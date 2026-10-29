@@ -1,0 +1,22 @@
+{
+  "name": "tc-language-packs",
+  "description": "Two skills for tC Language Packs, the Bible translation language packs of the translationCore family: tc-language-packs-translator helps a translator understand and translate a passage with the whole context of each verse (texts, original, notes, words, articles, lexicon, other books); tc-language-packs-dev helps a code agent build apps that make, open, download or serve packs.",
+  "version": "2.0.0",
+  "author": {
+    "name": "unfoldingWord",
+    "url": "https://github.com/unfoldingWord"
+  },
+  "homepage": "https://tc-language-packs.unfoldingword.workers.dev",
+  "repository": "https://github.com/unfoldingWord/tc-language-packs",
+  "license": "CC-BY-SA-4.0",
+  "keywords": [
+    "bible",
+    "door43",
+    "language-pack",
+    "offline",
+    "tc",
+    "translation",
+    "translationcore",
+    "unfoldingword"
+  ]
+}

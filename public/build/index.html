@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Build with Language Packs</title>
+<title>Build with tC Language Packs</title>
 <meta name="description" content="Read a pack's manifest, open it into your stores, make packs, download parts and serve views: the code and the routes.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -62,7 +62,7 @@
 <body>
 <header class="wrap">
   <nav class="nav" aria-label="Main">
-    <a class="wordmark" href="../">Language Packs</a>
+    <a class="wordmark" href="../">tC Language Packs</a>
     <ul>
       <li><a href="../inside/">Inside a pack</a></li>
       <li><a href="./" aria-current="page">Build with it</a></li>
@@ -108,7 +108,7 @@ manifest.kind        // 'language' | 'originals' | 'base' | 'book'
 manifest.books       // ['tit'] on a book pack
 manifest.requires    // [{ key: 'unfoldingWord/el-x-koine/ugnt', stamp: 'v0.34#…' }]
 for (const r of manifest.resources) {
-  console.log(r.title, r.stamp, r.rows)  // Texto Puente Literal v42#2026-08-11T12_22_03Z { sot: 5, prepared: 7 }
+  console.log(r.title, r.stamp, r.rows)  // unfoldingWord® Literal Text v91#2026-09-26T15_45_57Z { sot: 5, prepared: 7 }
 }</code></pre>
       <p class="small soft">Compare each resource's <code>stamp</code> with your copy before replacing anything: Servos says «newer», «the same» or «older» for each one, and never goes back to an older release.</p>
     </div>
@@ -142,7 +142,7 @@ const result = await importLanguagePack({
   bytes,
   target: packTargetFrom(stores),
   versions,
-  overwrite: ['es-419_gl/es-419/tn'],   // replace these resources; keep the rest
+  overwrite: ['unfoldingWord/en/tn'],   // replace these resources; keep the rest
   onProgress: (done, total) => bar.set(done / total),
 })
 
@@ -172,7 +172,11 @@ result.originals          // each required original: 'present' | 'in-pack' | 'mi
       <p data-reveal style="--d:60ms">From the command line, in a clone of <a href="https://github.com/unfoldingWord/tc-study">unfoldingWord/tc-study</a> with <code>bun install</code> done. It runs tC Study's own pipeline in memory, so the rows are byte for byte the ones the app writes. It reads only the public Door43 catalog: what is marked <code>tc-ready</code> for the language, from any owner.</p>
     </div>
     <div class="code" data-reveal style="--d:100ms">
-<pre><code>bun packages/resource-pipeline/cli/prepare-language.ts --lang es-419 --out ./packs --books all
+<pre><code>bun packages/resource-pipeline/cli/publish-language.ts --parts --lang en --work ./work --macula &lt;taller&gt;/public --lexicons-ref master --no-upload
+#   a large language, one book at a time: parts/&lt;sha256&gt;.part.gz, the lists, parts-report.json
+
+<pre><code>bun packages/resource-pipeline/cli/prepare-language.ts --lang fr --out ./packs --books all
+#   a small language, as zip packs:
 
   --books all|tit,rut     also write a base pack and one pack per book
   --no-originals          leave out originals.langpack.zip
@@ -181,19 +185,19 @@ result.originals          // each required original: 'present' | 'in-pack' | 'mi
   --lexicons-ref &lt;ref&gt;    read the lexicons at this ref (default master)
   --no-obs                leave out Open Bible Stories and their helps
 
-./packs/es-419.langpack.zip       the whole language, without the originals
+./packs/fr.langpack.zip           the whole language, without the originals
 ./packs/originals.langpack.zip    UGNT and UHB, the same for every language
-./packs/es-419-base.langpack.zip  with --books: catalog, TA, TW, OBS, lexicons
-./packs/es-419-tit.langpack.zip   with --books: one per book
-./packs/es-419.report.json        what was found, built, blocked and packed</code></pre>
+./packs/fr-base.langpack.zip      with --books: catalog, TA, TW, OBS, lexicons
+./packs/fr-tit.langpack.zip       with --books: one per book
+./packs/fr.report.json            what was found, built, blocked and packed</code></pre>
 <pre><code>import { buildLanguagePack, packSourceFrom } from '@bt-synergy/language-pack'
 
 // From stores your app has already filled:
 const source = packSourceFrom(stores)
-const titus = await buildLanguagePack({ source, language: 'es-419', kind: 'book', books: ['tit'], versions })
+const titus = await buildLanguagePack({ source, language: 'en', kind: 'book', books: ['tit'], versions })
 titus.bytes      // the zip
 titus.skipped    // resources left out, with the reason</code></pre>
-      <p class="small soft">A resource goes in only when its receipt says it arrived whole. The first es-419 run took seven and a half minutes; English does not fit in one process, which is why parts exist.</p>
+      <p class="small soft">A resource goes in only when its receipt says it arrived whole. All of English in one process took 47 minutes and 15 GB of memory, which is why large languages are built as parts, a book at a time.</p>
     </div>
   </section>
 
@@ -204,7 +208,7 @@ titus.skipped    // resources left out, with the reason</code></pre>
       <p data-reveal style="--d:100ms">Check that each part's sha256 is its name before you keep it. Run the same sequence at startup with nothing to download: it heals whatever an interrupted run left.</p>
     </div>
     <div class="code" data-reveal style="--d:100ms">
-<pre><code>GET https://tc-helps.mcp.servant.bible/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/es-419
+<pre><code>GET https://tc-helps.mcp.servant.bible/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/en
 GET https://tc-helps.mcp.servant.bible/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/originals/&lt;sha256&gt;
 GET https://tc-helps.mcp.servant.bible/v2/packs/parts/&lt;sha256&gt;</code></pre>
 <pre><code>import { IndexedDBByteStore } from '@bt-synergy/cache-adapter-indexeddb'
@@ -213,7 +217,7 @@ import { REGISTER_PREFIX, applyParts, packTargetFrom, planParts, readRegister, s
 const target = packTargetFrom(stores)
 const staging = stagingFrom(new IndexedDBByteStore({ dbName: 'my-app-parts' }))
 const register = readRegister(await stores.cache.getByPrefix(REGISTER_PREFIX))
-const chosen = ['shared', 'book tit', 'book rut']
+const chosen = ['shared', 'book tit', 'book rut']   // 3.7 MB + 403 KB + 805 KB in English
 
 const plan = planParts({ list, originals, register, chosen, versions })
 for (const part of plan.download) await staging.put(part.sha256, await download(part))
@@ -238,16 +242,16 @@ const result = await applyParts({ target, staging, plan, list, originals, regist
   <section class="recipe wrap" id="views" aria-labelledby="views-title">
     <div class="say">
       <h2 id="views-title" data-reveal>Serve answers from views</h2>
-      <p data-reveal style="--d:60ms">A server does not need IndexedDB. translation-helps-mcp reads views: plain JSON files per chapter, written from a pack, with each note's words already found in the literal and the simple text. For es-419 its median answer went from 13 ms to 2 ms.</p>
+      <p data-reveal style="--d:60ms">A server does not need IndexedDB. translation-helps-mcp reads views: plain JSON files per chapter, written from a pack, with each note's words already found in the literal and the simple text. Measured on Latin American Spanish, its median answer went from 13 ms to 2 ms.</p>
       <p data-reveal style="--d:100ms">The same views read from a folder would let an assistant answer with no internet.</p>
     </div>
     <div class="code" data-reveal style="--d:100ms">
 <pre><code>bun packages/resource-pipeline/cli/mcp-views.ts …   # writes the files below from a pack
 
-v1/es-419/index.json
-v1/es-419/notes/TIT/1.json
-v1/es-419/word-links/TIT/1.json
-v1/es-419/questions/TIT/1.json</code></pre>
+v1/en/index.json
+v1/en/notes/TIT/1.json
+v1/en/word-links/TIT/1.json
+v1/en/questions/TIT/1.json</code></pre>
 <pre><code>// translation-helps-mcp, src/api/routes/packViews.ts
 export interface PackViews {
   get(path: string): Promise&lt;unknown | null&gt;   // an R2 bucket in a Worker, a folder in a script
@@ -255,44 +259,60 @@ export interface PackViews {
 <pre><code>{
   "id": "rtc9",
   "reference": "1:1",
-  "quote": "κατὰ πίστιν",
+  "quote": "κατὰ πίστιν ἐκλεκτῶν Θεοῦ, καὶ ἐπίγνωσιν ἀληθείας",
   "supportReference": "rc://*/ta/man/translate/figs-abstractnouns",
-  "supportReferenceTitle": "Sustantivos abstractos",
+  "supportReferenceTitle": "Abstract Nouns",
   "aligned": {
-    "literal": "conforme a la fe",
-    "simple": "Dios me envió a enseñar … para que confíe más en él"
+    "literal": "for the faith of the chosen people of God and knowledge of the truth",
+    "simple": "God … to teach the people whom he has chosen as his own to trust him more …"
   }
 }</code></pre>
-      <p class="small soft">One note of Titus 1:1 from <code>v1/es-419/notes/TIT/1.json</code>, with its text and a few fields left out. Views have their own schema (<code>schema: 1</code>), which does not change when the code that prepares packs does.</p>
+      <p class="small soft">The shape of one note of Titus 1:1 in <code>v1/en/notes/TIT/1.json</code>, filled from the English parts, with its text and a few fields left out. Views have their own schema (<code>schema: 1</code>), which does not change when the code that prepares packs does.</p>
     </div>
   </section>
 
   <section class="recipe wrap" id="agents" aria-labelledby="agents-title">
     <div class="say">
       <h2 id="agents-title" data-reveal>Give it to your agent</h2>
-      <p data-reveal style="--d:60ms">An agent skill teaches Claude Code, Codex, Cursor or Gemini CLI what a pack is and how to read one with no internet. It brings a reader that needs only Python: verses, alignments, notes, questions, word links, articles, lexicon entries, and every place a word or an article occurs across books.</p>
-      <p data-reveal style="--d:100ms">Packs are modular, so its answers say which books are not on the device and which pack would bring them.</p>
-      <div data-reveal style="--d:140ms"><a class="button" href="../skills/language-packs.zip">Download the skill</a></div>
+      <p data-reveal style="--d:60ms">Two agent skills, for Claude Code, Codex, Cursor or Gemini CLI. The translator skill helps a Bible translator with a passage: one call gives a verse in every text, the original word by word with its lexicon, the notes with the words they are about, the questions, the key terms, and where each word appears in other books. The developer skill teaches a code agent the format, the keys, the versions, the parts and the packages.</p>
+      <p data-reveal style="--d:100ms">Both bring a reader that needs only Python and works offline. Packs are modular, so its answers say which books are not on the device.</p>
+      <div data-reveal style="--d:140ms; display:flex; gap:8px; flex-wrap:wrap"><a class="button" href="../skills/tc-language-packs-translator.zip">Translator skill</a> <a class="button" href="../skills/tc-language-packs-dev.zip">Developer skill</a></div>
     </div>
     <div class="code" data-reveal style="--d:100ms">
 <pre><code># Claude Code
-/plugin install language-packs --marketplace unfoldingWord/language-packs-site
+/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs
 
 # Codex, Cursor, Gemini CLI: unzip into your project
-.agents/skills/language-packs/SKILL.md</code></pre>
-<pre><code>python scripts/langpack.py occurrences originals.langpack.zip es-419.langpack.zip --strong G5485 --text glt
+.agents/skills/tc-language-packs-translator/SKILL.md
+.agents/skills/tc-language-packs-dev/SKILL.md
+
+# Any agent with MCP: notes and word links served from packs
+https://tc-helps.mcp.servant.bible/v2/mcp</code></pre>
+<pre><code>python scripts/langpack.py context packs/ --ref "TIT 2:11"
+
+# TIT 2:11
+unfoldingWord® Literal Text: For the grace of God has appeared, salvific for all men,
+unfoldingWord® Simplified Text: The believers should behave in these good ways because God is offering to save everyone as a gift that no one deserves.
+unfoldingWord® Greek New Testament: ἐπεφάνη γὰρ ἡ χάρις τοῦ Θεοῦ, σωτήριος πᾶσιν ἀνθρώποις,
+
+## Words of the original
+- χάρις (χάρις, G5485, Gr,N,,,,,NFS,): grace, favor, kindness  →  bsb «grace»; ult «grace»; ust «as a gift that no one deserves»
+  …
+## Translation notes
+- ἐπεφάνη &amp; ἡ χάρις τοῦ Θεοῦ  →  the grace of God has appeared  [figs-personification]: Paul speaks of the grace of God as if it were a person who has arrived. …
+  …
+## Elsewhere in the Bible (each word of the original)
+- G5485 χάρις: 148 verses in 23 books; in this book 1:4, 2:11, 3:7, 3:15
+- G4992 σωτήριος: 5 verses in 4 books; in this book 2:11</code></pre>
+<pre><code>python scripts/langpack.py occurrences packs/ --strong G5485 --text ult
 
 G5485 χάρις: 148 verses in 23 books (unfoldingWord/el-x-koine/ugnt)
   LUK: 1:30, 2:40, 2:52, 4:22, 6:32, 6:33 … and 2 more
   JHN: 1:14, 1:16, 1:17
   …
-  TIT: 1:4 «Gracia», 2:11 «gracia», 3:7 «gracia», 3:15 «gracia»
-  es-419_gl/es-419/glt does not have these books yet: LUK, JHN, ACT, ROM, …</code></pre>
-<pre><code>python scripts/langpack.py notes es-419.langpack.zip --ref "TIT 1:1" --text gst
-
-1:1 κατὰ πίστιν  →  Dios me envió a enseñar … para que confíe más en él  [figs-abstractnouns]
-  **Fe** es un sustantivo abstracto. Aquí se refiere al creer o al confiar en Jesús. …</code></pre>
-      <p class="small soft">Every place a word occurs comes from the packs' word index, the optional <code>index</code> layer of language packs v3; the reader finds the same places in the original's own words when a pack has no index. The skill's files are also at <a href="../skills/language-packs/SKILL.md">SKILL.md</a>, and the site's map for agents at <a href="../llms.txt">llms.txt</a>.</p>
+  TIT: 1:4 «Grace», 2:11 «grace», 3:7 «by the grace», 3:15 «Grace»
+  unfoldingWord/en/ult has these books in its release, not on this device: LUK, JHN, ACT, ROM, …</code></pre>
+      <p class="small soft">Every place a word occurs comes from the packs' word index, the optional <code>index</code> layer of language packs v3; the reader finds the same places in the original's own words when a pack has no index. The skills' files are also at <a href="../skills/tc-language-packs-translator/SKILL.md">translator</a> and <a href="../skills/tc-language-packs-dev/SKILL.md">developer</a>, and the site's map for agents at <a href="../llms.txt">llms.txt</a>. The examples read the English parts of Titus and the Greek New Testament.</p>
     </div>
   </section>
 
@@ -302,16 +322,16 @@ G5485 χάρις: 148 verses in 23 books (unfoldingWord/el-x-koine/ugnt)
       <table class="stack">
         <thead><tr><th>Row</th><th>Key</th><th>Example</th></tr></thead>
         <tbody>
-          <tr><td>Receipt</td><td><code>resource:{owner}/{lang}/{id}</code></td><td><code>resource:es-419_gl/es-419/glt</code></td></tr>
-          <tr><td>Book index</td><td><code>scripture-usj:{key}:{book}</code></td><td><code>scripture-usj:es-419_gl/es-419/glt:tit</code></td></tr>
-          <tr><td>Chapter</td><td><code>scripture-usj:{key}:{book}:{chapter}</code></td><td><code>scripture-usj:es-419_gl/es-419/glt:tit:1</code></td></tr>
-          <tr><td>Prepared chapter</td><td><code>prepared:{type}:{key}:{book}:{unit}:{light|full}</code></td><td><code>prepared:scripture:es-419_gl/es-419/glt:tit:1:full</code></td></tr>
-          <tr><td>Notes of a book</td><td><code>tn:{key}:{book}</code></td><td><code>tn:es-419_gl/es-419/tn:tit</code></td></tr>
-          <tr><td>Article</td><td><code>{key}/{path}</code></td><td><code>es-419_gl/es-419/tw/bible/kt/grace</code></td></tr>
-          <tr><td>Lexicon entry</td><td><code>{key}/content/{strong}.json</code></td><td><code>es-419_gl/es-419/ugl/content/5485.json</code></td></tr>
-          <tr><td>Quotes</td><td><code>helps-quote:{helps}@{hs}:{orig}@{os}+{usj}:{book}:{ch}</code></td><td><code>helps-quote:…/tn@gbb0c56a52f:…/ugnt@g987ab2025a+2.3.0-usj:tit:1</code></td></tr>
-          <tr><td>Aligned quotes</td><td><code>helps-align:…:{text}@{ts}:{book}:{ch}</code></td><td><code>helps-align:…:es-419_gl/es-419/glt@g9c65570ffd+6000230:tit:1</code></td></tr>
-          <tr><td>Article title</td><td><code>helps-text:ta-title:{key}@{stamp}:{article}</code></td><td><code>helps-text:ta-title:…/ta@v4#2024-07-17T20_15_35Z:translate/figs-abstractnouns</code></td></tr>
+          <tr><td>Receipt</td><td><code>resource:{owner}/{lang}/{id}</code></td><td><code>resource:unfoldingWord/en/ult</code></td></tr>
+          <tr><td>Book index</td><td><code>scripture-usj:{key}:{book}</code></td><td><code>scripture-usj:unfoldingWord/en/ult:tit</code></td></tr>
+          <tr><td>Chapter</td><td><code>scripture-usj:{key}:{book}:{chapter}</code></td><td><code>scripture-usj:unfoldingWord/en/ult:tit:1</code></td></tr>
+          <tr><td>Prepared chapter</td><td><code>prepared:{type}:{key}:{book}:{unit}:{light|full}</code></td><td><code>prepared:scripture:unfoldingWord/en/ult:tit:1:full</code></td></tr>
+          <tr><td>Notes of a book</td><td><code>tn:{key}:{book}</code></td><td><code>tn:unfoldingWord/en/tn:tit</code></td></tr>
+          <tr><td>Article</td><td><code>{key}/{path}</code></td><td><code>unfoldingWord/en/tw/bible/kt/grace</code></td></tr>
+          <tr><td>Lexicon entry</td><td><code>{key}/content/{strong}.json</code></td><td><code>test_org/en/ugl/content/5485.json</code></td></tr>
+          <tr><td>Quotes</td><td><code>helps-quote:{helps}@{hs}:{orig}@{os}+{usj}:{book}:{ch}</code></td><td><code>helps-quote:…/en/tn@g9e6a394c0e:…/ugnt@g987ab2025a+2.3.0-usj:tit:1</code></td></tr>
+          <tr><td>Aligned quotes</td><td><code>helps-align:…:{text}@{ts}:{book}:{ch}</code></td><td><code>helps-align:…:unfoldingWord/en/ult@g252ea4a894+6000230:tit:1</code></td></tr>
+          <tr><td>Article title</td><td><code>helps-text:ta-title:{key}@{stamp}:{article}</code></td><td><code>helps-text:ta-title:…/en/ta@v91#2026-09-26T15_47_36Z:translate/figs-abstractnouns</code></td></tr>
         </tbody>
       </table>
     </div>
@@ -332,13 +352,13 @@ G5485 χάρις: 148 verses in 23 books (unfoldingWord/el-x-koine/ugnt)
 </main>
 
 <footer class="footer wrap" style="margin-top:var(--section)">
-  <div class="blocks" aria-hidden="true"><span style="height:100%">l</span><span style="height:82%">a</span><span style="height:92%">n</span><span style="height:70%">g</span><span style="height:88%">p</span><span style="height:76%">a</span><span style="height:96%">c</span><span style="height:64%">k</span></div>
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
   <div class="footer-links">
     <div><a href="../">Overview</a><a href="../inside/">Inside a pack</a><a href="./">Build with it</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
     <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
     <div><a href="https://git.door43.org/">Door43</a><a href="../skills/language-packs.zip">Agent skill</a></div>
-    <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Kingston Technology DataTraveler G4 USB flash drive» by Dmitry Makeev, CC BY-SA 4.0. «Codex Sinaiticus» by PotatoCow25, CC0. All via Wikimedia Commons. Rows and keys quoted from the es-419 pack of 29 October 2026.</p>
+    <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Kingston Technology DataTraveler G4 USB flash drive» by Dmitry Makeev, CC BY-SA 4.0. «Codex Sinaiticus» by PotatoCow25, CC0. All via Wikimedia Commons. Rows, keys and outputs from the English parts of 29 October 2026.</p>
   </div>
   <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">Overview</a></div>
 </footer>

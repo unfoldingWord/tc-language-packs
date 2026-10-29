@@ -39,7 +39,7 @@ const versions = {
 }
 const result = await importLanguagePack({
   bytes, target: packTargetFrom(stores), versions,
-  overwrite: ['es-419_gl/es-419/tn'],          // resources to replace; others the device has stay
+  overwrite: ['unfoldingWord/en/tn'],          // resources to replace; others the device has stay
   onProgress: (done, total) => {},
 })
 // result.manifest, result.written, result.keptExisting, result.byLayer
@@ -68,18 +68,20 @@ what is missing. Open the originals pack first.
 In a clone of tc-study with `bun install`:
 
 ```bash
-bun packages/resource-pipeline/cli/prepare-language.ts --lang es-419 --out ./packs --books all
+bun packages/resource-pipeline/cli/prepare-language.ts --lang es-419 --out ./packs --books all   # a small language
 #   --books all|tit,rut   also a base pack and one pack per book
 #   --no-originals        --macula <folder>   --no-lexicons   --lexicons-ref <ref>   --no-obs
 ```
 
 It discovers what Door43 marks `tc-ready` for the language (any owner), downloads it whole, builds every derived
 row with tC Study's own code, and writes `{lang}.langpack.zip`, `originals.langpack.zip`, `{lang}-base…`,
-`{lang}-{book}…` and `{lang}.report.json`. From stores an app already filled:
+`{lang}-{book}…` and `{lang}.report.json`. A large language such as English does not fit in one process: build it as
+parts, one book at a time (`packages/resource-pipeline/cli/publish-language.ts --parts --lang en --work <folder>
+--no-upload`; the GitHub workflow `language-packs.yml` publishes them). From stores an app already filled:
 
 ```ts
 import { buildLanguagePack, packSourceFrom } from '@bt-synergy/language-pack'
-const { bytes, manifest, skipped } = await buildLanguagePack({ source: packSourceFrom(stores), language: 'es-419', kind: 'book', books: ['tit'], versions })
+const { bytes, manifest, skipped } = await buildLanguagePack({ source: packSourceFrom(stores), language: 'en', kind: 'book', books: ['tit'], versions })
 ```
 
 ## Download parts

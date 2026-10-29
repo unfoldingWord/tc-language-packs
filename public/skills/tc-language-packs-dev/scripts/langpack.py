@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Read Bible translation language packs offline, with the Python standard library only.
 
-A source is any mix of: a `.langpack.zip` file, a `.part.gz` file (format 2.0 parts), or a folder holding them.
-Give several when a language is split (for example `originals.langpack.zip es-419-base.langpack.zip es-419-tit.langpack.zip`).
+A source is any mix of: a `.langpack.zip` file, a `.part.gz` file (format 2.0 parts), a parts list (`.json`, schema 2,
+which names the resources the parts belong to), or a folder holding them. Give several when a language is split
+(for example `originals.langpack.zip en-base.langpack.zip en-tit.langpack.zip`, or a folder of parts with its lists).
 
   langpack.py info      SOURCE...                        what the packs bring
   langpack.py keys      SOURCE... [--layer L] [--resource R] [--prefix P] [--limit N]
@@ -14,13 +15,15 @@ Give several when a language is split (for example `originals.langpack.zip es-41
   langpack.py links     SOURCE... --ref "TIT 1:1" [--links twl]  Translation Words links of a verse
   langpack.py article   SOURCE... --path translate/figs-metaphor | bible/kt/grace
   langpack.py lexicon   SOURCE... --strong G5485 | H2580
+  langpack.py context   SOURCE... --ref "TIT 2:11"                 everything about a verse, and where its words reach
+  langpack.py intro     SOURCE... --book TIT | "TIT 2"              the introduction to a book or a chapter
   langpack.py occurrences SOURCE... --strong G5485 [--text glt]     every verse of the Bible with this word, and its rendering
   langpack.py occurrences SOURCE... --academy figs-metaphor         every note that cites a Translation Academy article
   langpack.py occurrences SOURCE... --word bible/kt/grace           every Translation Words link to an article
 
 Add --json to any command for machine-readable output, and --out FILE to write it to a UTF-8 file (safer than a
 pipe on Windows, whose console may not be UTF-8). A resource (--text, --notes…) is its full key
-(`es-419_gl/es-419/glt`) or the last part of it (`glt`).
+(`unfoldingWord/en/ult`) or the last part of it (`ult`).
 """
 
 import argparse
@@ -46,20 +49,31 @@ class Sources:
     def __init__(self, paths):
         self.zips = []  # (path, ZipFile, manifest)
         self.parts = []  # paths of .part.gz
+        self.lists = []  # (path, parts list) of format 2.0
         for p in paths:
             self._add(p)
         if not self.zips and not self.parts:
             sys.exit("No .langpack.zip or .part.gz found in: " + ", ".join(paths))
         self._part_rows = None
+        self._entry_of = {}
 
     def _add(self, p):
         if os.path.isdir(p):
             for name in sorted(os.listdir(p)):
-                if name.endswith(".langpack.zip") or name.endswith(".part.gz"):
+                if name.endswith(".langpack.zip") or name.endswith(".part.gz") or name.endswith(".json"):
                     self._add(os.path.join(p, name))
             return
         if p.endswith(".part.gz"):
             self.parts.append(p)
+            return
+        if p.endswith(".json"):
+            try:
+                with open(p, encoding="utf-8") as f:
+                    lst = json.load(f)
+            except (OSError, ValueError):
+                return
+            if isinstance(lst, dict) and lst.get("schema") == 2 and isinstance(lst.get("parts"), list):
+                self.lists.append((p, lst))
             return
         z = zipfile.ZipFile(p)
         try:
@@ -79,18 +93,34 @@ class Sources:
         for _, _, m in self.zips:
             for r in m.get("resources", []):
                 seen.setdefault(r["key"], r)
+        for _, lst in self.lists:
+            for r in lst.get("resources", []):
+                seen.setdefault(r["key"], r)
         return seen
 
-    def _parts(self):
+    def _entries(self):
+        """What the parts lists say of each part file given (by its sha256): its resource, book and layers."""
         if self._part_rows is None:
-            self._part_rows = []
-            for p in self.parts:
-                with gzip.open(p, "rt", encoding="utf-8") as f:
-                    for line in f:
-                        if line.strip():
-                            r = json.loads(line)
-                            self._part_rows.append((r["layer"], r["key"], r["value"]))
-        return self._part_rows
+            self._part_rows = {}
+            by_sha = {e["sha256"]: e for _, lst in self.lists for e in lst["parts"]}
+            self._entry_of = {p: by_sha.get(os.path.basename(p)[: -len(".part.gz")]) for p in self.parts}
+        return self._entry_of
+
+    def _part_file(self, p):
+        """The rows of one part file, read once."""
+        if p not in self._part_rows:
+            got = []
+            with gzip.open(p, "rt", encoding="utf-8") as f:
+                for line in f:
+                    if line.strip():
+                        r = json.loads(line)
+                        got.append((r["layer"], r["key"], r["value"]))
+            self._part_rows[p] = got
+        return self._part_rows[p]
+
+    def parts_on_device(self):
+        """The list entries of the part files given."""
+        return [e for e in self._entries().values() if e]
 
     def rows(self, layer, resource=None):
         """(key, entry) of a layer, of one resource or of all."""
@@ -108,9 +138,13 @@ class Sources:
                         if line.strip():
                             r = json.loads(line)
                             yield r["key"], r["entry"]
-        for l, k, v in self._parts():
-            if l == layer and (resource is None or resource_of(k) == resource):
-                yield k, v
+        # With parts lists, open only the parts of this resource and layer; without them, every part.
+        for p, entry in self._entries().items():
+            if entry and (layer not in entry.get("layers", []) or (resource and entry.get("resource") != resource)):
+                continue
+            for l, k, v in self._part_file(p):
+                if l == layer and (resource is None or resource_of(k) == resource):
+                    yield k, v
 
     def find(self, layer, resource, key):
         for k, e in self.rows(layer, resource):
@@ -128,6 +162,9 @@ def resource_of(key):
     if m:
         return m.group(1)
     m = re.match(r"^helps-(?:quote|align):([^@]+)@", key)
+    if m:
+        return m.group(1)
+    m = re.match(r"^index:[^:]+:([^:]+/[^:]+/[^:]+):", key)
     if m:
         return m.group(1)
     m = re.match(r"^helps-text:[^:]+:([^@]+)@", key)
@@ -222,8 +259,23 @@ def cmd_info(s, a):
             rows = ", ".join("%s %d" % (k, v) for k, v in r.get("rows", {}).items()) or "catalog row only"
             lines.append("  - %s · %s · %s · %s (%s)%s" % (r["key"], r.get("title", ""), r.get("subject", ""), r["stamp"], rows,
                                                           " · books " + ",".join(r["books"]) if r.get("books") else ""))
+    for p, lst in s.lists:
+        data.append({k: v for k, v in lst.items() if k != "parts"})
+        lines.append("%s" % os.path.basename(p))
+        lines.append("  parts list (schema 2) · language %s · compat %s · %d parts, %.1f MB" % (
+            lst.get("language"), lst.get("compat"), len(lst["parts"]), sum(x.get("bytes", 0) for x in lst["parts"]) / 1e6))
+        here = {}
+        for e in s.parts_on_device():
+            if e.get("book"):
+                here.setdefault(e["resource"], set()).add(e["book"])
+        for r in lst.get("resources", []):
+            books = r.get("books") or []
+            on = sorted(here.get(r["key"], set()), key=book_rank)
+            lines.append("  - %s · %s · %s · %s%s" % (r["key"], r.get("title", ""), r.get("subject", ""), r.get("stamp", ""),
+                                                     " · %d books in the release, on this device: %s" % (len(books), few(on) if on else "none")
+                                                     if books else ""))
     if s.parts:
-        lines.append("%d part file(s)" % len(s.parts))
+        lines.append("%d part file(s) given" % len(s.parts))
     out(a, data, "\n".join(lines))
 
 
@@ -400,6 +452,8 @@ def cmd_lexicon(s, a):
         for sense in entry.get("senses", []):
             refs = "; ".join("%s %s" % (b, r) for b, r in (sense.get("refs") or {}).items())
             lines.append("  - %s%s" % (", ".join(sense.get("glosses", [])) or sense.get("definition", ""), ("  (" + refs + ")") if refs else ""))
+    if not e.get("entries"):
+        lines.append("(this lexicon gives only a short gloss for %s, without senses)" % a.strong)
     out(a, e, "\n".join(lines))
 
 
@@ -467,48 +521,77 @@ def book_rank(book):
     return BOOK_ORDER.index(book) if book in BOOK_ORDER else 999
 
 
-def places_of_strong(s, original, code):
-    """Every verse of the original where a word carries this code: from the packs' `index` rows when they have them,
-    else read from the original's own words (the same answer, slower). Returns ({book: [refs]}, lemma, how)."""
-    places, lemma = {}, ""
-    prefix = "index:strong:%s:%s:" % (original, code)
-    strong_rows = [(k, e) for k, e in s.rows("index", original) if k.startswith(prefix)]
-    if strong_rows:
-        verses_rows = {k: e for k, e in s.rows("index", original) if k.startswith("index:verses:%s:" % original)}
+def places_of_codes(s, original, codes):
+    """Every verse of the original where a word carries one of these codes, in one pass: from the packs' `index` rows
+    when they have them, else read from the original's own words (the same answer, slower).
+    Returns ({code: {book: [refs]}}, {code: lemma}, how, books searched)."""
+    codes = set(codes)
+    places = {c: {} for c in codes}
+    lemmas = {c: {} for c in codes}
+    index_rows = [(k, e) for k, e in s.rows("index", original)]
+    verses_rows = {k: e for k, e in index_rows if k.startswith("index:verses:%s:" % original)}
+    if verses_rows:
         import bisect
-        for k, e in strong_rows:
-            book = k.rsplit(":", 1)[1]
+        searched = {k.rsplit(":", 1)[1] for k in verses_rows}
+        for k, e in index_rows:
+            m = re.match(r"^index:strong:[^:]+/[^:]+/[^:]+:([^:]+):([^:]+)$", k)
+            if not m or m.group(1) not in codes or not isinstance(e, dict):
+                continue
+            code, book = m.group(1), m.group(2)
             vr = verses_rows.get("index:verses:%s:%s" % (original, book))
             if not vr:
                 continue
             refs, starts = vr["verses"].split(" "), decode_words(vr["starts"])
-            lemma = lemma or e.get("lemma", "")
             got = []
             for w in decode_words(e["words"]):
                 ref = refs[bisect.bisect_right(starts, w) - 1]
                 if not got or got[-1] != ref:
                     got.append(ref)
-            places[book] = got
-        return places, lemma, "index"
-    lemmas = {}
-    for k, e in s.rows("sot", original):
-        m = re.match(r"^scripture-usj:[^:]+/[^:]+/[^:]+:([^:]+):(\d+)$", k)
-        if not m or m.group(2) == "0":
-            continue
-        book, ch = m.group(1), int(m.group(2))
-        usj = ((e or {}).get("content") or {}).get("usj") or {}
-        for verse, w in walk_words(usj.get("content"), {"verse": "0"}):
-            if code in strong_codes(w.get("strong")):
-                ref = "%d:%s" % (ch, verse)
-                lst = places.setdefault(book, [])
-                if not lst or lst[-1] != ref:
-                    lst.append(ref)
-                if w.get("lemma"):
-                    lemmas[w["lemma"]] = lemmas.get(w["lemma"], 0) + 1
-    for book in places:
-        places[book].sort(key=lambda r: tuple(int(x) for x in r.split(":")))
-    lemma = max(lemmas, key=lemmas.get) if lemmas else ""
-    return places, lemma, "original"
+            places[code][book] = got
+            if e.get("lemma"):
+                lemmas[code][e["lemma"]] = len(got)
+        how = "index"
+    else:
+        searched = set()
+        for k, e in s.rows("sot", original):
+            m = re.match(r"^scripture-usj:[^:]+/[^:]+/[^:]+:([^:]+):(\d+)$", k)
+            if not m or m.group(2) == "0":
+                continue
+            book, ch = m.group(1), int(m.group(2))
+            searched.add(book)
+            usj = ((e or {}).get("content") or {}).get("usj") or {}
+            for verse, w in walk_words(usj.get("content"), {"verse": "0"}):
+                for code in strong_codes(w.get("strong")):
+                    if code not in codes:
+                        continue
+                    ref = "%d:%s" % (ch, verse)
+                    lst = places[code].setdefault(book, [])
+                    if not lst or lst[-1] != ref:
+                        lst.append(ref)
+                    if w.get("lemma"):
+                        lemmas[code][w["lemma"]] = lemmas[code].get(w["lemma"], 0) + 1
+        how = "original"
+        for c in places:
+            for book in places[c]:
+                places[c][book].sort(key=lambda r: tuple(int(x) if x.isdigit() else 0 for x in r.split(":")))
+    best = {c: (max(l, key=l.get) if l else "") for c, l in lemmas.items()}
+    return places, best, how, searched
+
+
+def places_of_strong(s, original, code):
+    places, lemmas, how, searched = places_of_codes(s, original, [code])
+    return places[code], lemmas[code], how, searched
+
+
+def original_books_missing(s, original, searched):
+    """Books of the original's release not on this device (with parts, each book's original comes with that book)."""
+    release = s.resources().get(original, {}).get("books") or []
+    return sorted((b for b in release if b not in searched), key=book_rank)
+
+
+def few(books, n=8):
+    books = [b.upper() for b in books]
+    return ", ".join(books) if len(books) <= n else "%s and %d more" % (", ".join(books[:n]), len(books) - n)
 
 
 def renderings(s, text, code, places):
@@ -572,13 +655,14 @@ def cmd_occurrences(s, a):
         code = normal_code(a.strong)
         subject = "Greek New Testament" if code.startswith("G") else "Hebrew Old Testament"
         original = pick(s, a.original, [subject])
-        places, lemma, how = places_of_strong(s, original, code)
+        places, lemma, how, searched = places_of_strong(s, original, code)
+        orig_missing = original_books_missing(s, original, searched)
         if only:
             places = {b: r for b, r in places.items() if b in only}
         text = pick(s, a.text, ["Aligned Bible"]) if (a.text or any(r.get("subject") == "Aligned Bible" for r in s.resources().values())) else None
         rend = renderings(s, text, code, places) if text else {}
         total = sum(len(v) for v in places.values())
-        data = {"code": code, "lemma": lemma, "original": original, "from": how, "verses": total,
+        data = {"code": code, "lemma": lemma, "original": original, "from": how, "verses": total, "originalBooksNotOnDevice": orig_missing,
                 "books": {b: [{"ref": r, "text": rend.get("%s %s" % (b, r))} for r in refs] for b, refs in sorted(places.items(), key=lambda x: book_rank(x[0]))}}
         if text:
             data["text"] = text
@@ -594,10 +678,12 @@ def cmd_occurrences(s, a):
                 shown.append("%s%s" % (r, " «%s»" % t if t else ""))
             more = "" if len(refs) <= a.limit else " … and %d more" % (len(refs) - a.limit)
             lines.append("  %s: %s%s" % (b.upper(), ", ".join(shown), more))
+        if orig_missing:
+            lines.append("  Not searched: the original of %d books is not on this device (%s)" % (len(orig_missing), few(orig_missing)))
         if text and data.get("textNotOnDevice"):
-            lines.append("  %s has these books in its release, not on this device: %s" % (text, ", ".join(b.upper() for b in data["textNotOnDevice"])))
+            lines.append("  %s has these books in its release, not on this device: %s" % (text, few(data["textNotOnDevice"])))
         if text and data.get("textNotInRelease"):
-            lines.append("  %s does not have these books yet: %s" % (text, ", ".join(b.upper() for b in data["textNotInRelease"])))
+            lines.append("  %s does not have these books yet: %s" % (text, few(data["textNotInRelease"])))
     elif a.academy or a.word:
         if a.academy:
             notes = pick(s, a.notes, ["TSV Translation Notes"])
@@ -632,7 +718,7 @@ def cmd_occurrences(s, a):
             fmt0 = fmt
             fmt = lambda r: fmt0(r) + (" → " + r["textQuote"] if r.get("textQuote") else "")
         total = sum(len(v) for v in found.values())
-        missing = [b for b in missing_books(s, resource, present) if not only or b in only]
+        missing = sorted((b for b in missing_books(s, resource, present) if not only or b in only), key=book_rank)
         data = {"resource": resource, "count": total, "books": {b: rows for b, rows in sorted(found.items(), key=lambda x: book_rank(x[0]))},
                 "booksNotOnDevice": missing}
         lines.append("%d %s in %d books (%s)" % (total, label, len(found), resource))
@@ -641,10 +727,164 @@ def cmd_occurrences(s, a):
             more = "" if len(rows) <= a.limit else " … and %d more" % (len(rows) - a.limit)
             lines.append("  %s: %s%s" % (b.upper(), "; ".join(shown), more))
         if missing:
-            lines.append("  The release also has books not on this device, not searched: " + ", ".join(m.upper() for m in missing))
+            lines.append("  Not searched: %d books of the release are not on this device (%s)" % (len(missing), few(missing)))
     else:
         sys.exit("Say what to find: --strong G5485, --academy figs-metaphor or --word bible/kt/grace")
     out(a, data, "\n".join(lines))
+
+
+# A whole verse at once, for an assistant that helps a translator
+
+
+def texts_on_device(s):
+    """Every Bible text the packs name: gateway texts first (literal ones like ULT and GLT, then simplified ones like
+    UST and GST, then the rest), then the originals."""
+    res = s.resources()
+    rank = lambda k: (0 if k.endswith("lt") else 1 if k.endswith("st") else 2, k)
+    gate = sorted((k for k, r in res.items() if r.get("subject") in ("Aligned Bible", "Bible")), key=rank)
+    orig = [k for k, r in res.items() if r.get("subject") in ("Greek New Testament", "Hebrew Old Testament")]
+    return gate, orig
+
+
+def verse_text(s, text, book, ch, v):
+    chapter = light_chapter(s, text, book, ch)
+    if not chapter:
+        return None
+    words, inside = [], False
+    for block in chapter["blocks"]:
+        for i in block["inline"]:
+            if i["kind"] == "verse":
+                inside = i["chapterNumber"] == ch and i["verseNumber"] == v
+            elif inside and i["kind"] == "text":
+                words.append(i["text"])
+    t = re.sub(r"\s+", " ", "".join(words)).strip()
+    return t or None
+
+
+def original_words(s, original, book, ch, v):
+    e = s.find("sot", original, "scripture-usj:%s:%s:%d" % (original, book, ch))
+    if not e:
+        return []
+    usj = ((e.get("content") or {}).get("usj")) or {}
+    return [w for verse, w in walk_words(usj.get("content"), {"verse": "0"}) if verse == str(v)]
+
+
+def lexicon_brief(s, code):
+    subject = "Greek Lexicon" if code.startswith("G") else "Hebrew Lexicon"
+    hits = [k for k, r in s.resources().items() if r.get("subject") == subject]
+    if not hits:
+        return None
+    m = re.match(r"^[GH]0*(\d+)", code)
+    e = s.find("sot", hits[0], "%s/content/%s.json" % (hits[0], m.group(1))) if m else None
+    return e.get("brief") if isinstance(e, dict) else None
+
+
+def cmd_context(s, a):
+    """Everything about one verse: texts, original words with lexicon and renderings, notes, questions, word links,
+    and how its words and articles reach into other books."""
+    book, ch, v = parse_ref(a.ref)
+    gate, orig = texts_on_device(s)
+    data = {"ref": a.ref, "texts": {}, "original": None, "words": [], "notes": [], "questions": [], "links": [], "elsewhere": {}}
+    lines = ["# %s" % a.ref.upper()]
+    for t in gate + orig:
+        vt = verse_text(s, t, book, ch, v)
+        if vt:
+            data["texts"][t] = vt
+            lines.append("%s: %s" % (s.resources()[t].get("title") or t, vt))
+    original = next((o for o in orig if verse_text(s, o, book, ch, v)), None)
+    data["original"] = original
+    words = original_words(s, original, book, ch, v) if original else []
+    maps = {}
+    for t in gate:
+        e = s.find("sot", t, "scripture-usj:%s:%s:%d" % (t, book, ch))
+        if e:
+            maps[t] = ((e.get("content") or {}).get("alignmentMap") or {}).get("%s %d:%d" % (book.upper(), ch, v), [])
+    codes = []
+    lines.append("\n## Words of the original")
+    for w in words:
+        surface = "".join(x for x in (w.get("content") or []) if isinstance(x, str))
+        cs = strong_codes(w.get("strong"))
+        codes += [c for c in cs if c not in codes]
+        rend = {}
+        for t, rows in maps.items():
+            got = [" ".join(x["word"] for x in r.get("targets", [])) for r in rows
+                   if any(src.get("content") == surface and src.get("strong") == w.get("strong") for src in r.get("sources", []))]
+            if got:
+                rend[t.split("/")[-1]] = " / ".join(got)
+        brief = lexicon_brief(s, cs[0]) if cs else None
+        data["words"].append({"text": surface, "lemma": w.get("lemma"), "strong": cs, "morph": w.get("x-morph"), "lexicon": brief, "renderings": rend})
+        lines.append("- %s (%s, %s%s)%s%s" % (surface, w.get("lemma", ""), ",".join(cs), ", " + w["x-morph"] if w.get("x-morph") else "",
+                                               ": " + brief if brief else "", "  →  " + "; ".join("%s «%s»" % kv for kv in rend.items()) if rend else ""))
+    notes_res = [k for k, r in s.resources().items() if r.get("subject") == "TSV Translation Notes"]
+    if notes_res:
+        nr = notes_res[0]
+        chapter = helps_chapter(s, "notes", nr, book, ch) or {}
+        aligned = {}
+        lit = gate[0] if gate else None
+        if lit:
+            for k, e in s.rows("align", nr):
+                if ":%s@" % lit in k and k.endswith(":%s:%d" % (book, ch)) and isinstance(e, dict):
+                    aligned = e.get("content") or {}
+                    break
+        lines.append("\n## Translation notes")
+        for n in chapter.get("notes", []):
+            if covers(n.get("reference"), ch, v) and not is_intro(n):
+                d = {"id": n["id"], "quote": n.get("quote"), "occurrence": n.get("occurrence"), "supportReference": n.get("supportReference"),
+                     "note": unescape(n.get("note")), "textQuote": joined(aligned.get(n["id"], {})) or None}
+                data["notes"].append(d)
+                art = (n.get("supportReference") or "").split("/")[-1]
+                lines.append("- %s%s%s: %s" % (n.get("quote") or "(general)", "  →  " + d["textQuote"] if d["textQuote"] else "",
+                                               "  [%s]" % art if art else "", plain(n.get("note"))))
+    tq = [k for k, r in s.resources().items() if r.get("subject") == "TSV Translation Questions"]
+    if tq:
+        chapter = helps_chapter(s, "questions", tq[0], book, ch) or {}
+        qs = [q for q in chapter.get("questions", []) if covers(q.get("reference"), ch, v)]
+        data["questions"] = qs
+        if qs:
+            lines.append("\n## Translation questions")
+            lines += ["- %s  %s" % (q["question"], q["response"]) for q in qs]
+    twl = [k for k, r in s.resources().items() if r.get("subject") == "TSV Translation Words Links"]
+    if twl:
+        chapter = helps_chapter(s, "words-links", twl[0], book, ch) or {}
+        ls = [l for l in chapter.get("links", []) if covers(l.get("reference"), ch, v)]
+        data["links"] = ls
+        if ls:
+            lines.append("\n## Key words (Translation Words)")
+            lines += ["- %s → %s" % (l["origWords"], l["articlePath"]) for l in ls]
+    if not a.no_elsewhere and original and codes:
+        places, lemmas, how, searched = places_of_codes(s, original, codes)
+        missing = original_books_missing(s, original, searched)
+        lines.append("\n## Elsewhere in the Bible (each word of the original)")
+        for c in codes:
+            pl = places.get(c, {})
+            n = sum(len(r) for r in pl.values())
+            others = {b: r for b, r in pl.items() if b != book}
+            data["elsewhere"][c] = {"lemma": lemmas.get(c), "verses": n, "books": {b: r for b, r in sorted(pl.items(), key=lambda x: book_rank(x[0]))}}
+            if n:
+                here = pl.get(book, [])
+                common = n > 300
+                lines.append("- %s %s: %d verses in %d books%s" % (c, lemmas.get(c, ""), n, len(pl),
+                                                                  " (a very common word)" if common else
+                                                                  "; in this book " + ", ".join(here) if here else ""))
+        if missing:
+            data["originalBooksNotOnDevice"] = missing
+            lines.append("  (the original of %d books is not on this device, so they were not counted: %s)" % (len(missing), few(missing)))
+    out(a, data, "\n".join(lines))
+
+
+def cmd_intro(s, a):
+    """The book's introduction, or a chapter's, from the translation notes."""
+    m = re.match(r"^\s*([1-3]?[A-Za-z]{2,3})(?:\s+(\d+))?\s*$", a.book)
+    if not m:
+        sys.exit('Give a book code, or a book and a chapter: "TIT", "TIT 2"')
+    book, ch = m.group(1).lower(), int(m.group(2) or 1)
+    notes = pick(s, a.notes, ["TSV Translation Notes"])
+    chapter = helps_chapter(s, "notes", notes, book, ch) or {}
+    intros = [n for n in chapter.get("notes", []) if is_intro(n)]
+    want = intros[:1] if not m.group(2) else intros[1:] or intros
+    if not want:
+        sys.exit("No introduction for %s in %s" % (a.book, notes))
+    out(a, [dict(n, note=unescape(n.get("note"))) for n in want], "\n\n".join(unescape(n.get("note")) for n in want))
 
 
 def main():
@@ -657,7 +897,7 @@ def main():
         c.add_argument("--json", action="store_true")
         c.add_argument("--out", help="write the result to this file, in UTF-8, instead of the console")
         for flag, kw in extra.items():
-            c.add_argument("--" + flag, **kw)
+            c.add_argument("--" + flag.replace("_", "-"), **kw)
         c.set_defaults(fn=fn)
 
     add("info", cmd_info)
@@ -670,6 +910,8 @@ def main():
     add("links", cmd_links, links={}, ref={"required": True})
     add("article", cmd_article, path={"required": True}, resource={})
     add("lexicon", cmd_lexicon, strong={"required": True}, resource={})
+    add("context", cmd_context, ref={"required": True}, no_elsewhere={"action": "store_true", "help": "skip the search in other books"})
+    add("intro", cmd_intro, book={"required": True, "help": '"TIT" for the book, "TIT 2" for chapter 2'}, notes={})
     add("occurrences", cmd_occurrences, strong={}, academy={}, word={}, original={}, text={}, notes={}, links={},
         books={"help": "only these books, e.g. tit,rut"}, limit={"type": int, "default": 12, "help": "places shown per book in text; 0 shows all (--json always has all)"})
     a = p.parse_args()

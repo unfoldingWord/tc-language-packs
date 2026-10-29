@@ -1,20 +1,21 @@
-# Language Packs
+# tC Language Packs
 
 > One file that carries a Bible translation language, already prepared, and opens offline: gateway texts aligned to the Greek and Hebrew, translation notes, questions, words, word links, Translation Academy, lexicons and MACULA. Made by unfoldingWord's tC Study pipeline and read by Servos, tC Study and translation-helps-mcp.
 
 ## Pages
 
-- [Overview](https://language-packs.unfoldingword.workers.dev/): what a pack is, why it exists, who reads it
-- [Inside a pack](https://language-packs.unfoldingword.workers.dev/inside/): files, manifest, layers, kinds, versions, parts
-- [Build with it](https://language-packs.unfoldingword.workers.dev/build/): read, open, make and download packs; server routes; keys
+- [Overview](https://tc-language-packs.unfoldingword.workers.dev/): what a pack is, why it exists, who reads it
+- [Inside a pack](https://tc-language-packs.unfoldingword.workers.dev/inside/): files, manifest, layers, kinds, versions, parts
+- [Build with it](https://tc-language-packs.unfoldingword.workers.dev/build/): read, open, make and download packs; server routes; keys
 
-## Agent skill
+## Agent skills
 
-- [SKILL.md](https://language-packs.unfoldingword.workers.dev/skills/language-packs/SKILL.md): how an agent reads and uses packs
-- [langpack.py](https://language-packs.unfoldingword.workers.dev/skills/language-packs/scripts/langpack.py): a reader with the Python standard library only
-- [The format](https://language-packs.unfoldingword.workers.dev/skills/language-packs/references/format.md) and [the code](https://language-packs.unfoldingword.workers.dev/skills/language-packs/references/code.md)
-- [The whole skill as a zip](https://language-packs.unfoldingword.workers.dev/skills/language-packs.zip)
-- Claude Code: `/plugin install language-packs --marketplace unfoldingWord/language-packs-site`
+- Claude Code: `/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs` (both skills)
+- [Translator skill](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-translator/SKILL.md): help a Bible translator with a passage, with the whole context of each verse ([zip](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-translator.zip))
+- [Developer skill](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev/SKILL.md): build apps that make, open, download or serve packs ([zip](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev.zip)); [the format](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev/references/format.md) and [the code](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev/references/code.md)
+- [langpack.py](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-translator/scripts/langpack.py): a reader with the Python standard library only
+- MCP server with notes and word links from packs: https://tc-helps.mcp.servant.bible/v2/mcp
+- English parts: https://tc-helps.mcp.servant.bible/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/en
 
 ## Source
 

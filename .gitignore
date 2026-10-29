@@ -8,3 +8,5 @@ node_modules/
 !.env.example
 __pycache__/
 *.pyc
+.taste-skill/*
+!.taste-skill/direction.json

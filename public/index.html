@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Language Packs</title>
-<meta name="description" content="A language pack carries a Bible translation language, already prepared, in one file that opens offline. How it works and how to read one from your app.">
+<title>tC Language Packs</title>
+<meta name="description" content="A tC Language Pack carries a Bible translation language, already prepared, in one file that opens offline. How it works and how to read one from your app.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
@@ -16,6 +16,14 @@
   .hero-text { grid-column: 1 / span 6; grid-row: 1; padding-top: clamp(40px, 8vh, 120px); display: grid; gap: 24px; align-content: start; position: relative; z-index: 2; }
   .hero h1 { font-size: var(--step-hero); max-width: 9.5ch; }
   .hero-text p { max-width: 36ch; font-size: var(--step-body); }
+  .quick { display: grid; gap: 12px; max-width: 430px; margin-top: 8px; }
+  .quick p { font-size: 16px; }
+  .quick-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { --c: 7px; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px 0 16px; background: var(--surface); color: var(--ink); font: 500 15px/1 var(--font); text-decoration: none; border: 0; cursor: pointer; clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%, 0 var(--c)); transition: background-color 160ms, color 160ms, transform 160ms var(--ease-out); }
+  .chip:hover { transform: translateY(-2px); }
+  .chip.is-on { background: var(--ink); color: var(--bg); }
+  .quick code { font-size: 13px; padding: 8px 10px; overflow-wrap: anywhere; display: block; }
+  .quick .small code { display: inline; padding: 0.08em 0.3em; font-size: 0.86em; }
   .stage { grid-column: 5 / -1; grid-row: 1; align-self: start; margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); margin-top: clamp(380px, 44svh, 460px); background: var(--field); color: var(--field-ink); min-height: 560px; padding: 56px 0 0 56px; overflow: hidden; }
   .inspector { width: 660px; max-width: 100%; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.4; }
   .inspector header { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; padding: 16px 20px; background: var(--surface); }
@@ -171,7 +179,7 @@
 <body>
 <header class="wrap">
   <nav class="nav" aria-label="Main">
-    <a class="wordmark" href="./">Language Packs</a>
+    <a class="wordmark" href="./">tC Language Packs</a>
     <ul>
       <li><a href="inside/">Inside a pack</a></li>
       <li><a href="build/">Build with it</a></li>
@@ -185,29 +193,42 @@
   <section class="hero wrap" aria-labelledby="hero-title">
     <div class="hero-text">
       <h1 id="hero-title" data-reveal>A language in one file</h1>
-      <p data-reveal style="--d:80ms">A language pack carries a Bible translation language already prepared: texts aligned to the Greek and Hebrew, notes, questions, words, articles and lexicons. It opens with no internet, ready to read.</p>
+      <p data-reveal style="--d:80ms">A tC Language Pack carries a Bible translation language already prepared: texts aligned to the Greek and Hebrew, notes, questions, words, articles and lexicons. It opens with no internet, ready to read in the translationCore family of apps and beyond.</p>
       <div data-reveal style="--d:160ms"><a class="button" href="inside/">See inside a pack</a></div>
+      <div class="quick" data-ui data-reveal style="--d:220ms" aria-labelledby="quick-title">
+        <p id="quick-title">Already know them? Give packs to your agent:</p>
+        <div class="quick-row">
+          <button type="button" class="chip" data-copy="/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs">Claude Code plugin</button>
+          <a class="chip" href="skills/tc-language-packs-translator.zip">Translator skill</a>
+          <a class="chip" href="skills/tc-language-packs-dev.zip">Developer skill</a>
+          <button type="button" class="chip" data-copy="https://tc-helps.mcp.servant.bible/v2/mcp">MCP server</button>
+        </div>
+        <code id="quick-line">/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs</code>
+        <p class="small soft" id="quick-say">Paste it in Claude Code. The skills also work in Codex, Cursor and Gemini CLI: unzip into <code>.agents/skills/</code>.</p>
+      </div>
     </div>
     <div class="stage cut-xl" data-shutter>
-      <div class="inspector" data-ui aria-label="The manifest of a real pack">
-        <header><strong>es-419.langpack.zip</strong><span class="soft tab">8.3 MB · built 29 Oct 2026</span></header>
+      <div class="inspector" data-ui aria-label="The parts list of a real language">
+        <header><strong>en · parts list</strong><span class="soft tab">595 parts · 165 MB · 29 Oct 2026</span></header>
         <dl class="meta">
-          <dt>format</dt><dd>bt-synergy-language-pack 1.1.0</dd>
-          <dt>kind</dt><dd>language: every resource of Latin American Spanish</dd>
-          <dt>requires</dt><dd class="tab">UGNT v0.34 · UHB v3.0.0</dd>
+          <dt>format</dt><dd>bt-synergy parts list, schema 2</dd>
+          <dt>compat</dt><dd class="tab">f2.0-u2.3.0-p6000230-q9-a12-t1</dd>
+          <dt>originals</dt><dd class="tab">UGNT v0.34 · UHB v3.0.0 · MACULA, 132 parts</dd>
         </dl>
         <table>
-          <thead><tr><th>Resource</th><th>Release</th><th>Rows</th></tr></thead>
+          <thead><tr><th>Resource</th><th>Release</th><th>Size</th></tr></thead>
           <tbody>
-            <tr class="is-picked"><td>Texto Puente Literal</td><td class="tab">v42</td><td class="rows tab">91</td></tr>
-            <tr><td>Texto Puente Simple</td><td class="tab">v40</td><td class="rows tab">49</td></tr>
-            <tr><td>Notas de Traducción</td><td class="tab">v66</td><td class="rows tab">81</td></tr>
-            <tr><td>Preguntas de Traducción</td><td class="tab">v38</td><td class="rows tab">45</td></tr>
-            <tr><td>Enlaces a las Palabras</td><td class="tab">v18</td><td class="rows tab">69</td></tr>
-            <tr><td>Palabras de Traducción</td><td class="tab">v37</td><td class="rows tab">4 221</td></tr>
-            <tr><td>Academia de Traducción</td><td class="tab">v4</td><td class="rows tab">937</td></tr>
-            <tr><td>Greek lexicon</td><td class="tab">60a78e0</td><td class="rows tab">6 007</td></tr>
-            <tr><td>Hebrew lexicon</td><td class="tab">3fc0fdd</td><td class="rows tab">9 002</td></tr>
+            <tr class="is-picked"><td>unfoldingWord® Literal Text</td><td class="tab">v91</td><td class="rows tab">36.5 MB</td></tr>
+            <tr><td>unfoldingWord® Simplified Text</td><td class="tab">v91</td><td class="rows tab">43.5 MB</td></tr>
+            <tr><td>Berean Standard Bible</td><td class="tab">v1</td><td class="rows tab">17.5 MB</td></tr>
+            <tr><td>Translation for Translators</td><td class="tab">v1</td><td class="rows tab">5.6 MB</td></tr>
+            <tr><td>Translation Notes</td><td class="tab">v91</td><td class="rows tab">45.7 MB</td></tr>
+            <tr><td>Translation Questions</td><td class="tab">v91</td><td class="rows tab">2.0 MB</td></tr>
+            <tr><td>Translation Words Links</td><td class="tab">v91</td><td class="rows tab">10.4 MB</td></tr>
+            <tr><td>Translation Words</td><td class="tab">v91</td><td class="rows tab">2.0 MB</td></tr>
+            <tr><td>Translation Academy</td><td class="tab">v91</td><td class="rows tab">1.2 MB</td></tr>
+            <tr><td>Greek lexicon</td><td class="tab">1e0a840</td><td class="rows tab">0.2 MB</td></tr>
+            <tr><td>Hebrew lexicon</td><td class="tab">db0098f</td><td class="rows tab">0.4 MB</td></tr>
           </tbody>
         </table>
       </div>
@@ -217,34 +238,35 @@
   <section class="carry wrap" aria-labelledby="carry-title">
     <h2 id="carry-title" data-reveal>What does a team carry?</h2>
     <fieldset class="books" data-ui data-reveal style="--d:80ms; border:0; margin:0; padding:0">
-      <legend class="small soft" style="margin-bottom:10px">The books your team translates, in Latin American Spanish</legend>
-      <label><input type="checkbox" value="314338" checked><span>Titus <small class="tab">314 KB</small></span></label>
-      <label><input type="checkbox" value="328773" checked><span>Jonah <small class="tab">329 KB</small></span></label>
-      <label><input type="checkbox" value="518133"><span>Ruth <small class="tab">518 KB</small></span></label>
-      <label><input type="checkbox" value="357920"><span>Esther <small class="tab">358 KB</small></span></label>
-      <label><input type="checkbox" value="105259"><span>3 John <small class="tab">105 KB</small></span></label>
-      <label><input type="checkbox" value="6869"><span>Nehemiah <small class="tab">7 KB</small></span></label>
+      <legend class="small soft" style="margin-bottom:10px">The books your team translates, with English helps</legend>
+      <label><input type="checkbox" value="403312" checked><span>Titus <small class="tab">403 KB</small></span></label>
+      <label><input type="checkbox" value="480424" checked><span>Jonah <small class="tab">480 KB</small></span></label>
+      <label><input type="checkbox" value="804576"><span>Ruth <small class="tab">805 KB</small></span></label>
+      <label><input type="checkbox" value="183153"><span>Philemon <small class="tab">183 KB</small></span></label>
+      <label><input type="checkbox" value="126093"><span>3 John <small class="tab">126 KB</small></span></label>
+      <label><input type="checkbox" value="4002656"><span>Romans <small class="tab">4.0 MB</small></span></label>
+      <label><input type="checkbox" value="5685016"><span>Mark <small class="tab">5.7 MB</small></span></label>
     </fieldset>
     <div></div>
     <div class="carry-foot">
-      <p class="figure" aria-live="polite"><span id="mb">32.1</span><span class="unit">MB</span></p>
-      <p class="working">The original Greek and Hebrew (22.9 MB), the shared Spanish helps and lexicons (8.5 MB), and one small pack for each book. These are the sizes of the es-419 packs made on 20 October 2026.</p>
+      <p class="figure" aria-live="polite"><span id="mb">4.6</span><span class="unit">MB</span></p>
+      <p class="working">What every book shares (Translation Words, Translation Academy, lexicons and titles: 3.7 MB) and each book with its Greek or Hebrew. These are the English parts of 29 October 2026.</p>
     </div>
   </section>
 
   <section class="stages wrap" aria-labelledby="stages-title">
     <h2 id="stages-title" data-reveal>Made once, opened anywhere</h2>
     <div class="bar" data-ui data-reveal style="--d:80ms">
-      <div class="s1"><strong>Seven and a half minutes</strong><span class="note-in">Once, on a computer with internet: download from Door43, read every resource, find each note's words in the Greek and in the Spanish.</span></div>
+      <div class="s1"><strong>Forty-seven minutes</strong><span class="note-in">Once, on a server with internet: read every English resource from Door43 and find each note's words in the Greek, the Hebrew and each English text.</span></div>
       <div class="s2"><strong>Fifteen seconds</strong><span class="note-in">On each phone or laptop, with no internet.</span></div>
       <div class="s3"><strong>Two milliseconds</strong><span class="note-in">To read a verse's notes, every time after.</span></div>
     </div>
     <div class="bar-notes">
-      <p class="n1" data-reveal style="--d:140ms"><span>First, once, on a computer with internet: download every resource from Door43, read it, and find each note's words in the Greek and in each Spanish text. More than a gigabyte of memory.</span></p>
+      <p class="n1" data-reveal style="--d:140ms"><span>First, once, on a server with internet: download every English resource from Door43, read it, and find each note's words in the Greek, the Hebrew and each English text. All of English needs 15 GB of memory.</span></p>
       <p class="n2" data-reveal style="--d:200ms">Then, on each phone or laptop, with no internet.</p>
       <p class="n3" data-reveal style="--d:260ms">Then every read.</p>
     </div>
-    <p class="small soft" style="margin-top:28px; max-width:56ch">The first es-419 run with its originals, and the median of translation-helps-mcp reading notes from a pack. The widths follow the first two; reading is too short to draw.</p>
+    <p class="small soft" style="margin-top:28px; max-width:56ch">Preparing: all of English as one build on GitHub's server, October 2026. Opening and reading: measured with Latin American Spanish, the first language packed. The widths follow the first two; reading is too short to draw.</p>
   </section>
 
   <section class="where wrap" aria-labelledby="where-title">
@@ -272,7 +294,7 @@
       <p class="lead" data-reveal style="--d:80ms">A pack is a file like any other. It goes the way a team already shares things.</p>
       <ul class="cuts" data-reveal style="--d:140ms">
         <li>Inside the app's installer, opened on first start.</li>
-        <li>On an SD card or a USB stick: Spanish and the originals together take about 31 MB.</li>
+        <li>On an SD card or a USB stick: a team that translates Titus carries 4.1 MB of English helps and Greek.</li>
         <li>By Bluetooth or nearby sharing, phone to phone.</li>
         <li>In a chat message: one book weighs less than a photo.</li>
         <li>With internet, by parts: only what changed comes down.</li>
@@ -289,8 +311,8 @@
       <h2 data-reveal>The same verse, in every layer</h2>
       <div class="verses">
         <p data-reveal style="--d:60ms">Παῦλος, δοῦλος Θεοῦ, ἀπόστολος δὲ Ἰησοῦ Χριστοῦ, κατὰ πίστιν ἐκλεκτῶν Θεοῦ<small>Titus 1:1 in the Greek New Testament, from the originals pack</small></p>
-        <p data-reveal style="--d:120ms">Pablo, siervo de Dios y apóstol de Jesucristo, conforme a la fe de los elegidos de Dios<small>The same words in the literal Spanish text, each one aligned to its Greek word</small></p>
-        <p data-reveal style="--d:180ms">Dios me envió a enseñar al pueblo que él ha escogido como suyo para que confíe más en él.<small>And in the simple Spanish text: a note on κατὰ πίστιν already knows these are its words</small></p>
+        <p data-reveal style="--d:120ms">Paul, a servant of God and an apostle of Jesus Christ, for the faith of the chosen people of God<small>The same words in the unfoldingWord Literal Text, each one aligned to its Greek word</small></p>
+        <p data-reveal style="--d:180ms">God sent me to teach the people whom he has chosen as his own to trust him more.<small>And in the Simplified Text: a note on κατὰ πίστιν ἐκλεκτῶν Θεοῦ already knows these are its words</small></p>
       </div>
     </div>
   </section>
@@ -298,20 +320,20 @@
   <section class="peel" id="layers" aria-labelledby="peel-title">
     <div class="peel-grid wrap">
       <div class="peel-text">
-        <h2 id="peel-title">Titus 1:1, <em id="peel-word">the receipt</em></h2>
-        <p id="peel-say" style="max-width:44ch">Every resource in a pack has a receipt, written last: if the phone dies halfway, nothing is marked complete.</p>
+        <h2 id="peel-title">Titus 1:1, <em id="peel-word">its part</em></h2>
+        <p id="peel-say" style="max-width:44ch">With internet, rows arrive in parts. This is the entry of the English parts list for the notes of Titus, checked by its sha256.</p>
       </div>
       <div class="peel-row">
-        <p class="key"><code id="peel-key">resource:es-419_gl/es-419/glt</code></p>
-        <pre id="peel-value" tabindex="0" aria-label="The row in this layer">{ "releaseStamp": "v42#2026-08-11T12_22_03Z", "downloadComplete": true }</pre>
+        <p class="key"><code id="peel-key">parts/111a888bb7c86bcc93a80fc63165c9494de67a6fbab44283824525f4f759caa4.part.gz</code></p>
+        <pre id="peel-value" tabindex="0" aria-label="The row in this layer">{ "kind": "book", "resource": "unfoldingWord/en/tn", "book": "tit", "bytes": 83567 }</pre>
       </div>
     </div>
     <div class="switch" data-ui role="group" aria-label="Layers of the pack">
-      <button type="button" data-layer="receipt" aria-pressed="true">receipt<small>complete or not</small></button>
+      <button type="button" data-layer="part" aria-pressed="true">part<small>how it travels</small></button>
       <button type="button" data-layer="sot" aria-pressed="false">sot<small>the source</small></button>
       <button type="button" data-layer="prepared" aria-pressed="false">prepared<small>ready to show</small></button>
       <button type="button" data-layer="quote" aria-pressed="false">quote<small>found in the Greek</small></button>
-      <button type="button" data-layer="align" aria-pressed="false">align<small>found in the Spanish</small></button>
+      <button type="button" data-layer="align" aria-pressed="false">align<small>found in the English</small></button>
       <button type="button" data-layer="text" aria-pressed="false">text<small>article titles</small></button>
     </div>
   </section>
@@ -329,39 +351,39 @@
   <section class="open wrap" aria-labelledby="open-title">
     <div class="open-text">
       <h2 id="open-title" data-reveal>Make one yourself</h2>
-      <p data-reveal style="--d:80ms; max-width:40ch">The command runs tC Study's own pipeline on your computer and writes the packs to a folder. The next page explains every flag.</p>
+      <p data-reveal style="--d:80ms; max-width:40ch">The command runs tC Study's own pipeline on your computer. A large language like English is built as parts, a book at a time; a small one fits in one pack. The next page explains every flag.</p>
     </div>
     <form class="dialog" data-ui id="prepare" aria-labelledby="prepare-title">
       <h3 id="prepare-title">Prepare a language pack</h3>
-      <label for="lang">Door43 language code<input id="lang" type="text" value="es-419" autocomplete="off" spellcheck="false"></label>
+      <label for="lang">Door43 language code<input id="lang" type="text" value="en" autocomplete="off" spellcheck="false"></label>
       <div class="seg" role="group" aria-label="How to split it">
-        <button type="button" data-split="whole" aria-pressed="false">Whole language</button>
-        <button type="button" data-split="books" aria-pressed="true">One pack per book</button>
+        <button type="button" data-split="parts" aria-pressed="true">Parts, a book at a time</button>
+        <button type="button" data-split="whole" aria-pressed="false">Packs, a file a book</button>
       </div>
-      <pre id="cmd">bun packages/resource-pipeline/cli/prepare-language.ts --lang es-419 --out ./packs --books all</pre>
+      <pre id="cmd">bun packages/resource-pipeline/cli/publish-language.ts --parts --lang en --work ./work --macula &lt;taller&gt;/public --lexicons-ref master --no-upload</pre>
       <a class="button" id="cmd-go" href="build/#prepare">Read how to run it</a>
     </form>
   </section>
 </main>
 
 <footer class="footer wrap">
-  <div class="blocks" aria-hidden="true"><span style="height:100%">l</span><span style="height:82%">a</span><span style="height:92%">n</span><span style="height:70%">g</span><span style="height:88%">p</span><span style="height:76%">a</span><span style="height:96%">c</span><span style="height:64%">k</span></div>
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
   <div class="footer-links">
     <div><a href="inside/">Inside a pack</a><a href="build/">Build with it</a><a href="#readers">Who reads it</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
     <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
     <div><a href="https://git.door43.org/">Door43</a></div>
-    <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Lake Atitlan, Volcan San Pedro» by Arian Zwegers, CC BY 2.0. Papyrus 32, John Rylands Library, public domain, via Wikimedia Commons. «MicroSD card 2GB focus-stacked» by Afrank99, CC BY-SA 3.0, via Wikimedia Commons. Texts and helps quoted from the es-419 packs: Idiomas Puentes and unfoldingWord, CC BY-SA 4.0; unfoldingWord Greek New Testament, CC BY-SA 4.0.</p>
+    <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Lake Atitlan, Volcan San Pedro» by Arian Zwegers, CC BY 2.0. Papyrus 32, John Rylands Library, public domain, via Wikimedia Commons. «MicroSD card 2GB focus-stacked» by Afrank99, CC BY-SA 3.0, via Wikimedia Commons. Texts and helps quoted from the English parts of 29 October 2026: unfoldingWord Literal and Simplified Texts, Translation Notes and Translation Academy, and the unfoldingWord Greek New Testament, CC BY-SA 4.0.</p>
   </div>
   <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="inside/">Inside a pack</a></div>
 </footer>
 
-<script type="application/json" id="titus">{"source": "es-419.langpack.zip, built 2026-10-29 (formatVersion 1.1.0)", "verse": "Titus 1:1", "noteId": "rtc9", "layers": {"receipt": {"key": "resource:es-419_gl/es-419/glt", "value": {"downloadComplete": true, "downloadCompletedAt": "2026-10-29T01:48:22.281Z", "releaseStamp": "v42#2026-08-11T12_22_03Z", "ingestSchema": "usj:2.3.0-usj", "ingredientCount": 6, "downloadMethod": "zip", "entryCount": 6, "expectedEntryCount": 6}}, "sot": {"key": "scripture-usj:es-419_gl/es-419/glt:tit:1", "value": {"alignmentMap": {"TIT 1:1": [{"sources": [{"strong": "G39720", "lemma": "Παῦλος", "morph": "Gr,N,,,,,NMS,", "content": "Παῦλος", "occurrence": 1, "occurrences": 1}], "targets": [{"word": "Pablo", "occurrence": 1, "occurrences": 1}]}, {"sources": [{"strong": "G14010", "lemma": "δοῦλος", "morph": "Gr,N,,,,,NMS,", "content": "δοῦλος", "occurrence": 1, "occurrences": 1}], "targets": [{"word": "siervo", "occurrence": 1, "occurrences": 1}]}, {"sources": [{"strong": "G23160", "lemma": "θεός", "morph": "Gr,N,,,,,GMS,", "content": "Θεοῦ", "occurrence": 1, "occurrences": 2}], "targets": [{"word": "de", "occurrence": 1, "occurrences": 6}, {"word": "Dios", "occurrence": 1, "occurrences": 2}]}, {"sources": [{"strong": "G11610", "lemma": "δέ", "morph": "Gr,CC,,,,,,,,", "content": "δὲ", "occurrence": 1, "occurrences": 1}], "targets": [{"word": "y", "occurrence": 1, "occurrences": 2}]}]}}, "note": "The chapter USJ travels in the same row; shown here: the first four alignments of verse 1."}, "prepared": {"key": "prepared:scripture:es-419_gl/es-419/glt:tit:1:full", "value": {"version": 6000230, "unit": 1, "matchKeys": ["tit 1:1:pablo:1", "tit 1:1:παῦλος:1", "tit 1:1:siervo:1", "tit 1:1:δοῦλος:1", "tit 1:1:de:1", "tit 1:1:θεοῦ:1", "tit 1:1:dios:1", "tit 1:1:y:1", "tit 1:1:δὲ:1", "tit 1:1:apóstol:1", "tit 1:1:ἀπόστολος:1", "tit 1:1:de:2"], "tokens": [{"c": "Pablo", "o": 1, "k": 0, "a": [1]}, {"c": "siervo", "o": 1, "k": 2, "a": [3]}, {"c": "de", "o": 1, "k": 4, "a": [5]}, {"c": "Dios", "o": 1, "k": 6, "a": [5]}, {"c": "y", "o": 1, "k": 7, "a": [8]}, {"c": "apóstol", "o": 1, "k": 9, "a": [10]}, {"c": "de", "o": 2, "k": 11, "a": [12, 13]}, {"c": "Jesucristo", "o": 1, "k": 14, "a": [12, 13]}, {"c": "conforme", "o": 1, "k": 15, "a": [16]}, {"c": "a", "o": 1, "k": 17, "a": [18]}, {"c": "la", "o": 1, "k": 19, "a": [18]}, {"c": "fe", "o": 1, "k": 20, "a": [18]}]}, "note": "Each word of the literal text, with the indices (a) of the Greek words it translates."}, "quote": {"key": "helps-quote:es-419_gl/es-419/tn@gbb0c56a52f:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:tit:1", "value": {"rtc9": [{"id": 8, "text": "κατὰ", "type": "word", "occurrence": 1, "content": "κατὰ", "chapter": 1, "verse": 1}, {"id": 9, "text": "πίστιν", "type": "word", "occurrence": 1, "content": "πίστιν", "chapter": 1, "verse": 1}]}, "note": "The note's quote, found in the Greek of Titus 1:1."}, "align": {"key": "helps-align:es-419_gl/es-419/tn@gbb0c56a52f:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:es-419_gl/es-419/glt@g9c65570ffd+6000230:tit:1", "value": {"rtc9": {"p": [8, 9, 10, 11], "m": 1, "t": ["conforme", "a", "la", "fe"]}}, "note": "The same quote, found in the Spanish literal text."}, "text": {"key": "helps-text:ta-title:es-419_gl/es-419/ta@v4#2024-07-17T20_15_35Z:translate/figs-abstractnouns", "value": "Sustantivos abstractos", "note": "The title of the Translation Academy article the note cites."}}, "note": {"id": "rtc9", "reference": "1:1", "quote": "κατὰ πίστιν", "supportReference": "rc://*/ta/man/translate/figs-abstractnouns", "text": "**Fe** es un sustantivo abstracto. Aquí se refiere al creer o al confiar en Jesús. Si está más claro en su idioma, puede traducirlo usando uno de estos verbos, como en el TPS (Texto Puente Simple). Traducción alternativa: «para fortalecer la fe» o «para ayudar…"}}</script>
+<script type="application/json" id="titus">{"source": "English parts of 29 October 2026 (compat f2.0-u2.3.0-p6000230-q9-a12-t1)", "verse": "Titus 1:1", "noteId": "rtc9", "layers": {"part": {"key": "parts/111a888bb7c86bcc93a80fc63165c9494de67a6fbab44283824525f4f759caa4.part.gz", "value": {"book": "tit", "bytes": 83567, "fingerprint": "b28ad28c2cd7374d6ca812f6030f697e94a801fdb195b246f57d6091e3b4105e", "kind": "book", "layers": ["sot", "prepared", "quote"], "resource": "unfoldingWord/en/tn", "rows": 14, "sha256": "111a888bb7c86bcc93a80fc63165c9494de67a6fbab44283824525f4f759caa4"}}, "sot": {"key": "scripture-usj:unfoldingWord/en/ult:tit:1", "value": {"alignmentMap": {"TIT 1:1": [{"sources": [{"content": "Παῦλος", "lemma": "Παῦλος", "morph": "Gr,N,,,,,NMS,", "occurrence": 1, "occurrences": 1, "strong": "G39720"}], "targets": [{"occurrence": 1, "occurrences": 1, "word": "Paul"}]}, {"sources": [{"content": "δοῦλος", "lemma": "δοῦλος", "morph": "Gr,N,,,,,NMS,", "occurrence": 1, "occurrences": 1, "strong": "G14010"}], "targets": [{"occurrence": 1, "occurrences": 1, "word": "a"}, {"occurrence": 1, "occurrences": 1, "word": "servant"}]}, {"sources": [{"content": "Θεοῦ", "lemma": "θεός", "morph": "Gr,N,,,,,GMS,", "occurrence": 1, "occurrences": 2, "strong": "G23160"}], "targets": [{"occurrence": 1, "occurrences": 5, "word": "of"}, {"occurrence": 1, "occurrences": 2, "word": "God"}]}, {"sources": [{"content": "δὲ", "lemma": "δέ", "morph": "Gr,CC,,,,,,,,", "occurrence": 1, "occurrences": 1, "strong": "G11610"}], "targets": [{"occurrence": 1, "occurrences": 2, "word": "and"}]}]}}}, "prepared": {"key": "prepared:scripture:unfoldingWord/en/ult:tit:1:full", "value": {"version": 6000230, "unit": 1, "matchKeys": ["tit 1:1:paul:1", "tit 1:1:παῦλος:1", "tit 1:1:a:1", "tit 1:1:δοῦλος:1", "tit 1:1:servant:1", "tit 1:1:of:1", "tit 1:1:θεοῦ:1", "tit 1:1:god:1", "tit 1:1:and:1", "tit 1:1:δὲ:1", "tit 1:1:an:1", "tit 1:1:ἀπόστολος:1"], "tokens": [{"a": [1], "c": "Paul", "k": 0, "o": 1}, {"a": [3], "c": "a", "k": 2, "o": 1}, {"a": [3], "c": "servant", "k": 4, "o": 1}, {"a": [6], "c": "of", "k": 5, "o": 1}, {"a": [6], "c": "God", "k": 7, "o": 1}, {"a": [9], "c": "and", "k": 8, "o": 1}, {"a": [11], "c": "an", "k": 10, "o": 1}, {"a": [11], "c": "apostle", "k": 12, "o": 1}, {"a": [14], "c": "of", "k": 13, "o": 2}, {"a": [14], "c": "Jesus", "k": 15, "o": 1}]}}, "quote": {"key": "helps-quote:unfoldingWord/en/tn@g9e6a394c0e:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:tit:1", "value": {"rtc9": [{"chapter": 1, "content": "κατὰ", "id": 8, "occurrence": 1, "text": "κατὰ", "type": "word", "verse": 1}, {"chapter": 1, "content": "πίστιν", "id": 9, "occurrence": 1, "text": "πίστιν", "type": "word", "verse": 1}, {"chapter": 1, "content": "ἐκλεκτῶν", "id": 10, "occurrence": 1, "text": "ἐκλεκτῶν", "type": "word", "verse": 1}, {"chapter": 1, "content": "Θεοῦ", "id": 11, "occurrence": 2, "text": "Θεοῦ", "type": "word", "verse": 1}, {"chapter": 1, "content": "καὶ", "id": 12, "occurrence": 1, "text": "καὶ", "type": "word", "verse": 1}, {"chapter": 1, "content": "ἐπίγνωσιν", "id": 13, "occurrence": 1, "text": "ἐπίγνωσιν", "type": "word", "verse": 1}, {"chapter": 1, "content": "ἀληθείας", "id": 14, "occurrence": 1, "text": "ἀληθείας", "type": "word", "verse": 1}]}}, "align": {"key": "helps-align:unfoldingWord/en/tn@g9e6a394c0e:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:unfoldingWord/en/ult@g252ea4a894+6000230:tit:1", "value": {"rtc9": {"m": 1, "p": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24], "t": ["for", "the", "faith", "of", "the", "chosen", "people", "of", "God", "and", "knowledge", "of", "the", "truth"]}}}, "text": {"key": "helps-text:ta-title:unfoldingWord/en/ta@v91#2026-09-26T15_47_36Z:translate/figs-abstractnouns", "value": "Abstract Nouns"}}, "note": {"id": "rtc9", "reference": "1:1", "quote": "κατὰ πίστιν ἐκλεκτῶν Θεοῦ, καὶ ἐπίγνωσιν ἀληθείας", "occurrence": "1", "supportReference": "rc://*/ta/man/translate/figs-abstractnouns", "note": "The words **faith**, **knowledge**, and **truth** are abstract nouns. If it would be more clear in your language, you could express those ideas in another way. Alternate translation: [to help God’s chosen people to continue to trust him and to know every true thing]"}}</script>
 <script src="site.js"></script>
 <script>
-  // What a team carries: originals + base + each chosen book (sizes of the 20 Oct 2026 es-419 packs).
+  // What a team carries: the shared unit + each chosen book with its original (English parts, 29 Oct 2026).
   (function () {
-    var BASE = 8491113 + 22916719
+    var BASE = 3712122
     var boxes = document.querySelectorAll('.books input')
     var out = document.getElementById('mb')
     function total() {
@@ -373,15 +395,15 @@
     total()
   })();
 
-  // Titus 1:1, layer by layer: the real rows of one note, κατὰ πίστιν (rtc9).
+  // Titus 1:1, layer by layer: the real rows of one note on κατὰ πίστιν (rtc9), from the English parts.
   (function () {
     var data = JSON.parse(document.getElementById('titus').textContent)
     var say = {
-      receipt: ['the receipt', 'Every resource has a receipt, written last: if the phone dies halfway, nothing is marked complete.'],
-      sot: ['the source', 'The source of truth: the chapter as USJ, with which Spanish words translate which Greek words.'],
+      part: ['its part', 'With internet, rows arrive in parts. This is the entry of the English parts list for the notes of Titus, checked by its sha256.'],
+      sot: ['the source', 'The source of truth: the chapter as USJ, with which English words translate which Greek words.'],
       prepared: ['ready to show', 'The chapter already cut into blocks and words, so a phone never parses USFM.'],
-      quote: ['in the Greek', 'The note on κατὰ πίστιν, already found among the words of the Greek verse.'],
-      align: ['in the Spanish', 'The same note, already found in the literal text: «conforme a la fe».'],
+      quote: ['in the Greek', 'A note on κατὰ πίστιν ἐκλεκτῶν Θεοῦ, already found among the words of the Greek verse.'],
+      align: ['in the English', 'The same note, already found in the Literal Text: «for the faith of the chosen people of God and knowledge of the truth».'],
       text: ['its article', 'The title of the Translation Academy article the note cites, ready without opening it.']
     }
     var section = document.querySelector('.peel')
@@ -396,7 +418,28 @@
       section.classList.toggle('alt', ['sot', 'quote', 'text'].indexOf(layer) >= 0)
     }
     buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.layer) }) })
-    show('receipt')
+    show('part')
+  })();
+
+  // Quick install: a chip shows its command and copies it; the zips download.
+  (function () {
+    var line = document.getElementById('quick-line')
+    var say = document.getElementById('quick-say')
+    var help = {
+      '/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs': 'Copied. Paste it in Claude Code: it installs both skills.',
+      'https://tc-helps.mcp.servant.bible/v2/mcp': 'Copied. Add it as a remote MCP server in your agent: notes and word links come from packs.'
+    }
+    document.querySelectorAll('.quick [data-copy]').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var text = b.getAttribute('data-copy')
+        line.textContent = text
+        document.querySelectorAll('.quick .chip').forEach(function (o) { o.classList.toggle('is-on', o === b) })
+        var done = function () { say.textContent = help[text] }
+        try {
+          navigator.clipboard.writeText(text).then(done, function () { say.textContent = 'Select the line above and copy it.' })
+        } catch (e) { say.textContent = 'Select the line above and copy it.' }
+      })
+    })
   })();
 
   // The prepare dialog writes the real command.
@@ -404,10 +447,12 @@
     var form = document.getElementById('prepare')
     var lang = document.getElementById('lang')
     var cmd = document.getElementById('cmd')
-    var split = 'books'
+    var split = 'parts'
     function write() {
-      var code = (lang.value || '').trim().replace(/[^A-Za-z0-9-]/g, '') || 'es-419'
-      cmd.textContent = 'bun packages/resource-pipeline/cli/prepare-language.ts --lang ' + code + ' --out ./packs' + (split === 'books' ? ' --books all' : '')
+      var code = (lang.value || '').trim().replace(/[^A-Za-z0-9-]/g, '') || 'en'
+      cmd.textContent = split === 'parts'
+        ? 'bun packages/resource-pipeline/cli/publish-language.ts --parts --lang ' + code + ' --work ./work --macula <taller>/public --lexicons-ref master --no-upload'
+        : 'bun packages/resource-pipeline/cli/prepare-language.ts --lang ' + code + ' --out ./packs --books all'
     }
     form.querySelectorAll('.seg button').forEach(function (b) {
       b.addEventListener('click', function () {

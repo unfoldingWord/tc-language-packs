@@ -1,12 +1,15 @@
 {
-  "name": "language-packs",
-  "owner": { "name": "unfoldingWord", "url": "https://github.com/unfoldingWord" },
-  "description": "Tools for agents that work with Bible translation language packs.",
+  "name": "tc-language-packs",
+  "owner": {
+    "name": "unfoldingWord",
+    "url": "https://github.com/unfoldingWord"
+  },
+  "description": "Tools for agents that work with tC Language Packs.",
   "plugins": [
     {
-      "name": "language-packs",
-      "source": "./plugins/language-packs",
-      "description": "Read and use Bible translation language packs offline: texts, alignments, notes, words, articles, lexicons, and every place a word or article occurs across books."
+      "name": "tc-language-packs",
+      "source": "./plugins/tc-language-packs",
+      "description": "Two skills for tC Language Packs, the Bible translation language packs of the translationCore family: tc-language-packs-translator helps a translator understand and translate a passage with the whole context of each verse (texts, original, notes, words, articles, lexicon, other books); tc-language-packs-dev helps a code agent build apps that make, open, download or serve packs."
     }
   ]
 }

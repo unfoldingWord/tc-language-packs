@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Inside a Language Pack</title>
+<title>Inside a tC Language Pack</title>
 <meta name="description" content="The files, manifest, layers, kinds and versions of a language pack, and the parts format that splits a language into small pieces.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -38,7 +38,7 @@
   .kinds { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: stretch; }
   .kinds figure { grid-column: 1 / span 5; margin: 0; display: grid; gap: 12px; align-content: start; }
   .kinds figure .frame { overflow: hidden; }
-  .kinds figure img { width: 100%; aspect-ratio: 5 / 6; object-fit: cover; object-position: 50% 30%; }
+  .kinds figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; object-position: 50% 35%; }
   .kinds figure .pair img { aspect-ratio: 16 / 9; object-position: 50% 60%; }
   .kinds figcaption { font-size: 13px; color: var(--muted); }
   .kinds .list { grid-column: 7 / -1; display: grid; gap: 4px; align-content: start; }
@@ -79,7 +79,7 @@
 <body>
 <header class="wrap">
   <nav class="nav" aria-label="Main">
-    <a class="wordmark" href="../">Language Packs</a>
+    <a class="wordmark" href="../">tC Language Packs</a>
     <ul>
       <li><a href="./" aria-current="page">Inside a pack</a></li>
       <li><a href="../build/">Build with it</a></li>
@@ -99,18 +99,18 @@
     </div>
     <div class="tree cut-xl" data-ui data-reveal style="--d:100ms" aria-label="The files in a pack">
       <ol>
-        <li><code>es-419.langpack.zip</code><span class="tab">8.3 MB</span></li>
+        <li><code>en-tit.langpack.zip</code><span>Titus, in English</span></li>
         <li class="in1"><code>manifest.json</code><span>what it is, what it brings</span></li>
         <li class="in1"><code>catalog.json</code><span>Door43's row of each resource</span></li>
         <li class="in1"><code>rows/</code><span>one folder a layer</span></li>
-        <li class="in2"><code>receipt/es-419_gl~2Fes-419~2Fglt.jsonl</code><span class="tab">1 row</span></li>
-        <li class="in2"><code>sot/es-419_gl~2Fes-419~2Fglt.jsonl</code><span class="tab">36 rows</span></li>
-        <li class="in2"><code>prepared/es-419_gl~2Fes-419~2Fglt.jsonl</code><span class="tab">54 rows</span></li>
-        <li class="in2"><code>quote/es-419_gl~2Fes-419~2Ftn.jsonl</code><span class="tab">12 rows</span></li>
-        <li class="in2"><code>align/es-419_gl~2Fes-419~2Ftn.jsonl</code><span class="tab">24 rows</span></li>
-        <li class="in2"><code>text/es-419_gl~2Fes-419~2Fta.jsonl</code><span class="tab">234 rows</span></li>
+        <li class="in2"><code>sot/unfoldingWord~2Fen~2Fult.jsonl</code><span class="tab">5 rows</span></li>
+        <li class="in2"><code>prepared/unfoldingWord~2Fen~2Fult.jsonl</code><span class="tab">7 rows</span></li>
+        <li class="in2"><code>sot/unfoldingWord~2Fen~2Ftn.jsonl</code><span class="tab">4 rows</span></li>
+        <li class="in2"><code>quote/unfoldingWord~2Fen~2Ftn.jsonl</code><span class="tab">3 rows</span></li>
+        <li class="in2"><code>align/unfoldingWord~2Fen~2Ftn.jsonl</code><span class="tab">9 rows</span></li>
+        <li class="in2"><code>prepared/unfoldingWord~2Fen~2Fust.jsonl</code><span class="tab">7 rows</span></li>
       </ol>
-      <p>A few of the 33 files in the Latin American Spanish pack of 29 October 2026. File names are for people; the real key is inside each row.</p>
+      <p>A few of the files of an English pack of Titus, with the row counts of the English parts of 29 October 2026. File names are for people; the real key is inside each row.</p>
     </div>
   </section>
 
@@ -121,31 +121,31 @@
 <pre><code>{
   "format": "bt-synergy-language-pack",
   "formatVersion": "1.1.0",
-  "language": "es-419",
+  "language": "en",
   "kind": "book",
   "books": ["tit"],
   "requires": [{ "key": "unfoldingWord/el-x-koine/ugnt",
                  "stamp": "v0.34#2023-09-27T02_19_31Z" }],
-  "createdAt": "2026-10-20T13:35:31.339Z",
+  "createdAt": "2026-10-29T02:01:28.497Z",
   "layers": ["receipt", "sot", "prepared", "quote", "align", "text"],
   "versions": {
     "sot": { "usjProcessing": "2.3.0-usj" },
-    "prepared": { "scripturePrepare": 5000230 },
-    "quote": { "helpsQuote": 7 },
-    "align": { "helpsAlign": 10 },
+    "prepared": { "scripturePrepare": 6000230 },
+    "quote": { "helpsQuote": 9 },
+    "align": { "helpsAlign": 12 },
     "text": { "helpsText": 1 }
   },
   "resources": [{
-    "key": "es-419_gl/es-419/glt",
+    "key": "unfoldingWord/en/ult",
     "role": "language",
-    "stamp": "v42#2026-08-11T12_22_03Z",
+    "stamp": "v91#2026-09-26T15_45_57Z",
     "subject": "Aligned Bible",
-    "title": "Texto Puente Literal",
+    "title": "unfoldingWord® Literal Text",
     "rows": { "sot": 5, "prepared": 7 },
-    "books": ["3jn", "est", "jon", "neh", "rut", "tit"]
+    "books": ["gen", "exo", "…", "tit", "…"]
   }]
 }</code></pre>
-        <p class="small soft" style="margin-top:12px">The manifest of <code>es-419-tit.langpack.zip</code>, Titus alone (314 KB), shortened to one of its five resources.</p>
+        <p class="small soft" style="margin-top:12px">The manifest of an English pack of Titus, shortened to one of its resources, with the stamps and versions of the English release of October 2026.</p>
       </div>
       <dl class="right fields" data-reveal style="--d:120ms">
         <div><dt>format, formatVersion</dt><dd>What the file is. A reader refuses a pack whose major version is newer than its own.</dd></div>
@@ -188,10 +188,10 @@
         <figcaption>The Leningrad Codex, folio 8a, Genesis 14–15, about 1008. The Hebrew Bible in the originals pack descends from it. Public domain, via Wikimedia Commons.</figcaption>
       </figure>
       <div class="list">
-        <div class="kind" data-reveal style="--d:40ms"><h3>originals</h3><span class="size">22.9 MB</span><p>The Greek New Testament, the Hebrew Bible and MACULA's analysis of both. The same for every language, so it is made and carried once.</p></div>
-        <div class="kind" data-reveal style="--d:100ms"><h3>language</h3><span class="size">8.3 MB</span><p>Every resource of one language, whole, with its receipts. No originals.</p></div>
-        <div class="kind" data-reveal style="--d:160ms"><h3>base</h3><span class="size">8.5 MB</span><p>What every book needs: Translation Words, Translation Academy and the lexicons whole, and the catalog row of each book-scoped resource.</p></div>
-        <div class="kind" data-reveal style="--d:220ms"><h3>book</h3><span class="size">7–518 KB</span><p>The texts, notes, questions and word links of the books it names. No receipts: a receipt would claim the whole release.</p></div>
+        <div class="kind" data-reveal style="--d:40ms"><h3>originals</h3><span class="size">22.9 MB</span><p>The Greek New Testament, the Hebrew Bible and MACULA's analysis of both, every book. As a zip it is one file for every language; as parts, each book's original comes with that book, so a team that translates Titus downloads 30 KB of Greek, not the whole Bible.</p></div>
+        <div class="kind" data-reveal style="--d:100ms"><h3>language</h3><span class="size">165 MB</span><p>Every resource of one language, whole, with its receipts. No originals. All of English: ULT, UST, BSB, T4T, notes, questions, words, links, academy and lexicons.</p></div>
+        <div class="kind" data-reveal style="--d:160ms"><h3>base</h3><span class="size">3.7 MB</span><p>What every book needs: Translation Words, Translation Academy and the lexicons whole, and the catalog row of each book-scoped resource.</p></div>
+        <div class="kind" data-reveal style="--d:220ms"><h3>book</h3><span class="size">0.1–12.7 MB</span><p>The texts, notes, questions and word links of the books it names. No receipts: a receipt would claim the whole release.</p></div>
       </div>
     </div>
   </section>
@@ -200,7 +200,7 @@
     <h2 id="versions-title" data-reveal>Three versions, three questions</h2>
     <div class="versions">
       <div class="v" data-reveal style="--d:40ms"><strong>Can I read this file?</strong><p>The format version. Only a newer major version is refused.</p><pre>"formatVersion": "1.1.0"</pre></div>
-      <div class="v" data-reveal style="--d:100ms"><strong>Is it newer than mine?</strong><p>Each resource's stamp: its Door43 release tag and when it was published.</p><pre>"stamp": "v42#2026-08-11T12_22_03Z"</pre></div>
+      <div class="v" data-reveal style="--d:100ms"><strong>Is it newer than mine?</strong><p>Each resource's stamp: its Door43 release tag and when it was published.</p><pre>"stamp": "v91#2026-09-26T15_45_57Z"</pre></div>
       <div class="v" data-reveal style="--d:160ms"><strong>Can I use its rows?</strong><p>The version of the code that made each layer. These change often.</p><pre>"helpsAlign": 12</pre></div>
     </div>
     <div class="compat" data-reveal style="--d:200ms">
@@ -226,19 +226,20 @@
         <p class="lead" style="margin-bottom:28px">Format 2.0 cuts a language into content-addressed parts, each one gzip of JSONL rows <code>{"layer", "key", "value"}</code>. A parts list names them all; a part whose inputs did not change keeps its hash and is never built or downloaded again.</p>
 <pre><code>{
   "schema": 2,
-  "language": "es-419",
+  "language": "en",
   "compat": "f2.0-u2.3.0-p6000230-q9-a12-t1",
   "parts": [{
-    "sha256": "…",
-    "bytes": 41210,
+    "sha256": "111a888bb7c86bcc93a80fc63165c9494de67a6fbab44283824525f4f759caa4",
+    "bytes": 83567,
+    "rows": 14,
     "kind": "book",
-    "resource": "es-419_gl/es-419/tn",
+    "resource": "unfoldingWord/en/tn",
     "book": "tit",
-    "fingerprint": "…",
-    "layers": ["sot", "prepared"]
+    "layers": ["sot", "prepared", "quote"],
+    "fingerprint": "b28ad28c2cd7374d…"
   }]
 }</code></pre>
-        <p class="small soft" style="margin-top:12px">The shape of <code>PartsList</code> (<code>parts/partsList.ts</code>), with one entry. Hashes and sizes left out.</p>
+        <p class="small soft" style="margin-top:12px">The English list (<code>/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/en</code>, 595 parts) with one real entry: the notes of Titus. The list also names its resources, units and originals.</p>
       </div>
       <div class="right">
         <p data-reveal>Where the rows go:</p>
@@ -270,13 +271,13 @@
 </main>
 
 <footer class="footer wrap">
-  <div class="blocks" aria-hidden="true"><span style="height:100%">l</span><span style="height:82%">a</span><span style="height:92%">n</span><span style="height:70%">g</span><span style="height:88%">p</span><span style="height:76%">a</span><span style="height:96%">c</span><span style="height:64%">k</span></div>
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
   <div class="footer-links">
     <div><a href="../">Overview</a><a href="./">Inside a pack</a><a href="../build/">Build with it</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/blob/master/apps/tc-study/docs/cache-data-structure.md">Cache data structure</a></div>
     <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
     <div><a href="https://git.door43.org/">Door43</a></div>
-    <p class="credits">Photographs: «Leningrad Codex Folio 008a», public domain, via Wikimedia Commons. «Orillas de bronce del Titicaca» by Yamil Maidana Tuco, CC BY-SA 4.0, via Wikimedia Commons. «Codex Sinaiticus» by PotatoCow25, CC0, via Wikimedia Commons. Manifests and keys from the es-419 packs of 20 and 29 October 2026.</p>
+    <p class="credits">Photographs: «Leningrad Codex Folio 008a», public domain, via Wikimedia Commons. «Orillas de bronce del Titicaca» by Yamil Maidana Tuco, CC BY-SA 4.0, via Wikimedia Commons. «Codex Sinaiticus» by PotatoCow25, CC0, via Wikimedia Commons. Manifests, keys and sizes from the English parts of 29 October 2026.</p>
   </div>
   <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../build/">Build with it</a></div>
 </footer>
