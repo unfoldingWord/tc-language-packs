@@ -65,10 +65,10 @@
   .bar .s2 { flex-grow: 12; background: var(--muted); color: var(--bg); }
   .bar .s3 { flex-grow: 12; background: var(--surface); color: var(--ink); }
   .bar strong { font-weight: 500; font-size: clamp(18px, 1.6vw, 26px); letter-spacing: -0.02em; line-height: 1.1; display: block; }
-  .bar-notes { display: flex; gap: 6px; margin-top: 20px; }
-  .bar-notes p { flex-basis: 0; min-width: 0; font-size: var(--step-body); padding-right: 20px; }
-  .bar-notes .n1 { flex-grow: 76; max-width: none; } .bar-notes .n1 span { display: block; max-width: 52ch; }
-  .bar-notes .n2, .bar-notes .n3 { flex-grow: 12; }
+  .bar-notes { display: grid; grid-template-columns: 1.6fr 1fr 1fr; gap: var(--gap); margin-top: 24px; }
+  .bar-notes strong { font-weight: 500; display: block; margin-bottom: 4px; }
+  .bar-notes p { min-width: 0; font-size: var(--step-body); }
+
 
   /* It travels in the hand: the card itself, then the ways. */
   .hand { margin-top: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: end; }
@@ -121,6 +121,20 @@
   .lineup p { max-width: 58ch; }
   .lineup .state { text-align: right; font-weight: 500; }
 
+  /* Help build it: the way in on the left, the open work on the right. */
+  .help { padding-block: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: start; background: var(--surface); margin-bottom: 0; }
+  .help-text { grid-column: 1 / span 5; display: grid; gap: 22px; }
+  .help h2 { font-size: var(--step-head); }
+  .help pre { font-size: 14px; }
+  .help .button.alt { background: var(--bg); }
+  .work { grid-column: 7 / -1; list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .work li { padding: 18px 22px 20px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; }
+  .work li:nth-child(odd) { background: var(--bg); }
+  .work li:first-child { clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); }
+  .work strong { font-weight: 500; font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; grid-row: 1; }
+  .work .state { grid-column: 2; grid-row: 1; font-size: 15px; color: var(--muted); align-self: center; }
+  .work li:first-child .state { color: var(--ink); font-weight: 500; }
+  .work p { grid-column: 1 / -1; font-size: 16px; max-width: 60ch; }
   /* First step, already open: the prepare dialog writes the real command. */
   .open { background: var(--field); color: var(--field-ink); min-height: 90svh; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); padding-block: clamp(56px, 7vw, 104px); }
   .open-text { grid-column: 1 / span 5; align-self: end; display: grid; gap: 20px; }
@@ -171,6 +185,7 @@
     .switch { right: auto; left: 16px; bottom: -24px; font-size: 32px; }
     .lineup li { grid-template-columns: minmax(0, 1fr) auto; }
     .lineup p { grid-column: 1 / -1; grid-row: 2; }
+    .help-text, .work { grid-column: 1 / -1; }
     .open { min-height: 84svh; }
     .open-text { grid-column: 1 / -1; align-self: start; }
     .open h2 { font-size: 13vw; }
@@ -264,16 +279,16 @@
     <h2 id="stages-title" data-reveal>Made once, opened anywhere</h2>
     <p class="lead measure" data-reveal style="--d:60ms; margin-bottom:48px">The slow work happens once, on unfoldingWord's build server, each time a resource is published. Nobody waits for it on a phone, and nobody has to run it to use a pack.</p>
     <div class="bar" data-ui data-reveal style="--d:80ms">
-      <div class="s1"><strong>47 minutes, once, for all of English, on our server</strong><span class="note-in">All 66 books and every English resource: four Bibles, every note placed on its words.</span></div>
-      <div class="s2"><strong>15 seconds to open a whole language</strong><span class="note-in">Once, on your device, with no internet. One book takes less.</span></div>
+      <div class="s1"><strong>47 minutes, once, to prepare everything in English, on our server</strong><span class="note-in">66 books in four Bibles with their notes, questions and key terms, every Translation Words and Academy article, and the lexicons.</span></div>
+      <div class="s2"><strong>15 seconds to open a full pack</strong><span class="note-in">Once, on your device, with no internet: every book, article and lexicon in it. One book takes less.</span></div>
       <div class="s3"><strong>2 ms for a verse's notes</strong><span class="note-in">Every time you read, already prepared.</span></div>
     </div>
     <div class="bar-notes">
-      <p class="n1" data-reveal style="--d:140ms"><span>The server downloads every English resource from Door43 and prepares it: four English Bibles of up to 31,000 verses each, every word linked to the Greek or Hebrew, and every translation note placed on the exact words it explains in the original and in each Bible. That is for all of English at once: all 66 books, 47 minutes and 15 GB of memory, more than most phones have. It runs again only when a resource changes, and then only for the books that changed.</span></p>
-      <p class="n2" data-reveal style="--d:200ms">Opening copies the prepared rows into the app's storage, once. 15 seconds was a whole language with all the Greek and Hebrew (27 MB) on a laptop, not one book.</p>
-      <p class="n3" data-reveal style="--d:260ms">After that, each time someone opens a verse, its notes come back in 2 milliseconds.</p>
+      <p class="n1" data-reveal style="--d:140ms"><strong>47 minutes, on our server</strong><span>The server downloads every English resource from Door43 and prepares it: four English Bibles of up to 31,000 verses each, every word linked to the Greek or Hebrew, and every translation note placed on the exact words it explains in the original and in each Bible. For English that is everything at once: 66 books in four Bibles with their notes, questions and key terms, 953 Translation Words and 242 Translation Academy articles, and the Greek and Hebrew lexicons. It takes 47 minutes and 15 GB of memory, more than most phones have. It runs again only when a resource changes, and then only for the books that changed.</span></p>
+      <p class="n2" data-reveal style="--d:200ms"><strong>15 seconds, on your device</strong>Opening copies the prepared rows into the app's storage, once. The 15 seconds are for a full pack on a laptop: everything Latin American Spanish had (texts and helps of its six books, all its Translation Words and Academy articles, its lexicons) and the whole Greek and Hebrew Bible, 27 MB. One book takes less.</p>
+      <p class="n3" data-reveal style="--d:260ms"><strong>2 ms, every read</strong>After that, each time someone opens a verse, its notes come back in 2 milliseconds.</p>
     </div>
-    <p class="small soft" style="margin-top:28px; max-width:64ch">Preparing: all of English as one build on GitHub's server, October 2026. Opening: Latin American Spanish with its originals (27 MB), the first language packed. Reading: translation-helps-mcp answering from a pack. Widths follow the first two; reading is too short to draw.</p>
+    <p class="small soft" style="margin-top:28px; max-width:64ch">Preparing: all of English as one build on GitHub's server, October 2026. Opening: the full pack of Latin American Spanish with the originals (27 MB), the first language packed. Reading: translation-helps-mcp answering from a pack. Widths follow the first two; reading is too short to draw.</p>
   </section>
 
   <section class="where wrap" aria-labelledby="where-title">
@@ -355,6 +370,29 @@
     </ul>
   </section>
 
+  <section class="help wrap" id="help" aria-labelledby="help-title">
+    <div class="help-text">
+      <h2 id="help-title" data-reveal>Help build it</h2>
+      <p class="lead" data-reveal style="--d:60ms">tC Language Packs are open: the format, the code that makes and reads them, this site and the skills. Programmers and their agents are welcome to improve them.</p>
+      <div data-reveal style="--d:100ms">
+<pre><code>git clone https://github.com/unfoldingWord/tc-study
+cd tc-study &amp;&amp; bun install
+cd packages/language-pack &amp;&amp; bun test</code></pre>
+      </div>
+      <p data-reveal style="--d:140ms">Working with a coding agent? Give it the <a href="agents/">developer skill</a> first: it knows the format, the keys, the versions and the parts, and can check what it builds against real packs.</p>
+      <div class="actions" data-reveal style="--d:180ms"><a class="button" href="https://github.com/unfoldingWord/tc-study/issues" target="_blank" rel="noopener">Open issues</a><a class="button alt" href="https://github.com/unfoldingWord/tc-language-packs/blob/main/CONTRIBUTING.md" target="_blank" rel="noopener">How to contribute</a></div>
+    </div>
+    <ul class="work" data-reveal style="--d:120ms" aria-label="Open work">
+      <li><span class="state">In progress</span><strong>The word index</strong><p>Find every verse where a Greek or Hebrew word appears, in every book, even books not on the device. Packages <code>language-pack</code> and <code>resource-pipeline</code>.</p></li>
+      <li><span class="state">Open</span><strong>Packs that outlive the code</strong><p>Today a change in the code that prepares a layer makes older packs unreadable for it. A stable level of source and views would let teams keep sharing packs across app versions.</p></li>
+      <li><span class="state">Open</span><strong>A public schema</strong><p>JSON Schema for the manifest, the parts list and each row, so apps in any language can check a pack.</p></li>
+      <li><span class="state">Open</span><strong>Signed packs</strong><p>A pack passed by hand cannot yet prove who made it. A signature that checks with no internet.</p></li>
+      <li><span class="state">Open</span><strong>tC Study opens packs</strong><p>tC Study shares the code but its reading page still needs the network to open a language.</p></li>
+      <li><span class="state">Open</span><strong>Answers with no internet</strong><p>translation-helps-mcp reading packs from a folder, so an assistant can answer offline.</p></li>
+      <li><span class="state">Open</span><strong>More languages</strong><p>Any language with an aligned literal text marked tc-ready on Door43 can be packed. Try yours and report what breaks.</p></li>
+    </ul>
+  </section>
+
   <section class="open wrap" aria-labelledby="open-title">
     <div class="open-text">
       <h2 id="open-title" data-reveal>Make one yourself</h2>
@@ -376,7 +414,7 @@
 <footer class="footer wrap">
   <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
   <div class="footer-links">
-    <div><a href="inside/">Inside a pack</a><a href="build/">Build with it</a><a href="agents/">For agents</a><a href="#readers">Who reads it</a></div>
+    <div><a href="inside/">Inside a pack</a><a href="build/">Build with it</a><a href="agents/">For agents</a><a href="#help">Help build it</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
     <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
     <div><a href="https://git.door43.org/">Door43</a></div>
