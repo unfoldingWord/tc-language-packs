@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inside a Language Pack</title>
+<meta name="description" content="The files, manifest, layers, kinds and versions of a language pack, and the parts format that splits a language into small pieces.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="stylesheet" href="../site.css">
+<style>
+  /* The page goes down the archive: the file, its manifest, its rows, its kinds, its versions, its parts. */
+  .top { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); padding-block: clamp(32px, 6vw, 96px) 0; align-items: start; }
+  .top-text { grid-column: 1 / span 6; display: grid; gap: 24px; }
+  .top h1 { font-size: clamp(3rem, 1.6rem + 5.4vw, 7rem); max-width: 8ch; }
+  .tree { grid-column: 7 / -1; margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); background: var(--field); color: var(--field-ink); padding: clamp(32px, 4vw, 56px); padding-right: max(var(--margin), 24px); }
+  .tree ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 16px; }
+  .tree li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 10px 14px; background: color-mix(in srgb, var(--field-ink) 10%, var(--field)); }
+  .tree li code { background: none; padding: 0; color: inherit; font-size: 14px; overflow-wrap: anywhere; }
+  .tree li span { font-size: 14px; opacity: 0.92; text-align: right; }
+  .tree li.in1 { margin-left: 24px; } .tree li.in2 { margin-left: 48px; }
+  .tree p { margin-top: 18px; font-size: 14px; opacity: 0.92; }
+
+  section.part { padding-block: var(--section) 0; }
+  .two { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: start; }
+  .two > .left { grid-column: 1 / span 7; min-width: 0; }
+  .two > .right { grid-column: 9 / -1; display: grid; gap: 22px; align-content: start; min-width: 0; }
+  .part h2 { font-size: var(--step-head); margin-bottom: 36px; max-width: 16ch; }
+  .fields { display: grid; gap: 18px; }
+  .fields dt { font-weight: 500; }
+  .fields dd { margin: 4px 0 0; }
+
+  .layers td:nth-child(3) { min-width: 300px; }
+  .layers code { font-size: 13px; }
+
+  .kinds { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: stretch; }
+  .kinds figure { grid-column: 1 / span 5; margin: 0; display: grid; gap: 12px; align-content: start; }
+  .kinds figure .frame { overflow: hidden; }
+  .kinds figure img { width: 100%; aspect-ratio: 5 / 6; object-fit: cover; object-position: 50% 30%; }
+  .kinds figure .pair img { aspect-ratio: 16 / 9; object-position: 50% 60%; }
+  .kinds figcaption { font-size: 13px; color: var(--muted); }
+  .kinds .list { grid-column: 7 / -1; display: grid; gap: 4px; align-content: start; }
+  .kind { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; padding: 22px 24px; background: var(--surface); }
+  .kind h3 { font-size: clamp(1.4rem, 1rem + 1.2vw, 2rem); letter-spacing: -0.03em; }
+  .kind .size { font-size: clamp(1.4rem, 1rem + 1.2vw, 2rem); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+  .kind p { grid-column: 1 / -1; font-size: 17px; }
+  .kind:first-child { background: var(--ink); color: var(--bg); clip-path: polygon(var(--cut-l) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-l)); }
+
+  .versions { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); }
+  .versions .v { grid-column: span 4; display: grid; gap: 14px; align-content: start; padding-top: 28px; }
+  .versions .v strong { font-weight: 500; font-size: var(--step-lead); letter-spacing: -0.02em; }
+  .versions .v pre { font-size: 13px; }
+  .compat { margin-top: 56px; display: grid; gap: 14px; max-width: 72ch; }
+
+  .parts-band { margin-top: var(--section); position: relative; min-height: 80svh; display: grid; align-items: end; color: #ffffff; overflow: hidden; }
+  .parts-band .photo { position: absolute; inset: 0; }
+  .parts-band .photo img { width: 100%; height: 100%; object-fit: cover; object-position: 40% 40%; }
+  .parts-band .photo::after { content: ""; position: absolute; inset: 0; background: rgba(8, 14, 36, 0.38); }
+  .parts-band .over { position: relative; padding-block: 56px; display: grid; gap: 18px; max-width: 760px; }
+  .parts-band h2 { font-size: clamp(2.6rem, 1.4rem + 4.4vw, 6rem); max-width: 17ch; }
+  .parts-band p { font-size: var(--step-lead); line-height: 1.35; max-width: 40ch; }
+  .parts-band small { font-size: 13px; }
+
+  .slots { margin-top: 48px; }
+  .gaps .cuts { font-size: var(--step-lead); line-height: 1.35; gap: 22px; max-width: 60ch; }
+  .gaps .cuts strong { font-weight: 500; }
+  .next { padding-block: var(--section); display: flex; gap: 24px; align-items: center; flex-wrap: wrap; }
+
+  @media (max-width: 900px) {
+    .top-text, .two > .left, .two > .right, .kinds figure, .kinds .list { grid-column: 1 / -1; }
+    .tree { grid-column: 1 / -1; margin-left: calc(-1 * max(var(--margin), env(safe-area-inset-left, 0px))); clip-path: polygon(72px 0, 100% 0, 100% 100%, 0 100%, 0 72px); padding: 48px 16px 32px; }
+    .versions .v { grid-column: 1 / -1; }
+    .parts-band { min-height: 72svh; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="../">Language Packs</a>
+    <ul>
+      <li><a href="./" aria-current="page">Inside a pack</a></li>
+      <li><a href="../build/">Build with it</a></li>
+      <li><a href="../#readers">Who reads it</a></li>
+      <li><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Source</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="top wrap" aria-labelledby="top-title">
+    <div class="top-text">
+      <h1 id="top-title" data-reveal>Inside a pack</h1>
+      <p class="lead measure" data-reveal style="--d:80ms">A pack is a zip of the rows tC Study keeps in its cache after it has read a language. Open it into the same stores and the app reads it as if it had downloaded and prepared everything itself.</p>
+      <p class="measure" data-reveal style="--d:140ms">This page goes down the archive one level at a time: the file, its manifest, its rows, the kinds of pack, its versions, and the parts that split a language into small pieces.</p>
+      <div data-reveal style="--d:200ms"><a class="button" href="#manifest-title">Start with the manifest</a></div>
+    </div>
+    <div class="tree cut-xl" data-ui data-reveal style="--d:100ms" aria-label="The files in a pack">
+      <ol>
+        <li><code>es-419.langpack.zip</code><span class="tab">8.3 MB</span></li>
+        <li class="in1"><code>manifest.json</code><span>what it is, what it brings</span></li>
+        <li class="in1"><code>catalog.json</code><span>Door43's row of each resource</span></li>
+        <li class="in1"><code>rows/</code><span>one folder a layer</span></li>
+        <li class="in2"><code>receipt/es-419_gl~2Fes-419~2Fglt.jsonl</code><span class="tab">1 row</span></li>
+        <li class="in2"><code>sot/es-419_gl~2Fes-419~2Fglt.jsonl</code><span class="tab">36 rows</span></li>
+        <li class="in2"><code>prepared/es-419_gl~2Fes-419~2Fglt.jsonl</code><span class="tab">54 rows</span></li>
+        <li class="in2"><code>quote/es-419_gl~2Fes-419~2Ftn.jsonl</code><span class="tab">12 rows</span></li>
+        <li class="in2"><code>align/es-419_gl~2Fes-419~2Ftn.jsonl</code><span class="tab">24 rows</span></li>
+        <li class="in2"><code>text/es-419_gl~2Fes-419~2Fta.jsonl</code><span class="tab">234 rows</span></li>
+      </ol>
+      <p>A few of the 33 files in the Latin American Spanish pack of 29 October 2026. File names are for people; the real key is inside each row.</p>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="manifest-title">
+    <h2 id="manifest-title" data-reveal>The manifest says what it brings</h2>
+    <div class="two">
+      <div class="left" data-reveal style="--d:60ms">
+<pre><code>{
+  "format": "bt-synergy-language-pack",
+  "formatVersion": "1.1.0",
+  "language": "es-419",
+  "kind": "book",
+  "books": ["tit"],
+  "requires": [{ "key": "unfoldingWord/el-x-koine/ugnt",
+                 "stamp": "v0.34#2023-09-27T02_19_31Z" }],
+  "createdAt": "2026-10-20T13:35:31.339Z",
+  "layers": ["receipt", "sot", "prepared", "quote", "align", "text"],
+  "versions": {
+    "sot": { "usjProcessing": "2.3.0-usj" },
+    "prepared": { "scripturePrepare": 5000230 },
+    "quote": { "helpsQuote": 7 },
+    "align": { "helpsAlign": 10 },
+    "text": { "helpsText": 1 }
+  },
+  "resources": [{
+    "key": "es-419_gl/es-419/glt",
+    "role": "language",
+    "stamp": "v42#2026-08-11T12_22_03Z",
+    "subject": "Aligned Bible",
+    "title": "Texto Puente Literal",
+    "rows": { "sot": 5, "prepared": 7 },
+    "books": ["3jn", "est", "jon", "neh", "rut", "tit"]
+  }]
+}</code></pre>
+        <p class="small soft" style="margin-top:12px">The manifest of <code>es-419-tit.langpack.zip</code>, Titus alone (314 KB), shortened to one of its five resources.</p>
+      </div>
+      <dl class="right fields" data-reveal style="--d:120ms">
+        <div><dt>format, formatVersion</dt><dd>What the file is. A reader refuses a pack whose major version is newer than its own.</dd></div>
+        <div><dt>kind, books</dt><dd>Whole language, originals, base, or the books named here.</dd></div>
+        <div><dt>requires</dt><dd>The Greek or Hebrew release the notes' quotes were found in. Without it, the quotes wait until the originals pack is opened.</dd></div>
+        <div><dt>versions</dt><dd>The version of the code that made each layer. A reader with another source version refuses the pack; one with another derived version skips that layer and rebuilds it.</dd></div>
+        <div><dt>resources</dt><dd>Each resource with its key <code>{owner}/{language}/{id}</code>, its release stamp, how many rows of each layer it brings, and which books its release has.</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="layers-title">
+    <h2 id="layers-title" data-reveal>Six layers of rows</h2>
+    <p class="lead measure" data-reveal style="--d:60ms; margin-bottom:40px">Every row is <code>{"key", "entry"}</code>, raw as the cache keeps it. The first two layers always travel; the other four are built from them, and travel so that a phone never has to build them.</p>
+    <div class="table-wrap" data-reveal style="--d:120ms">
+      <table class="layers stack">
+        <thead><tr><th>Layer</th><th>What it holds</th><th>Key</th><th>Travels</th></tr></thead>
+        <tbody>
+          <tr><td>receipt</td><td>A resource arrived whole, from which release, read with which schema. Written last.</td><td><code>resource:{key}</code></td><td>Always</td></tr>
+          <tr><td>sot</td><td>The source of truth: each chapter as USJ with its alignment to the original; notes, questions and word links by book; Translation Words and Academy articles; lexicons; MACULA</td><td><code>scripture-usj:{key}:{book}:{chapter}</code><br><code>tn:{key}:{book}</code><br><code>{key}/{article}</code></td><td>Always</td></tr>
+          <tr><td>prepared</td><td>Each chapter ready to draw: light (blocks of text) and full (each word, its occurrence, and the original words it translates)</td><td><code>prepared:{type}:{key}:{book}:{chapter}:{light|full}</code></td><td>Built</td></tr>
+          <tr><td>quote</td><td>Each note's and word link's quote, found among the words of the Greek or Hebrew verse</td><td><code>helps-quote:{helps}@…:{original}@…:{book}:{chapter}</code></td><td>Built</td></tr>
+          <tr><td>align</td><td>The same quote found in each gateway text: which of its words, and where</td><td><code>helps-align:…:{text}@{stamp}:{book}:{chapter}</code></td><td>Built</td></tr>
+          <tr><td>text</td><td>The title of every Translation Academy and Translation Words article</td><td><code>helps-text:ta-title:{key}@{stamp}:{article}</code></td><td>Built</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small soft" style="margin-top:16px; max-width:70ch">Lexicons (one file per Strong's number, <code>{key}/content/5485.json</code>) and MACULA's sentences and referents (<code>{key}/trees/{BOOK}</code>) travel as resources of their own in the <code>sot</code> layer.</p>
+  </section>
+
+  <section class="part wrap" aria-labelledby="kinds-title">
+    <h2 id="kinds-title" data-reveal>Four kinds of pack</h2>
+    <div class="kinds">
+      <figure data-reveal>
+        <div class="pair">
+          <div class="frame cut-l"><img src="../assets/codex-sinaiticus.jpg" alt="Codex Sinaiticus open in its display case, four columns of Greek on each page" width="1920" height="1440" loading="lazy"></div>
+        </div>
+        <figcaption>Codex Sinaiticus, a fourth-century Greek Bible, in the British Library. Photo: PotatoCow25, CC0, via Wikimedia Commons.</figcaption>
+        <div class="frame" data-drift><img src="../assets/leningrad-codex-folio-008a.jpg" alt="A page of the Leningrad Codex: three columns of Hebrew in brown ink with small notes in the margins" width="1920" height="2121" loading="lazy"></div>
+        <figcaption>The Leningrad Codex, folio 8a, Genesis 14–15, about 1008. The Hebrew Bible in the originals pack descends from it. Public domain, via Wikimedia Commons.</figcaption>
+      </figure>
+      <div class="list">
+        <div class="kind" data-reveal style="--d:40ms"><h3>originals</h3><span class="size">22.9 MB</span><p>The Greek New Testament, the Hebrew Bible and MACULA's analysis of both. The same for every language, so it is made and carried once.</p></div>
+        <div class="kind" data-reveal style="--d:100ms"><h3>language</h3><span class="size">8.3 MB</span><p>Every resource of one language, whole, with its receipts. No originals.</p></div>
+        <div class="kind" data-reveal style="--d:160ms"><h3>base</h3><span class="size">8.5 MB</span><p>What every book needs: Translation Words, Translation Academy and the lexicons whole, and the catalog row of each book-scoped resource.</p></div>
+        <div class="kind" data-reveal style="--d:220ms"><h3>book</h3><span class="size">7–518 KB</span><p>The texts, notes, questions and word links of the books it names. No receipts: a receipt would claim the whole release.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="versions-title">
+    <h2 id="versions-title" data-reveal>Three versions, three questions</h2>
+    <div class="versions">
+      <div class="v" data-reveal style="--d:40ms"><strong>Can I read this file?</strong><p>The format version. Only a newer major version is refused.</p><pre>"formatVersion": "1.1.0"</pre></div>
+      <div class="v" data-reveal style="--d:100ms"><strong>Is it newer than mine?</strong><p>Each resource's stamp: its Door43 release tag and when it was published.</p><pre>"stamp": "v42#2026-08-11T12_22_03Z"</pre></div>
+      <div class="v" data-reveal style="--d:160ms"><strong>Can I use its rows?</strong><p>The version of the code that made each layer. These change often.</p><pre>"helpsAlign": 12</pre></div>
+    </div>
+    <div class="compat" data-reveal style="--d:200ms">
+      <p class="lead">The five code versions and the format make a compatibility key. A server keeps packs under it, and an app asks only for its own.</p>
+      <pre>f1.1-u2.3.0-p6000230-q9-a12-t1</pre>
+      <p class="small soft">Whole packs of format 1.1 today. Parts lists use format 2.0, so their key starts with <code>f2.0</code>. Built by <code>compatKeyOf</code> in <code>packages/language-pack/src/catalog.ts</code>.</p>
+    </div>
+  </section>
+
+  <section class="parts-band wrap" aria-labelledby="parts-title">
+    <div class="photo" data-drift><img src="../assets/orillas-de-bronce-del-titicaca.jpg" alt="A woman in a bowler hat stands on golden grass above Lake Titicaca, with boats moored below and mountains behind" width="1920" height="966" loading="lazy"></div>
+    <div class="over">
+      <h2 id="parts-title" data-reveal>Only what changed comes down</h2>
+      <p data-reveal style="--d:80ms">With internet, a language arrives as parts of about 250 KB. When one book changes, a phone downloads that book and nothing else.</p>
+      <small data-reveal style="--d:140ms">Guaqui, on the shore of Lake Titicaca, Bolivia. Photo: Yamil Maidana Tuco, CC BY-SA 4.0, via Wikimedia Commons.</small>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="slots-title">
+    <h2 id="slots-title" data-reveal>Parts: the same rows, cut small</h2>
+    <div class="two">
+      <div class="left" data-reveal style="--d:60ms">
+        <p class="lead" style="margin-bottom:28px">Format 2.0 cuts a language into content-addressed parts, each one gzip of JSONL rows <code>{"layer", "key", "value"}</code>. A parts list names them all; a part whose inputs did not change keeps its hash and is never built or downloaded again.</p>
+<pre><code>{
+  "schema": 2,
+  "language": "es-419",
+  "compat": "f2.0-u2.3.0-p6000230-q9-a12-t1",
+  "parts": [{
+    "sha256": "…",
+    "bytes": 41210,
+    "kind": "book",
+    "resource": "es-419_gl/es-419/tn",
+    "book": "tit",
+    "fingerprint": "…",
+    "layers": ["sot", "prepared"]
+  }]
+}</code></pre>
+        <p class="small soft" style="margin-top:12px">The shape of <code>PartsList</code> (<code>parts/partsList.ts</code>), with one entry. Hashes and sizes left out.</p>
+      </div>
+      <div class="right">
+        <p data-reveal>Where the rows go:</p>
+        <ul class="cuts" data-reveal style="--d:80ms">
+          <li>By book: the text, the original, MACULA, the helps, and their alignments.</li>
+          <li>Translation Words in 8 groups, Academy by manual, all titles together.</li>
+          <li>Lexicons by ranges of 1,000 Strong's numbers.</li>
+          <li>Open Bible Stories ten at a time.</li>
+        </ul>
+        <p data-reveal style="--d:140ms">A reader skips a part of a kind, a layer or an index version it does not know, and keeps everything else. That is how a new optional layer can be published without breaking older apps.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="part wrap gaps" aria-labelledby="gaps-title">
+    <h2 id="gaps-title" data-reveal>What is not settled yet</h2>
+    <ul class="cuts" data-reveal style="--d:60ms">
+      <li><span><strong>Rows follow the code.</strong> A pack is a copy of tC Study's cache, so every change to the code that prepares a layer makes the packs already handed out unreadable for that layer. Between 20 and 24 October 2026 those versions changed five times.</span></li>
+      <li><span><strong>No schema.</strong> The format is described by TypeScript types; there is no JSON Schema an app in another language can validate against.</span></li>
+      <li><span><strong>No signature.</strong> Parts are checked by their sha256 when downloaded. A pack passed hand to hand cannot yet prove who made it.</span></li>
+      <li><span><strong>A word index is coming.</strong> An optional <code>index</code> layer will let an app find a Greek or Hebrew word in every book, even books not on the device.</span></li>
+    </ul>
+  </section>
+
+  <div class="next wrap">
+    <a class="button" href="../build/">Build with it</a>
+    <p class="soft">Code for reading, opening and making packs, and the server routes.</p>
+  </div>
+</main>
+
+<footer class="footer wrap">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">l</span><span style="height:82%">a</span><span style="height:92%">n</span><span style="height:70%">g</span><span style="height:88%">p</span><span style="height:76%">a</span><span style="height:96%">c</span><span style="height:64%">k</span></div>
+  <div class="footer-links">
+    <div><a href="../">Overview</a><a href="./">Inside a pack</a><a href="../build/">Build with it</a></div>
+    <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/blob/master/apps/tc-study/docs/cache-data-structure.md">Cache data structure</a></div>
+    <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
+    <div><a href="https://git.door43.org/">Door43</a></div>
+    <p class="credits">Photographs: «Leningrad Codex Folio 008a», public domain, via Wikimedia Commons. «Orillas de bronce del Titicaca» by Yamil Maidana Tuco, CC BY-SA 4.0, via Wikimedia Commons. «Codex Sinaiticus» by PotatoCow25, CC0, via Wikimedia Commons. Manifests and keys from the es-419 packs of 20 and 29 October 2026.</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../build/">Build with it</a></div>
+</footer>
+<script src="../site.js"></script>
+</body>
+</html>

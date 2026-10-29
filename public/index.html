@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Language Packs</title>
+<meta name="description" content="A language pack carries a Bible translation language, already prepared, in one file that opens offline. How it works and how to read one from your app.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="stylesheet" href="site.css">
+<style>
+  /* Hero: headline upper left; the cobalt stage, its corner cut like an SD card, holds a real pack's manifest. */
+  .hero { position: relative; min-height: min(100svh, 980px); display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); align-content: start; }
+  .hero-text { grid-column: 1 / span 6; grid-row: 1; padding-top: clamp(40px, 8vh, 120px); display: grid; gap: 24px; align-content: start; position: relative; z-index: 2; }
+  .hero h1 { font-size: var(--step-hero); max-width: 9.5ch; }
+  .hero-text p { max-width: 36ch; font-size: var(--step-body); }
+  .stage { grid-column: 5 / -1; grid-row: 1; align-self: start; margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); margin-top: clamp(380px, 44svh, 460px); background: var(--field); color: var(--field-ink); min-height: 560px; padding: 56px 0 0 56px; overflow: hidden; }
+  .inspector { width: 660px; max-width: 100%; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.4; }
+  .inspector header { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; padding: 16px 20px; background: var(--surface); }
+  .inspector header strong { font-weight: 500; font-size: 16px; }
+  .inspector .meta { display: grid; grid-template-columns: auto 1fr; gap: 6px 20px; padding: 16px 20px; }
+  .inspector .meta dt { color: var(--muted); }
+  .inspector .meta dd { margin: 0; }
+  .inspector table { font-size: 15px; }
+  .inspector th, .inspector td { padding: 9px 12px 9px 0; }
+  .inspector th:first-child, .inspector td:first-child { padding-left: 20px; }
+  .inspector tbody tr { cursor: default; }
+  .inspector tbody tr:hover, .inspector tbody tr.is-picked { background: var(--field); color: var(--field-ink); }
+  .inspector .rows { color: var(--muted); }
+  .inspector tbody tr:hover .rows, .inspector tbody tr.is-picked .rows { color: inherit; }
+
+  /* Stats: the team picks its books; the size is worked out from the real packs. */
+  .carry { margin-top: var(--section); background: var(--surface); min-height: 88svh; display: grid; grid-template-rows: auto auto 1fr auto; padding-block: clamp(56px, 8vw, 120px); gap: 28px; }
+  .carry h2 { font-size: var(--step-head); }
+  .books { display: flex; flex-wrap: wrap; gap: 10px; max-width: 760px; }
+  .books label { position: relative; }
+  .books input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .books span { display: inline-flex; gap: 10px; align-items: baseline; min-height: 48px; padding: 12px 18px 12px 20px; background: var(--bg); clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); transition: background-color 160ms, color 160ms, transform 160ms var(--ease-out); }
+  .books small { color: var(--muted); font-size: 15px; }
+  .books input:checked + span { background: var(--ink); color: var(--bg); }
+  .books input:checked + span small { color: inherit; opacity: 0.85; }
+  .books input:focus-visible + span { outline: 3px solid var(--ink); outline-offset: 3px; }
+  .books label:hover span { transform: translateY(-2px); }
+  .carry-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
+  .figure { font-size: clamp(140px, 19vw, 320px); font-weight: 500; letter-spacing: -0.06em; line-height: 0.8; font-variant-numeric: tabular-nums; }
+  .figure .unit { font-size: 0.22em; letter-spacing: -0.02em; margin-left: 0.1em; }
+  .working { max-width: 34ch; font-size: var(--step-body); }
+
+  /* How it works: the stages as one bar, widths from real durations. */
+  .stages { padding-block: var(--section) 0; }
+  .stages h2 { font-size: clamp(56px, 7vw, 112px); margin-bottom: 64px; max-width: 16ch; }
+  .bar { display: flex; gap: 6px; height: 22vh; min-height: 170px; }
+  .bar > div { padding: 20px; flex-basis: 0; min-width: 0; }
+  .bar .s1 { flex-grow: 76; background: var(--ink); color: var(--bg); clip-path: polygon(var(--cut-l) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-l)); }
+  .bar .s2 { flex-grow: 12; background: var(--muted); color: var(--bg); }
+  .bar .s3 { flex-grow: 12; background: var(--surface); color: var(--ink); }
+  .bar strong { font-weight: 500; font-size: clamp(20px, 2vw, 30px); letter-spacing: -0.03em; line-height: 1.05; display: block; }
+  .bar-notes { display: flex; gap: 6px; margin-top: 20px; }
+  .bar-notes p { flex-basis: 0; min-width: 0; font-size: var(--step-body); padding-right: 20px; }
+  .bar-notes .n1 { flex-grow: 76; max-width: none; } .bar-notes .n1 span { display: block; max-width: 34ch; }
+  .bar-notes .n2, .bar-notes .n3 { flex-grow: 12; }
+
+  /* It travels in the hand: the card itself, then the ways. */
+  .hand { margin-top: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: end; }
+  .hand figure { grid-column: 1 / span 7; margin: 0; }
+  .hand figure img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .hand figcaption { margin-top: 12px; font-size: 14px; color: var(--muted); }
+  .hand .ways { grid-column: 8 / -1; display: grid; gap: 28px; padding-bottom: 36px; }
+  .hand h2 { font-size: var(--step-head); }
+
+  /* Band: the one full-width shape that splits the page. */
+  .band { margin-top: var(--section); background: var(--field); color: var(--field-ink); padding-block: clamp(64px, 9vw, 140px); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: center; }
+  .band .papyrus { grid-column: 1 / span 4; margin: 0; }
+  .band .papyrus img { width: 100%; aspect-ratio: 3 / 5; object-fit: cover; object-position: center 30%; }
+  .band .papyrus figcaption { margin-top: 12px; font-size: 14px; opacity: 0.9; }
+  .band .words { grid-column: 6 / -1; display: grid; gap: 32px; }
+  .band h2 { font-size: var(--step-head); }
+  .verses { display: grid; gap: 22px; }
+  .verses p { font-size: var(--step-lead); line-height: 1.3; letter-spacing: -0.01em; }
+  .verses small { display: block; font-size: 15px; margin-top: 6px; opacity: 0.88; }
+
+  /* Showcase: one control, blown up, peels a verse layer by layer. */
+  .peel { min-height: 92svh; overflow: hidden; position: relative; background: var(--surface); color: var(--ink); padding-block: clamp(56px, 7vw, 104px); transition: background-color 400ms, color 400ms; }
+  .peel.alt { background: var(--ink); color: var(--bg); }
+  .peel-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); position: relative; z-index: 1; }
+  .peel-text { grid-column: 1 / span 5; display: grid; gap: 18px; align-content: start; }
+  .peel h2 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.1; }
+  .peel h2 em { font-style: normal; }
+  .peel-row { grid-column: 1 / span 6; margin-top: 28px; display: grid; gap: 12px; min-width: 0; }
+  .peel-row .key { font-size: 15px; word-break: break-all; }
+  .peel-row pre { max-height: 320px; font-size: 14px; }
+  .peel.alt pre { background: color-mix(in srgb, var(--bg) 14%, var(--ink)); color: var(--bg); }
+  .peel.alt :not(pre) > code { background: color-mix(in srgb, var(--bg) 14%, var(--ink)); }
+  .switch { position: absolute; right: -9vw; bottom: -5vh; font-size: clamp(30px, 4.6vw, 76px); display: grid; grid-template-columns: repeat(2, auto); gap: 0.12em; z-index: 0; }
+  .switch button { font: 500 1em/1 var(--font); letter-spacing: -0.045em; border: 0; cursor: pointer; padding: 0.38em 0.6em 0.42em 0.7em; background: var(--bg); color: var(--ink); clip-path: polygon(var(--cut-xs) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-xs)); transition: background-color 200ms, color 200ms, transform 200ms var(--ease-out); text-align: left; }
+  .peel.alt .switch button { background: color-mix(in srgb, var(--bg) 16%, var(--ink)); color: var(--bg); }
+  .switch button[aria-pressed="true"], .peel.alt .switch button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .peel.alt .switch button[aria-pressed="true"] { background: var(--bg); color: var(--ink); }
+  .switch button:hover { transform: translateY(-3px); }
+  .switch button small { display: block; font-size: 0.26em; letter-spacing: 0; font-weight: 400; margin-top: 0.5em; }
+
+  /* Who reads it: one row a reader, the name at one size, its status at the far edge. */
+  .readers { padding-block: var(--section); }
+  .readers h2 { font-size: var(--step-head); margin-bottom: 48px; }
+  .lineup { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+  .lineup li { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) auto; gap: 8px var(--gap); align-items: baseline; padding: 22px 18px; }
+  .lineup li:nth-child(odd) { background: var(--surface); }
+  .lineup .name { font-size: clamp(22px, 2.1vw, 30px); letter-spacing: -0.02em; line-height: 1.2; }
+  .lineup p { max-width: 58ch; }
+  .lineup .state { text-align: right; font-weight: 500; }
+
+  /* First step, already open: the prepare dialog writes the real command. */
+  .open { background: var(--field); color: var(--field-ink); min-height: 90svh; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); padding-block: clamp(56px, 7vw, 104px); }
+  .open-text { grid-column: 1 / span 5; align-self: end; display: grid; gap: 20px; }
+  .open h2 { font-size: clamp(56px, 7vw, 112px); line-height: 0.92; }
+  .dialog { grid-column: 7 / span 5; align-self: center; background: var(--bg); color: var(--ink); width: 100%; max-width: 480px; padding: 28px; display: grid; gap: 20px; box-shadow: 0 30px 60px -20px rgba(0, 0, 0, 0.45); clip-path: none; } /* taste-skill-ignore: an open dialog, data-ui */
+  .dialog h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.2; }
+  .dialog label { display: grid; gap: 8px; font-size: 16px; }
+  .dialog input[type="text"] { font: 400 17px/1.3 var(--font); padding: 12px 14px; border: 2px solid var(--ink); background: var(--bg); color: var(--ink); border-radius: 0; }
+  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+  .seg button { font: 500 15px/1.2 var(--font); padding: 12px 10px; border: 0; cursor: pointer; background: var(--surface); color: var(--ink); transition: background-color 160ms, color 160ms; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .dialog pre { font-size: 14px; white-space: pre-wrap; word-break: break-word; }
+  .dialog .button { justify-content: center; width: 100%; }
+
+  .where { margin-top: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: start; }
+  .where figure { margin: 0; display: grid; gap: 12px; }
+  .where .frame { overflow: hidden; }
+  .where img { width: 100%; object-fit: cover; }
+  .where figcaption { font-size: 14px; color: var(--muted); }
+  .where .w1 { grid-column: 1 / span 7; } .where .w1 img { aspect-ratio: 4 / 5; }
+  .where .w2 { grid-column: 9 / -1; display: grid; gap: 28px; padding-top: 12vh; }
+  .where .w2 img { aspect-ratio: 3 / 2; }
+  .where h2 { font-size: var(--step-head); }
+
+  @media (max-width: 900px) {
+    .where .w1, .where .w2 { grid-column: 1 / -1; padding-top: 0; }
+    .hero { min-height: 0; }
+    .hero-text { grid-column: 1 / -1; padding-top: 24px; }
+    .hero h1 { font-size: clamp(3rem, 13vw, 5rem); max-width: 10ch; }
+    .stage { grid-column: 1 / -1; grid-row: 2; margin-top: 40px; margin-left: calc(-1 * max(var(--margin), env(safe-area-inset-left, 0px))); padding: 40px 0 0 16px; min-height: 480px; clip-path: polygon(72px 0, 100% 0, 100% 100%, 0 100%, 0 72px); }
+    .inspector { width: 560px; max-width: none; }
+    .carry { min-height: 84svh; }
+    .carry h2 { font-size: 26px; }
+    .figure { font-size: 30vw; }
+    .stages h2 { font-size: 11vw; }
+    .bar { flex-direction: column; height: 70svh; }
+    .bar > div { min-height: 72px; }
+    .bar .s1 { flex-grow: 76; } .bar .s2, .bar .s3 { flex-grow: 12; }
+    .bar-notes { display: none; }
+    .bar .note-in { display: block; font-size: 16px; margin-top: 8px; max-width: 40ch; }
+    .hand figure, .hand .ways { grid-column: 1 / -1; }
+    .band .papyrus { grid-column: 1 / span 12; max-width: 320px; }
+    .band .words { grid-column: 1 / -1; }
+    .peel { min-height: 86svh; padding-bottom: 300px; }
+    .peel-text, .peel-row { grid-column: 1 / -1; }
+    .peel h2 { font-size: 26px; }
+    .switch { right: auto; left: 16px; bottom: -24px; font-size: 32px; }
+    .lineup li { grid-template-columns: minmax(0, 1fr) auto; }
+    .lineup p { grid-column: 1 / -1; grid-row: 2; }
+    .open { min-height: 84svh; }
+    .open-text { grid-column: 1 / -1; align-self: start; }
+    .open h2 { font-size: 13vw; }
+    .dialog { grid-column: 1 / -1; max-width: none; }
+  }
+  @media (min-width: 901px) { .bar .note-in { display: none; } }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="./">Language Packs</a>
+    <ul>
+      <li><a href="inside/">Inside a pack</a></li>
+      <li><a href="build/">Build with it</a></li>
+      <li><a href="#readers">Who reads it</a></li>
+      <li><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Source</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="hero wrap" aria-labelledby="hero-title">
+    <div class="hero-text">
+      <h1 id="hero-title" data-reveal>A language in one file</h1>
+      <p data-reveal style="--d:80ms">A language pack carries a Bible translation language already prepared: texts aligned to the Greek and Hebrew, notes, questions, words, articles and lexicons. It opens with no internet, ready to read.</p>
+      <div data-reveal style="--d:160ms"><a class="button" href="inside/">See inside a pack</a></div>
+    </div>
+    <div class="stage cut-xl" data-shutter>
+      <div class="inspector" data-ui aria-label="The manifest of a real pack">
+        <header><strong>es-419.langpack.zip</strong><span class="soft tab">8.3 MB · built 29 Oct 2026</span></header>
+        <dl class="meta">
+          <dt>format</dt><dd>bt-synergy-language-pack 1.1.0</dd>
+          <dt>kind</dt><dd>language: every resource of Latin American Spanish</dd>
+          <dt>requires</dt><dd class="tab">UGNT v0.34 · UHB v3.0.0</dd>
+        </dl>
+        <table>
+          <thead><tr><th>Resource</th><th>Release</th><th>Rows</th></tr></thead>
+          <tbody>
+            <tr class="is-picked"><td>Texto Puente Literal</td><td class="tab">v42</td><td class="rows tab">91</td></tr>
+            <tr><td>Texto Puente Simple</td><td class="tab">v40</td><td class="rows tab">49</td></tr>
+            <tr><td>Notas de Traducción</td><td class="tab">v66</td><td class="rows tab">81</td></tr>
+            <tr><td>Preguntas de Traducción</td><td class="tab">v38</td><td class="rows tab">45</td></tr>
+            <tr><td>Enlaces a las Palabras</td><td class="tab">v18</td><td class="rows tab">69</td></tr>
+            <tr><td>Palabras de Traducción</td><td class="tab">v37</td><td class="rows tab">4 221</td></tr>
+            <tr><td>Academia de Traducción</td><td class="tab">v4</td><td class="rows tab">937</td></tr>
+            <tr><td>Greek lexicon</td><td class="tab">60a78e0</td><td class="rows tab">6 007</td></tr>
+            <tr><td>Hebrew lexicon</td><td class="tab">3fc0fdd</td><td class="rows tab">9 002</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="carry wrap" aria-labelledby="carry-title">
+    <h2 id="carry-title" data-reveal>What does a team carry?</h2>
+    <fieldset class="books" data-ui data-reveal style="--d:80ms; border:0; margin:0; padding:0">
+      <legend class="small soft" style="margin-bottom:10px">The books your team translates, in Latin American Spanish</legend>
+      <label><input type="checkbox" value="314338" checked><span>Titus <small class="tab">314 KB</small></span></label>
+      <label><input type="checkbox" value="328773" checked><span>Jonah <small class="tab">329 KB</small></span></label>
+      <label><input type="checkbox" value="518133"><span>Ruth <small class="tab">518 KB</small></span></label>
+      <label><input type="checkbox" value="357920"><span>Esther <small class="tab">358 KB</small></span></label>
+      <label><input type="checkbox" value="105259"><span>3 John <small class="tab">105 KB</small></span></label>
+      <label><input type="checkbox" value="6869"><span>Nehemiah <small class="tab">7 KB</small></span></label>
+    </fieldset>
+    <div></div>
+    <div class="carry-foot">
+      <p class="figure" aria-live="polite"><span id="mb">32.1</span><span class="unit">MB</span></p>
+      <p class="working">The original Greek and Hebrew (22.9 MB), the shared Spanish helps and lexicons (8.5 MB), and one small pack for each book. These are the sizes of the es-419 packs made on 20 October 2026.</p>
+    </div>
+  </section>
+
+  <section class="stages wrap" aria-labelledby="stages-title">
+    <h2 id="stages-title" data-reveal>Made once, opened anywhere</h2>
+    <div class="bar" data-ui data-reveal style="--d:80ms">
+      <div class="s1"><strong>Seven and a half minutes</strong><span class="note-in">Once, on a computer with internet: download from Door43, read every resource, find each note's words in the Greek and in the Spanish.</span></div>
+      <div class="s2"><strong>Fifteen seconds</strong><span class="note-in">On each phone or laptop, with no internet.</span></div>
+      <div class="s3"><strong>Two milliseconds</strong><span class="note-in">To read a verse's notes, every time after.</span></div>
+    </div>
+    <div class="bar-notes">
+      <p class="n1" data-reveal style="--d:140ms"><span>First, once, on a computer with internet: download every resource from Door43, read it, and find each note's words in the Greek and in each Spanish text. More than a gigabyte of memory.</span></p>
+      <p class="n2" data-reveal style="--d:200ms">Then, on each phone or laptop, with no internet.</p>
+      <p class="n3" data-reveal style="--d:260ms">Then every read.</p>
+    </div>
+    <p class="small soft" style="margin-top:28px; max-width:56ch">The first es-419 run with its originals, and the median of translation-helps-mcp reading notes from a pack. The widths follow the first two; reading is too short to draw.</p>
+  </section>
+
+  <section class="where wrap" aria-labelledby="where-title">
+    <figure class="w1" data-reveal>
+      <div class="frame cut-l" data-drift><img src="assets/rural-village-of-guatemala.jpg" alt="A road through a village in the Guatemalan highlands, power lines crossing a green mountain under cloud" width="1920" height="1440" loading="lazy"></div>
+      <figcaption>A rural village in the highlands of Guatemala. Photo: Annkat22, CC BY-SA 4.0, via Wikimedia Commons.</figcaption>
+    </figure>
+    <div class="w2">
+      <h2 id="where-title" data-reveal>Where the signal ends at the road</h2>
+      <p class="lead" data-reveal style="--d:80ms">Teams who translate into the languages of their own towns often work where the power line arrives and the data does not. The pack was made for them: everything the app reads is already on the device.</p>
+      <figure data-reveal style="--d:140ms">
+        <div class="frame cut-l"><img src="assets/lake-atitlan-volcan-san-pedro-15339126093.jpg" alt="Lake Atitlán with the San Pedro volcano behind it" width="1920" height="1280" loading="lazy"></div>
+        <figcaption>Lake Atitlán and the San Pedro volcano, Guatemala. Photo: Arian Zwegers, CC BY 2.0, via Wikimedia Commons.</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="hand wrap" aria-labelledby="hand-title">
+    <figure data-reveal>
+      <img class="cut-l" src="assets/microsd-card-2gb-focus-stacked.jpg" alt="A 2 GB microSD card photographed close up, its corner cut at an angle" width="1920" height="1280" loading="lazy">
+      <figcaption>A 2 GB microSD card. Photo: Afrank99, CC BY-SA 3.0, Wikimedia Commons.</figcaption>
+    </figure>
+    <div class="ways">
+      <h2 data-reveal>It travels in the hand</h2>
+      <p class="lead" data-reveal style="--d:80ms">A pack is a file like any other. It goes the way a team already shares things.</p>
+      <ul class="cuts" data-reveal style="--d:140ms">
+        <li>Inside the app's installer, opened on first start.</li>
+        <li>On an SD card or a USB stick: Spanish and the originals together take about 31 MB.</li>
+        <li>By Bluetooth or nearby sharing, phone to phone.</li>
+        <li>In a chat message: one book weighs less than a photo.</li>
+        <li>With internet, by parts: only what changed comes down.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="band wrap" aria-labelledby="band-title">
+    <figure class="papyrus" data-reveal>
+      <img class="cut-l" src="assets/manchester-john-rylands-university-library-ms-gr.jpg" alt="Papyrus 32: a torn brown fragment with Greek letters in black ink, Titus 1:11-15" width="1920" height="3242" loading="lazy">
+      <figcaption>Papyrus 32, Titus 1:11–15, about AD 200. John Rylands Library, Manchester. Public domain.</figcaption>
+    </figure>
+    <div class="words">
+      <h2 data-reveal>The same verse, in every layer</h2>
+      <div class="verses">
+        <p data-reveal style="--d:60ms">Παῦλος, δοῦλος Θεοῦ, ἀπόστολος δὲ Ἰησοῦ Χριστοῦ, κατὰ πίστιν ἐκλεκτῶν Θεοῦ<small>Titus 1:1 in the Greek New Testament, from the originals pack</small></p>
+        <p data-reveal style="--d:120ms">Pablo, siervo de Dios y apóstol de Jesucristo, conforme a la fe de los elegidos de Dios<small>The same words in the literal Spanish text, each one aligned to its Greek word</small></p>
+        <p data-reveal style="--d:180ms">Dios me envió a enseñar al pueblo que él ha escogido como suyo para que confíe más en él.<small>And in the simple Spanish text: a note on κατὰ πίστιν already knows these are its words</small></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="peel" id="layers" aria-labelledby="peel-title">
+    <div class="peel-grid wrap">
+      <div class="peel-text">
+        <h2 id="peel-title">Titus 1:1, <em id="peel-word">the receipt</em></h2>
+        <p id="peel-say" style="max-width:44ch">Every resource in a pack has a receipt, written last: if the phone dies halfway, nothing is marked complete.</p>
+      </div>
+      <div class="peel-row">
+        <p class="key"><code id="peel-key">resource:es-419_gl/es-419/glt</code></p>
+        <pre id="peel-value" tabindex="0" aria-label="The row in this layer">{ "releaseStamp": "v42#2026-08-11T12_22_03Z", "downloadComplete": true }</pre>
+      </div>
+    </div>
+    <div class="switch" data-ui role="group" aria-label="Layers of the pack">
+      <button type="button" data-layer="receipt" aria-pressed="true">receipt<small>complete or not</small></button>
+      <button type="button" data-layer="sot" aria-pressed="false">sot<small>the source</small></button>
+      <button type="button" data-layer="prepared" aria-pressed="false">prepared<small>ready to show</small></button>
+      <button type="button" data-layer="quote" aria-pressed="false">quote<small>found in the Greek</small></button>
+      <button type="button" data-layer="align" aria-pressed="false">align<small>found in the Spanish</small></button>
+      <button type="button" data-layer="text" aria-pressed="false">text<small>article titles</small></button>
+    </div>
+  </section>
+
+  <section class="readers wrap" id="readers" aria-labelledby="readers-title">
+    <h2 id="readers-title" data-reveal>Who reads a pack</h2>
+    <ul class="lineup" data-reveal style="--d:80ms">
+      <li><span class="name">Servos</span><p>Idiomas Puentes' app for translating a book of the Bible by phone or laptop, in writing and by voice. Opens whole packs from a file or its installer, and downloads parts with internet. Reads every layer.</p><span class="state">In use</span></li>
+      <li><span class="name">translation-helps-mcp</span><p>The MCP server that gives AI assistants Bible texts and helps. Serves packs and parts to apps, and answers notes and word links from views made from a pack.</p><span class="state">In use</span></li>
+      <li><span class="name">tC Study</span><p>Shares the code that makes and stores packs, and the same cache keys. Its reading page cannot open a pack yet.</p><span class="state">Planned</span></li>
+      <li><span class="name">Your app</span><p>A reader, an audio Bible, a checking tool or an offline assistant. Take the layers you need.</p><span class="state">Open</span></li>
+    </ul>
+  </section>
+
+  <section class="open wrap" aria-labelledby="open-title">
+    <div class="open-text">
+      <h2 id="open-title" data-reveal>Make one yourself</h2>
+      <p data-reveal style="--d:80ms; max-width:40ch">The command runs tC Study's own pipeline on your computer and writes the packs to a folder. The next page explains every flag.</p>
+    </div>
+    <form class="dialog" data-ui id="prepare" aria-labelledby="prepare-title">
+      <h3 id="prepare-title">Prepare a language pack</h3>
+      <label for="lang">Door43 language code<input id="lang" type="text" value="es-419" autocomplete="off" spellcheck="false"></label>
+      <div class="seg" role="group" aria-label="How to split it">
+        <button type="button" data-split="whole" aria-pressed="false">Whole language</button>
+        <button type="button" data-split="books" aria-pressed="true">One pack per book</button>
+      </div>
+      <pre id="cmd">bun packages/resource-pipeline/cli/prepare-language.ts --lang es-419 --out ./packs --books all</pre>
+      <a class="button" id="cmd-go" href="build/#prepare">Read how to run it</a>
+    </form>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">l</span><span style="height:82%">a</span><span style="height:92%">n</span><span style="height:70%">g</span><span style="height:88%">p</span><span style="height:76%">a</span><span style="height:96%">c</span><span style="height:64%">k</span></div>
+  <div class="footer-links">
+    <div><a href="inside/">Inside a pack</a><a href="build/">Build with it</a><a href="#readers">Who reads it</a></div>
+    <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
+    <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
+    <div><a href="https://git.door43.org/">Door43</a></div>
+    <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Lake Atitlan, Volcan San Pedro» by Arian Zwegers, CC BY 2.0. Papyrus 32, John Rylands Library, public domain, via Wikimedia Commons. «MicroSD card 2GB focus-stacked» by Afrank99, CC BY-SA 3.0, via Wikimedia Commons. Texts and helps quoted from the es-419 packs: Idiomas Puentes and unfoldingWord, CC BY-SA 4.0; unfoldingWord Greek New Testament, CC BY-SA 4.0.</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="inside/">Inside a pack</a></div>
+</footer>
+
+<script type="application/json" id="titus">{"source": "es-419.langpack.zip, built 2026-10-29 (formatVersion 1.1.0)", "verse": "Titus 1:1", "noteId": "rtc9", "layers": {"receipt": {"key": "resource:es-419_gl/es-419/glt", "value": {"downloadComplete": true, "downloadCompletedAt": "2026-10-29T01:48:22.281Z", "releaseStamp": "v42#2026-08-11T12_22_03Z", "ingestSchema": "usj:2.3.0-usj", "ingredientCount": 6, "downloadMethod": "zip", "entryCount": 6, "expectedEntryCount": 6}}, "sot": {"key": "scripture-usj:es-419_gl/es-419/glt:tit:1", "value": {"alignmentMap": {"TIT 1:1": [{"sources": [{"strong": "G39720", "lemma": "Παῦλος", "morph": "Gr,N,,,,,NMS,", "content": "Παῦλος", "occurrence": 1, "occurrences": 1}], "targets": [{"word": "Pablo", "occurrence": 1, "occurrences": 1}]}, {"sources": [{"strong": "G14010", "lemma": "δοῦλος", "morph": "Gr,N,,,,,NMS,", "content": "δοῦλος", "occurrence": 1, "occurrences": 1}], "targets": [{"word": "siervo", "occurrence": 1, "occurrences": 1}]}, {"sources": [{"strong": "G23160", "lemma": "θεός", "morph": "Gr,N,,,,,GMS,", "content": "Θεοῦ", "occurrence": 1, "occurrences": 2}], "targets": [{"word": "de", "occurrence": 1, "occurrences": 6}, {"word": "Dios", "occurrence": 1, "occurrences": 2}]}, {"sources": [{"strong": "G11610", "lemma": "δέ", "morph": "Gr,CC,,,,,,,,", "content": "δὲ", "occurrence": 1, "occurrences": 1}], "targets": [{"word": "y", "occurrence": 1, "occurrences": 2}]}]}}, "note": "The chapter USJ travels in the same row; shown here: the first four alignments of verse 1."}, "prepared": {"key": "prepared:scripture:es-419_gl/es-419/glt:tit:1:full", "value": {"version": 6000230, "unit": 1, "matchKeys": ["tit 1:1:pablo:1", "tit 1:1:παῦλος:1", "tit 1:1:siervo:1", "tit 1:1:δοῦλος:1", "tit 1:1:de:1", "tit 1:1:θεοῦ:1", "tit 1:1:dios:1", "tit 1:1:y:1", "tit 1:1:δὲ:1", "tit 1:1:apóstol:1", "tit 1:1:ἀπόστολος:1", "tit 1:1:de:2"], "tokens": [{"c": "Pablo", "o": 1, "k": 0, "a": [1]}, {"c": "siervo", "o": 1, "k": 2, "a": [3]}, {"c": "de", "o": 1, "k": 4, "a": [5]}, {"c": "Dios", "o": 1, "k": 6, "a": [5]}, {"c": "y", "o": 1, "k": 7, "a": [8]}, {"c": "apóstol", "o": 1, "k": 9, "a": [10]}, {"c": "de", "o": 2, "k": 11, "a": [12, 13]}, {"c": "Jesucristo", "o": 1, "k": 14, "a": [12, 13]}, {"c": "conforme", "o": 1, "k": 15, "a": [16]}, {"c": "a", "o": 1, "k": 17, "a": [18]}, {"c": "la", "o": 1, "k": 19, "a": [18]}, {"c": "fe", "o": 1, "k": 20, "a": [18]}]}, "note": "Each word of the literal text, with the indices (a) of the Greek words it translates."}, "quote": {"key": "helps-quote:es-419_gl/es-419/tn@gbb0c56a52f:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:tit:1", "value": {"rtc9": [{"id": 8, "text": "κατὰ", "type": "word", "occurrence": 1, "content": "κατὰ", "chapter": 1, "verse": 1}, {"id": 9, "text": "πίστιν", "type": "word", "occurrence": 1, "content": "πίστιν", "chapter": 1, "verse": 1}]}, "note": "The note's quote, found in the Greek of Titus 1:1."}, "align": {"key": "helps-align:es-419_gl/es-419/tn@gbb0c56a52f:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:es-419_gl/es-419/glt@g9c65570ffd+6000230:tit:1", "value": {"rtc9": {"p": [8, 9, 10, 11], "m": 1, "t": ["conforme", "a", "la", "fe"]}}, "note": "The same quote, found in the Spanish literal text."}, "text": {"key": "helps-text:ta-title:es-419_gl/es-419/ta@v4#2024-07-17T20_15_35Z:translate/figs-abstractnouns", "value": "Sustantivos abstractos", "note": "The title of the Translation Academy article the note cites."}}, "note": {"id": "rtc9", "reference": "1:1", "quote": "κατὰ πίστιν", "supportReference": "rc://*/ta/man/translate/figs-abstractnouns", "text": "**Fe** es un sustantivo abstracto. Aquí se refiere al creer o al confiar en Jesús. Si está más claro en su idioma, puede traducirlo usando uno de estos verbos, como en el TPS (Texto Puente Simple). Traducción alternativa: «para fortalecer la fe» o «para ayudar…"}}</script>
+<script src="site.js"></script>
+<script>
+  // What a team carries: originals + base + each chosen book (sizes of the 20 Oct 2026 es-419 packs).
+  (function () {
+    var BASE = 8491113 + 22916719
+    var boxes = document.querySelectorAll('.books input')
+    var out = document.getElementById('mb')
+    function total() {
+      var bytes = BASE
+      boxes.forEach(function (b) { if (b.checked) bytes += Number(b.value) })
+      out.textContent = (bytes / 1e6).toFixed(1)
+    }
+    boxes.forEach(function (b) { b.addEventListener('input', total) })
+    total()
+  })()
+
+  // Titus 1:1, layer by layer: the real rows of one note, κατὰ πίστιν (rtc9).
+  (function () {
+    var data = JSON.parse(document.getElementById('titus').textContent)
+    var say = {
+      receipt: ['the receipt', 'Every resource has a receipt, written last: if the phone dies halfway, nothing is marked complete.'],
+      sot: ['the source', 'The source of truth: the chapter as USJ, with which Spanish words translate which Greek words.'],
+      prepared: ['ready to show', 'The chapter already cut into blocks and words, so a phone never parses USFM.'],
+      quote: ['in the Greek', 'The note on κατὰ πίστιν, already found among the words of the Greek verse.'],
+      align: ['in the Spanish', 'The same note, already found in the literal text: «conforme a la fe».'],
+      text: ['its article', 'The title of the Translation Academy article the note cites, ready without opening it.']
+    }
+    var section = document.querySelector('.peel')
+    var buttons = section.querySelectorAll('.switch button')
+    function show(layer) {
+      var row = data.layers[layer]
+      document.getElementById('peel-word').textContent = say[layer][0]
+      document.getElementById('peel-say').textContent = say[layer][1]
+      document.getElementById('peel-key').textContent = row.key
+      document.getElementById('peel-value').textContent = JSON.stringify(row.value, null, 2)
+      buttons.forEach(function (b) { b.setAttribute('aria-pressed', String(b.dataset.layer === layer)) })
+      section.classList.toggle('alt', ['sot', 'quote', 'text'].indexOf(layer) >= 0)
+    }
+    buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.layer) }) })
+    show('receipt')
+  })()
+
+  // The prepare dialog writes the real command.
+  (function () {
+    var form = document.getElementById('prepare')
+    var lang = document.getElementById('lang')
+    var cmd = document.getElementById('cmd')
+    var split = 'books'
+    function write() {
+      var code = (lang.value || '').trim().replace(/[^A-Za-z0-9-]/g, '') || 'es-419'
+      cmd.textContent = 'bun packages/resource-pipeline/cli/prepare-language.ts --lang ' + code + ' --out ./packs' + (split === 'books' ? ' --books all' : '')
+    }
+    form.querySelectorAll('.seg button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        split = b.dataset.split
+        form.querySelectorAll('.seg button').forEach(function (o) { o.setAttribute('aria-pressed', String(o === b)) })
+        write()
+      })
+    })
+    lang.addEventListener('input', write)
+    form.addEventListener('submit', function (e) { e.preventDefault() })
+    write()
+  })()
+</script>
+</body>
+</html>

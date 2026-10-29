@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Build with Language Packs</title>
+<meta name="description" content="Read a pack's manifest, open it into your stores, make packs, download parts and serve views: the code and the routes.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="stylesheet" href="../site.css">
+<style>
+  /* The deepest level: recipes. Each one is the claim on the left and the code on the right, at the size it is used. */
+  .top { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); padding-block: clamp(32px, 6vw, 96px) 0; align-items: end; }
+  .top-text { grid-column: 1 / span 7; display: grid; gap: 24px; }
+  .top h1 { font-size: clamp(3rem, 1.6rem + 5.4vw, 7rem); max-width: 9ch; }
+  .jump { grid-column: 9 / -1; background: var(--field); color: var(--field-ink); padding: 32px 28px 28px; }
+  .jump p { font-size: 15px; margin-bottom: 14px; }
+  .jump ul { font-size: var(--step-lead); line-height: 1.25; letter-spacing: -0.015em; gap: 10px; }
+  .jump a { text-decoration: none; } .jump a:hover { text-decoration: underline; }
+
+  .recipe { padding-block: var(--section) 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: start; scroll-margin-top: 24px; }
+  .recipe .say { grid-column: 1 / span 4; display: grid; gap: 18px; }
+  .recipe .code { grid-column: 6 / -1; display: grid; gap: 16px; min-width: 0; }
+  .recipe h2 { font-size: clamp(2rem, 1.3rem + 2.4vw, 3.4rem); }
+  .recipe pre { font-size: 13.5px; }
+  .recipe .say p { font-size: 17px; }
+
+  .interlude { margin-top: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: end; }
+  .interlude figure { margin: 0; display: grid; gap: 10px; min-width: 0; }
+  .interlude .frame { overflow: hidden; }
+  .interlude img { width: 100%; object-fit: cover; }
+  .interlude figcaption { font-size: 13px; color: var(--muted); }
+  .interlude .a { grid-column: 1 / span 8; } .interlude .a img { aspect-ratio: 16 / 9; }
+  .interlude .b { grid-column: 9 / -1; } .interlude .b img { aspect-ratio: 4 / 5; }
+  .interlude p { grid-column: 1 / span 7; font-size: var(--step-lead); line-height: 1.35; margin-top: 12px; }
+
+  .answers td:first-child { white-space: nowrap; }
+  .answers code { font-size: 12.5px; }
+
+  .keys { padding-block: var(--section) 0; }
+  .keys h2 { font-size: var(--step-head); margin-bottom: 36px; }
+  .keys td code { font-size: 12.5px; }
+
+  .closing { margin-top: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: end; }
+  .closing figure { grid-column: 1 / span 6; margin: 0; display: grid; gap: 10px; }
+  .closing .frame { overflow: hidden; }
+  .closing img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .closing figcaption { font-size: 13px; color: var(--muted); }
+  .closing .text { grid-column: 8 / -1; display: grid; gap: 22px; padding-bottom: 32px; }
+  .closing h2 { font-size: var(--step-head); }
+
+  @media (max-width: 900px) {
+    .top-text, .jump { grid-column: 1 / -1; }
+    .jump { margin-left: calc(-1 * max(var(--margin), env(safe-area-inset-left, 0px))); margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); padding: 48px 16px 24px; }
+    .recipe .say, .recipe .code { grid-column: 1 / -1; position: static; }
+    .interlude .a, .interlude .b, .interlude p, .closing figure, .closing .text { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="../">Language Packs</a>
+    <ul>
+      <li><a href="../inside/">Inside a pack</a></li>
+      <li><a href="./" aria-current="page">Build with it</a></li>
+      <li><a href="../#readers">Who reads it</a></li>
+      <li><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Source</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="top wrap" aria-labelledby="top-title">
+    <div class="top-text">
+      <h1 id="top-title" data-reveal>Build with it</h1>
+      <p class="lead measure" data-reveal style="--d:80ms">The packages that make and open packs live in tC Study's repository and are written in TypeScript. They run in a browser on IndexedDB and in Bun or Node on anything with the same small interface.</p>
+      <div data-reveal style="--d:140ms"><a class="button" href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Open the package</a></div>
+    </div>
+    <nav class="jump cut-l" data-ui aria-label="On this page" data-reveal style="--d:120ms">
+      <p>On this page</p>
+      <ul class="cuts">
+        <li><a href="#read">Read what a pack brings</a></li>
+        <li><a href="#open">Open it into your stores</a></li>
+        <li><a href="#prepare">Make packs</a></li>
+        <li><a href="#parts">Download parts</a></li>
+        <li><a href="#views">Serve answers from views</a></li>
+        <li><a href="#keys">Keys</a></li>
+      </ul>
+    </nav>
+  </section>
+
+  <section class="recipe wrap" id="read" aria-labelledby="read-title">
+    <div class="say">
+      <h2 id="read-title" data-reveal>Read what a pack brings</h2>
+      <p data-reveal style="--d:60ms">Show people what a file brings before you open it. <code>readPackManifest</code> reads only <code>manifest.json</code> and throws a readable error when the file is not a pack or is newer than your reader.</p>
+    </div>
+    <div class="code" data-reveal style="--d:100ms">
+<pre><code>import { readPackManifest } from '@bt-synergy/language-pack'
+
+const bytes = new Uint8Array(await file.arrayBuffer())
+const manifest = await readPackManifest(bytes)
+
+manifest.kind        // 'language' | 'originals' | 'base' | 'book'
+manifest.books       // ['tit'] on a book pack
+manifest.requires    // [{ key: 'unfoldingWord/el-x-koine/ugnt', stamp: 'v0.34#…' }]
+for (const r of manifest.resources) {
+  console.log(r.title, r.stamp, r.rows)  // Texto Puente Literal v42#2026-08-11T12_22_03Z { sot: 5, prepared: 7 }
+}</code></pre>
+      <p class="small soft">Compare each resource's <code>stamp</code> with your copy before replacing anything: Servos says «newer», «the same» or «older» for each one, and never goes back to an older release.</p>
+    </div>
+  </section>
+
+  <section class="recipe wrap" id="open" aria-labelledby="open-title">
+    <div class="say">
+      <h2 id="open-title" data-reveal>Open it into your stores</h2>
+      <p data-reveal style="--d:60ms">Pass the versions of the code you read with. A pack made with another source version is refused; a derived layer of another version is skipped and listed, for you to rebuild or to say so.</p>
+      <p data-reveal style="--d:100ms">Receipts are written last for each resource, so a pack cut short by a dead battery never marks a resource complete. Opening it again fills what is missing.</p>
+    </div>
+    <div class="code" data-reveal style="--d:100ms">
+<pre><code>import { IndexedDBCacheAdapter } from '@bt-synergy/cache-adapter-indexeddb'
+import { IndexedDBCatalogAdapter } from '@bt-synergy/catalog-adapter-indexeddb'
+import { importLanguagePack, packTargetFrom } from '@bt-synergy/language-pack'
+
+const stores = {
+  cache: new IndexedDBCacheAdapter({ dbName: 'my-app-resources', storeName: 'cache-entries', version: 1 }),
+  catalog: new IndexedDBCatalogAdapter({ dbName: 'my-app-catalog', storeName: 'catalog-entries' }),
+}
+
+const versions = {
+  sot: { usjProcessing: USJ_PROCESSING_VERSION },
+  prepared: { scripturePrepare: SCRIPTURE_PREPARE_VERSION },
+  quote: { helpsQuote: HELPS_QUOTE_VERSION },
+  align: { helpsAlign: HELPS_ALIGN_VERSION },
+  text: { helpsText: HELPS_TEXT_VERSION },
+}
+
+const result = await importLanguagePack({
+  bytes,
+  target: packTargetFrom(stores),
+  versions,
+  overwrite: ['es-419_gl/es-419/tn'],   // replace these resources; keep the rest
+  onProgress: (done, total) => bar.set(done / total),
+})
+
+result.written            // rows written
+result.skippedLayers      // derived layers of another code version
+result.skippedResources   // [{ key, why }]
+result.originals          // each required original: 'present' | 'in-pack' | 'missing' | 'other-release'</code></pre>
+      <p class="small soft">Open the originals pack first: the notes' quotes in a language pack point into it. The version constants come from <code>@bt-synergy/usj-processor</code> and <code>@bt-synergy/resource-pipeline</code>.</p>
+    </div>
+  </section>
+
+  <div class="interlude wrap">
+    <figure class="a" data-reveal>
+      <div class="frame cut-l" data-drift><img src="../assets/rural-village-of-guatemala.jpg" alt="A road through a village in the Guatemalan highlands, power lines crossing a green mountain under cloud" width="1920" height="1440" loading="lazy"></div>
+      <figcaption>A rural village in the highlands of Guatemala. Photo: Annkat22, CC BY-SA 4.0, via Wikimedia Commons.</figcaption>
+    </figure>
+    <figure class="b" data-reveal style="--d:80ms">
+      <div class="frame cut-l"><img src="../assets/kingston-technology-datatraveler-g4-usb-flash-drive.jpg" alt="USB flash drives" width="1920" height="1280" loading="lazy"></div>
+      <figcaption>USB flash drives. Photo: Dmitry Makeev, CC BY-SA 4.0, via Wikimedia Commons.</figcaption>
+    </figure>
+    <p data-reveal style="--d:120ms">Build for the place the file arrives: power lines but no data, a phone with 2 GB of memory, and a stick passed from hand to hand. Read the zip as a stream and write in batches; the Hebrew source alone is 82 MB unzipped.</p>
+  </div>
+
+  <section class="recipe wrap" id="prepare" aria-labelledby="prepare-title">
+    <div class="say">
+      <h2 id="prepare-title" data-reveal>Make packs</h2>
+      <p data-reveal style="--d:60ms">From the command line, in a clone of <a href="https://github.com/unfoldingWord/tc-study">unfoldingWord/tc-study</a> with <code>bun install</code> done. It runs tC Study's own pipeline in memory, so the rows are byte for byte the ones the app writes. It reads only the public Door43 catalog: what is marked <code>tc-ready</code> for the language, from any owner.</p>
+    </div>
+    <div class="code" data-reveal style="--d:100ms">
+<pre><code>bun packages/resource-pipeline/cli/prepare-language.ts --lang es-419 --out ./packs --books all
+
+  --books all|tit,rut     also write a base pack and one pack per book
+  --no-originals          leave out originals.langpack.zip
+  --macula &lt;folder&gt;       add MACULA's sentences and referents (Taller's trees/ and referents/)
+  --no-lexicons           leave out the language's Hebrew and Greek lexicons
+  --lexicons-ref &lt;ref&gt;    read the lexicons at this ref (default master)
+  --no-obs                leave out Open Bible Stories and their helps
+
+./packs/es-419.langpack.zip       the whole language, without the originals
+./packs/originals.langpack.zip    UGNT and UHB, the same for every language
+./packs/es-419-base.langpack.zip  with --books: catalog, TA, TW, OBS, lexicons
+./packs/es-419-tit.langpack.zip   with --books: one per book
+./packs/es-419.report.json        what was found, built, blocked and packed</code></pre>
+<pre><code>import { buildLanguagePack, packSourceFrom } from '@bt-synergy/language-pack'
+
+// From stores your app has already filled:
+const source = packSourceFrom(stores)
+const titus = await buildLanguagePack({ source, language: 'es-419', kind: 'book', books: ['tit'], versions })
+titus.bytes      // the zip
+titus.skipped    // resources left out, with the reason</code></pre>
+      <p class="small soft">A resource goes in only when its receipt says it arrived whole. The first es-419 run took seven and a half minutes; English does not fit in one process, which is why parts exist.</p>
+    </div>
+  </section>
+
+  <section class="recipe wrap" id="parts" aria-labelledby="parts-title">
+    <div class="say">
+      <h2 id="parts-title" data-reveal>Download parts</h2>
+      <p data-reveal style="--d:60ms">With internet, ask the server for a language's parts list, download the parts you lack into staging, and apply them. The package plans and applies; downloading is yours.</p>
+      <p data-reveal style="--d:100ms">Check that each part's sha256 is its name before you keep it. Run the same sequence at startup with nothing to download: it heals whatever an interrupted run left.</p>
+    </div>
+    <div class="code" data-reveal style="--d:100ms">
+<pre><code>GET https://tc-helps.mcp.servant.bible/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/es-419
+GET https://tc-helps.mcp.servant.bible/v2/packs/f2.0-u2.3.0-p6000230-q9-a12-t1/originals/&lt;sha256&gt;
+GET https://tc-helps.mcp.servant.bible/v2/packs/parts/&lt;sha256&gt;</code></pre>
+<pre><code>import { IndexedDBByteStore } from '@bt-synergy/cache-adapter-indexeddb'
+import { REGISTER_PREFIX, applyParts, packTargetFrom, planParts, readRegister, stagingFrom } from '@bt-synergy/language-pack'
+
+const target = packTargetFrom(stores)
+const staging = stagingFrom(new IndexedDBByteStore({ dbName: 'my-app-parts' }))
+const register = readRegister(await stores.cache.getByPrefix(REGISTER_PREFIX))
+const chosen = ['shared', 'book tit', 'book rut']
+
+const plan = planParts({ list, originals, register, chosen, versions })
+for (const part of plan.download) await staging.put(part.sha256, await download(part))
+const result = await applyParts({ target, staging, plan, list, originals, register, chosen, versions })</code></pre>
+      <div class="table-wrap">
+        <table class="answers stack">
+          <thead><tr><th>Answer</th><th>What to do</th></tr></thead>
+          <tbody>
+            <tr><td><code>200</code> + <code>ETag</code></td><td>The current list. Send the ETag as <code>If-None-Match</code> next time.</td></tr>
+            <tr><td><code>304</code></td><td>Nothing changed.</td></tr>
+            <tr><td><code>202 preparing</code></td><td>A build is on its way. Ask again after <code>Retry-After</code>.</td></tr>
+            <tr><td><code>404 old-compat</code></td><td>Your app is older than the packs: ask people to update.</td></tr>
+            <tr><td><code>404 no packs</code></td><td>The language has no aligned literal text marked tc-ready.</td></tr>
+            <tr><td><code>429</code>, <code>503</code></td><td>Wait as long as <code>Retry-After</code> says, then go on.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="small soft">Parts are immutable and can be resumed with <code>Range</code>. The full contract is in <code>docs/LANGUAGE_PACKS_INFRA.md</code> of translation-helps-mcp.</p>
+    </div>
+  </section>
+
+  <section class="recipe wrap" id="views" aria-labelledby="views-title">
+    <div class="say">
+      <h2 id="views-title" data-reveal>Serve answers from views</h2>
+      <p data-reveal style="--d:60ms">A server does not need IndexedDB. translation-helps-mcp reads views: plain JSON files per chapter, written from a pack, with each note's words already found in the literal and the simple text. For es-419 its median answer went from 13 ms to 2 ms.</p>
+      <p data-reveal style="--d:100ms">The same views read from a folder would let an assistant answer with no internet.</p>
+    </div>
+    <div class="code" data-reveal style="--d:100ms">
+<pre><code>bun packages/resource-pipeline/cli/mcp-views.ts …   # writes the files below from a pack
+
+v1/es-419/index.json
+v1/es-419/notes/TIT/1.json
+v1/es-419/word-links/TIT/1.json
+v1/es-419/questions/TIT/1.json</code></pre>
+<pre><code>// translation-helps-mcp, src/api/routes/packViews.ts
+export interface PackViews {
+  get(path: string): Promise&lt;unknown | null&gt;   // an R2 bucket in a Worker, a folder in a script
+}</code></pre>
+<pre><code>{
+  "id": "rtc9",
+  "reference": "1:1",
+  "quote": "κατὰ πίστιν",
+  "supportReference": "rc://*/ta/man/translate/figs-abstractnouns",
+  "supportReferenceTitle": "Sustantivos abstractos",
+  "aligned": {
+    "literal": "conforme a la fe",
+    "simple": "Dios me envió a enseñar … para que confíe más en él"
+  }
+}</code></pre>
+      <p class="small soft">One note of Titus 1:1 from <code>v1/es-419/notes/TIT/1.json</code>, with its text and a few fields left out. Views have their own schema (<code>schema: 1</code>), which does not change when the code that prepares packs does.</p>
+    </div>
+  </section>
+
+  <section class="keys wrap" id="keys" aria-labelledby="keys-title">
+    <h2 id="keys-title" data-reveal>Keys</h2>
+    <div class="table-wrap" data-reveal style="--d:80ms">
+      <table class="stack">
+        <thead><tr><th>Row</th><th>Key</th><th>Example</th></tr></thead>
+        <tbody>
+          <tr><td>Receipt</td><td><code>resource:{owner}/{lang}/{id}</code></td><td><code>resource:es-419_gl/es-419/glt</code></td></tr>
+          <tr><td>Book index</td><td><code>scripture-usj:{key}:{book}</code></td><td><code>scripture-usj:es-419_gl/es-419/glt:tit</code></td></tr>
+          <tr><td>Chapter</td><td><code>scripture-usj:{key}:{book}:{chapter}</code></td><td><code>scripture-usj:es-419_gl/es-419/glt:tit:1</code></td></tr>
+          <tr><td>Prepared chapter</td><td><code>prepared:{type}:{key}:{book}:{unit}:{light|full}</code></td><td><code>prepared:scripture:es-419_gl/es-419/glt:tit:1:full</code></td></tr>
+          <tr><td>Notes of a book</td><td><code>tn:{key}:{book}</code></td><td><code>tn:es-419_gl/es-419/tn:tit</code></td></tr>
+          <tr><td>Article</td><td><code>{key}/{path}</code></td><td><code>es-419_gl/es-419/tw/bible/kt/grace</code></td></tr>
+          <tr><td>Lexicon entry</td><td><code>{key}/content/{strong}.json</code></td><td><code>es-419_gl/es-419/ugl/content/5485.json</code></td></tr>
+          <tr><td>Quotes</td><td><code>helps-quote:{helps}@{hs}:{orig}@{os}+{usj}:{book}:{ch}</code></td><td><code>helps-quote:…/tn@gbb0c56a52f:…/ugnt@g987ab2025a+2.3.0-usj:tit:1</code></td></tr>
+          <tr><td>Aligned quotes</td><td><code>helps-align:…:{text}@{ts}:{book}:{ch}</code></td><td><code>helps-align:…:es-419_gl/es-419/glt@g9c65570ffd+6000230:tit:1</code></td></tr>
+          <tr><td>Article title</td><td><code>helps-text:ta-title:{key}@{stamp}:{article}</code></td><td><code>helps-text:ta-title:…/ta@v4#2024-07-17T20_15_35Z:translate/figs-abstractnouns</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="small soft" style="margin-top:16px; max-width:72ch">Stamps live inside derived keys, so a row made from another release or another book simply is not found, and is rebuilt from the source. Every key with its envelope is in <a href="https://github.com/unfoldingWord/tc-study/blob/master/apps/tc-study/docs/cache-data-structure.md">cache-data-structure.md</a>.</p>
+  </section>
+
+  <section class="closing wrap" aria-labelledby="closing-title">
+    <figure data-reveal>
+      <div class="frame cut-l" data-drift><img src="../assets/codex-sinaiticus.jpg" alt="Codex Sinaiticus open in its display case, four columns of Greek on each page" width="1920" height="1440" loading="lazy"></div>
+      <figcaption>Codex Sinaiticus in the British Library. Photo: PotatoCow25, CC0, via Wikimedia Commons.</figcaption>
+    </figure>
+    <div class="text">
+      <h2 id="closing-title" data-reveal>Read the source</h2>
+      <p data-reveal style="--d:60ms">The format, its tests and a real pack test live beside the code that writes them. Questions and changes go to the repository.</p>
+      <div data-reveal style="--d:120ms"><a class="button" href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Open the language-pack package</a></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer wrap" style="margin-top:var(--section)">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">l</span><span style="height:82%">a</span><span style="height:92%">n</span><span style="height:70%">g</span><span style="height:88%">p</span><span style="height:76%">a</span><span style="height:96%">c</span><span style="height:64%">k</span></div>
+  <div class="footer-links">
+    <div><a href="../">Overview</a><a href="../inside/">Inside a pack</a><a href="./">Build with it</a></div>
+    <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
+    <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
+    <div><a href="https://git.door43.org/">Door43</a></div>
+    <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Kingston Technology DataTraveler G4 USB flash drive» by Dmitry Makeev, CC BY-SA 4.0. «Codex Sinaiticus» by PotatoCow25, CC0. All via Wikimedia Commons. Rows and keys quoted from the es-419 pack of 29 October 2026.</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">Overview</a></div>
+</footer>
+<script src="../site.js"></script>
+</body>
+</html>

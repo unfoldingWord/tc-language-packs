@@ -1,0 +1,292 @@
+{
+ "source": "es-419.langpack.zip, built 2026-10-29 (formatVersion 1.1.0)",
+ "verse": "Titus 1:1",
+ "noteId": "rtc9",
+ "layers": {
+  "receipt": {
+   "key": "resource:es-419_gl/es-419/glt",
+   "value": {
+    "downloadComplete": true,
+    "downloadCompletedAt": "2026-10-29T01:48:22.281Z",
+    "releaseStamp": "v42#2026-08-11T12_22_03Z",
+    "ingestSchema": "usj:2.3.0-usj",
+    "ingredientCount": 6,
+    "downloadMethod": "zip",
+    "entryCount": 6,
+    "expectedEntryCount": 6
+   }
+  },
+  "sot": {
+   "key": "scripture-usj:es-419_gl/es-419/glt:tit:1",
+   "value": {
+    "alignmentMap": {
+     "TIT 1:1": [
+      {
+       "sources": [
+        {
+         "strong": "G39720",
+         "lemma": "Παῦλος",
+         "morph": "Gr,N,,,,,NMS,",
+         "content": "Παῦλος",
+         "occurrence": 1,
+         "occurrences": 1
+        }
+       ],
+       "targets": [
+        {
+         "word": "Pablo",
+         "occurrence": 1,
+         "occurrences": 1
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "strong": "G14010",
+         "lemma": "δοῦλος",
+         "morph": "Gr,N,,,,,NMS,",
+         "content": "δοῦλος",
+         "occurrence": 1,
+         "occurrences": 1
+        }
+       ],
+       "targets": [
+        {
+         "word": "siervo",
+         "occurrence": 1,
+         "occurrences": 1
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "strong": "G23160",
+         "lemma": "θεός",
+         "morph": "Gr,N,,,,,GMS,",
+         "content": "Θεοῦ",
+         "occurrence": 1,
+         "occurrences": 2
+        }
+       ],
+       "targets": [
+        {
+         "word": "de",
+         "occurrence": 1,
+         "occurrences": 6
+        },
+        {
+         "word": "Dios",
+         "occurrence": 1,
+         "occurrences": 2
+        }
+       ]
+      },
+      {
+       "sources": [
+        {
+         "strong": "G11610",
+         "lemma": "δέ",
+         "morph": "Gr,CC,,,,,,,,",
+         "content": "δὲ",
+         "occurrence": 1,
+         "occurrences": 1
+        }
+       ],
+       "targets": [
+        {
+         "word": "y",
+         "occurrence": 1,
+         "occurrences": 2
+        }
+       ]
+      }
+     ]
+    }
+   },
+   "note": "The chapter USJ travels in the same row; shown here: the first four alignments of verse 1."
+  },
+  "prepared": {
+   "key": "prepared:scripture:es-419_gl/es-419/glt:tit:1:full",
+   "value": {
+    "version": 6000230,
+    "unit": 1,
+    "matchKeys": [
+     "tit 1:1:pablo:1",
+     "tit 1:1:παῦλος:1",
+     "tit 1:1:siervo:1",
+     "tit 1:1:δοῦλος:1",
+     "tit 1:1:de:1",
+     "tit 1:1:θεοῦ:1",
+     "tit 1:1:dios:1",
+     "tit 1:1:y:1",
+     "tit 1:1:δὲ:1",
+     "tit 1:1:apóstol:1",
+     "tit 1:1:ἀπόστολος:1",
+     "tit 1:1:de:2"
+    ],
+    "tokens": [
+     {
+      "c": "Pablo",
+      "o": 1,
+      "k": 0,
+      "a": [
+       1
+      ]
+     },
+     {
+      "c": "siervo",
+      "o": 1,
+      "k": 2,
+      "a": [
+       3
+      ]
+     },
+     {
+      "c": "de",
+      "o": 1,
+      "k": 4,
+      "a": [
+       5
+      ]
+     },
+     {
+      "c": "Dios",
+      "o": 1,
+      "k": 6,
+      "a": [
+       5
+      ]
+     },
+     {
+      "c": "y",
+      "o": 1,
+      "k": 7,
+      "a": [
+       8
+      ]
+     },
+     {
+      "c": "apóstol",
+      "o": 1,
+      "k": 9,
+      "a": [
+       10
+      ]
+     },
+     {
+      "c": "de",
+      "o": 2,
+      "k": 11,
+      "a": [
+       12,
+       13
+      ]
+     },
+     {
+      "c": "Jesucristo",
+      "o": 1,
+      "k": 14,
+      "a": [
+       12,
+       13
+      ]
+     },
+     {
+      "c": "conforme",
+      "o": 1,
+      "k": 15,
+      "a": [
+       16
+      ]
+     },
+     {
+      "c": "a",
+      "o": 1,
+      "k": 17,
+      "a": [
+       18
+      ]
+     },
+     {
+      "c": "la",
+      "o": 1,
+      "k": 19,
+      "a": [
+       18
+      ]
+     },
+     {
+      "c": "fe",
+      "o": 1,
+      "k": 20,
+      "a": [
+       18
+      ]
+     }
+    ]
+   },
+   "note": "Each word of the literal text, with the indices (a) of the Greek words it translates."
+  },
+  "quote": {
+   "key": "helps-quote:es-419_gl/es-419/tn@gbb0c56a52f:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:tit:1",
+   "value": {
+    "rtc9": [
+     {
+      "id": 8,
+      "text": "κατὰ",
+      "type": "word",
+      "occurrence": 1,
+      "content": "κατὰ",
+      "chapter": 1,
+      "verse": 1
+     },
+     {
+      "id": 9,
+      "text": "πίστιν",
+      "type": "word",
+      "occurrence": 1,
+      "content": "πίστιν",
+      "chapter": 1,
+      "verse": 1
+     }
+    ]
+   },
+   "note": "The note's quote, found in the Greek of Titus 1:1."
+  },
+  "align": {
+   "key": "helps-align:es-419_gl/es-419/tn@gbb0c56a52f:unfoldingWord/el-x-koine/ugnt@g987ab2025a+2.3.0-usj:es-419_gl/es-419/glt@g9c65570ffd+6000230:tit:1",
+   "value": {
+    "rtc9": {
+     "p": [
+      8,
+      9,
+      10,
+      11
+     ],
+     "m": 1,
+     "t": [
+      "conforme",
+      "a",
+      "la",
+      "fe"
+     ]
+    }
+   },
+   "note": "The same quote, found in the Spanish literal text."
+  },
+  "text": {
+   "key": "helps-text:ta-title:es-419_gl/es-419/ta@v4#2024-07-17T20_15_35Z:translate/figs-abstractnouns",
+   "value": "Sustantivos abstractos",
+   "note": "The title of the Translation Academy article the note cites."
+  }
+ },
+ "note": {
+  "id": "rtc9",
+  "reference": "1:1",
+  "quote": "κατὰ πίστιν",
+  "supportReference": "rc://*/ta/man/translate/figs-abstractnouns",
+  "text": "**Fe** es un sustantivo abstracto. Aquí se refiere al creer o al confiar en Jesús. Si está más claro en su idioma, puede traducirlo usando uno de estos verbos, como en el TPS (Texto Puente Simple). Traducción alternativa: «para fortalecer la fe» o «para ayudar…"
+ }
+}
