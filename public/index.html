@@ -365,7 +365,7 @@
     <h2 id="readers-title" data-reveal>Who reads a pack</h2>
     <ul class="lineup" data-reveal style="--d:80ms">
       <li><a class="name" href="https://tc-helps.mcp.servant.bible/v2/" target="_blank" rel="noopener">translation-helps-mcp <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>The MCP server that gives AI assistants Bible texts and helps. Serves packs and parts to apps, and answers notes and word links from views made from a pack.</p><span class="state">In use</span></li>
-      <li><a class="name" href="https://tc-study.pages.dev/" target="_blank" rel="noopener">tC Study <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>Shares the code that makes and stores packs, and the same cache keys. Its reading page cannot open a pack yet.</p><span class="state">Planned</span></li>
+      <li><a class="name" href="https://tc-study.pages.dev/" target="_blank" rel="noopener">tC Study <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>The study app the packs come from. Opens whole packs from a file and reads a language with no internet, from the same stores it downloads into.</p><span class="state">Ready</span></li>
       <li><a class="name" href="https://servos.idiomaspuentes.org/" target="_blank" rel="noopener">Servos <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>Idiomas Puentes' app for translating a book of the Bible by phone or laptop, in writing and by voice. Opens whole packs from a file or its installer, and downloads parts with internet. Reads every layer.</p><span class="state">In use</span></li>
       <li><a class="name" href="agents/">Your app or agent</a><p>A reader, an audio Bible, a checking tool or an offline assistant. Take the layers you need; <a href="agents/">agent skills</a> teach Claude Code, Codex, Cursor or Gemini CLI to read packs.</p><span class="state">Open</span></li>
     </ul>
@@ -388,7 +388,7 @@ cd packages/language-pack &amp;&amp; bun test</code></pre>
       <li><span class="state">Open</span><strong>Packs that outlive the code</strong><p>Today a change in the code that prepares a layer makes older packs unreadable for it. A stable level of source and views would let teams keep sharing packs across app versions.</p></li>
       <li><span class="state">Open</span><strong>A public schema</strong><p>JSON Schema for the manifest, the parts list and each row, so apps in any language can check a pack.</p></li>
       <li><span class="state">Open</span><strong>Signed packs</strong><p>A pack passed by hand cannot yet prove who made it. A signature that checks with no internet.</p></li>
-      <li><span class="state">Open</span><strong>tC Study opens packs</strong><p>tC Study shares the code but its reading page still needs the network to open a language.</p></li>
+      <li><span class="state">Open</span><strong>tC Study downloads parts</strong><p>tC Study opens whole packs from a file. Downloading only the parts a team needs, as Servos does, comes next.</p></li>
       <li><span class="state">Open</span><strong>Answers with no internet</strong><p>translation-helps-mcp reading packs from a folder, so an assistant can answer offline.</p></li>
       <li><span class="state">Open</span><strong>More languages</strong><p>Any language with an aligned literal text marked tc-ready on Door43 can be packed. Try yours and report what breaks.</p></li>
     </ul>

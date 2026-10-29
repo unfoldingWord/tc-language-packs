@@ -37,7 +37,8 @@ whether rows can be used, the parts and the word index, and its reader inspects 
   layer. A stable level of source and views would let teams keep sharing packs across app versions.
 - **A public schema.** JSON Schema for the manifest, the parts list and each row.
 - **Signed packs.** A signature that checks with no internet, for packs passed hand to hand.
-- **tC Study opens packs.** Its reading page still needs the network to open a language.
+- **tC Study downloads parts.** It opens whole packs from a file; downloading only the parts a team needs, as Servos
+  does, comes next.
 - **Answers with no internet.** translation-helps-mcp reading packs or views from a folder.
 - **More languages.** Any language with an aligned literal text marked `tc-ready` on Door43 can be packed; try yours
   and report what breaks.
