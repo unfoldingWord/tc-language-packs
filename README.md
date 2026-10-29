@@ -17,10 +17,13 @@ prepared, and opens offline. The landing page explains them at a high level; `in
 npx serve public
 ```
 
-## Publish (Cloudflare Pages)
+## Publish
+
+The site runs on Cloudflare's account of unfoldingWord as `language-packs`: Pages in its current form, a Worker that
+serves `public/` as static assets (`wrangler.jsonc`). It is live at https://language-packs.unfoldingword.workers.dev.
 
 ```bash
-npx wrangler pages deploy public --project-name language-packs
+npx wrangler deploy
 ```
 
 The facts on the pages come from `unfoldingWord/tc-study` (`packages/language-pack`, `packages/resource-pipeline`),

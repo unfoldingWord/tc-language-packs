@@ -370,7 +370,7 @@
     }
     boxes.forEach(function (b) { b.addEventListener('input', total) })
     total()
-  })()
+  })();
 
   // Titus 1:1, layer by layer: the real rows of one note, κατὰ πίστιν (rtc9).
   (function () {
@@ -396,7 +396,7 @@
     }
     buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.layer) }) })
     show('receipt')
-  })()
+  })();
 
   // The prepare dialog writes the real command.
   (function () {
@@ -418,7 +418,7 @@
     lang.addEventListener('input', write)
     form.addEventListener('submit', function (e) { e.preventDefault() })
     write()
-  })()
+  })();
 </script>
 </body>
 </html>
