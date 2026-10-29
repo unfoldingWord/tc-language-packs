@@ -1,0 +1,10 @@
+{
+  "name": "language-packs",
+  "description": "Read and use Bible translation language packs offline: texts, alignments, notes, words, articles, lexicons, and every place a word or article occurs across books.",
+  "version": "1.0.0",
+  "author": { "name": "unfoldingWord", "url": "https://github.com/unfoldingWord" },
+  "homepage": "https://language-packs.unfoldingword.workers.dev",
+  "repository": "https://github.com/unfoldingWord/language-packs-site",
+  "license": "CC-BY-SA-4.0",
+  "keywords": ["bible", "translation", "language-pack", "offline", "door43", "unfoldingword"]
+}

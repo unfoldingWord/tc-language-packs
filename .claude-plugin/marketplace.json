@@ -1,0 +1,12 @@
+{
+  "name": "language-packs",
+  "owner": { "name": "unfoldingWord", "url": "https://github.com/unfoldingWord" },
+  "description": "Tools for agents that work with Bible translation language packs.",
+  "plugins": [
+    {
+      "name": "language-packs",
+      "source": "./plugins/language-packs",
+      "description": "Read and use Bible translation language packs offline: texts, alignments, notes, words, articles, lexicons, and every place a word or article occurs across books."
+    }
+  ]
+}

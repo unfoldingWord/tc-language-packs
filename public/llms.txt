@@ -1,0 +1,22 @@
+# Language Packs
+
+> One file that carries a Bible translation language, already prepared, and opens offline: gateway texts aligned to the Greek and Hebrew, translation notes, questions, words, word links, Translation Academy, lexicons and MACULA. Made by unfoldingWord's tC Study pipeline and read by Servos, tC Study and translation-helps-mcp.
+
+## Pages
+
+- [Overview](https://language-packs.unfoldingword.workers.dev/): what a pack is, why it exists, who reads it
+- [Inside a pack](https://language-packs.unfoldingword.workers.dev/inside/): files, manifest, layers, kinds, versions, parts
+- [Build with it](https://language-packs.unfoldingword.workers.dev/build/): read, open, make and download packs; server routes; keys
+
+## Agent skill
+
+- [SKILL.md](https://language-packs.unfoldingword.workers.dev/skills/language-packs/SKILL.md): how an agent reads and uses packs
+- [langpack.py](https://language-packs.unfoldingword.workers.dev/skills/language-packs/scripts/langpack.py): a reader with the Python standard library only
+- [The format](https://language-packs.unfoldingword.workers.dev/skills/language-packs/references/format.md) and [the code](https://language-packs.unfoldingword.workers.dev/skills/language-packs/references/code.md)
+- [The whole skill as a zip](https://language-packs.unfoldingword.workers.dev/skills/language-packs.zip)
+- Claude Code: `/plugin install language-packs --marketplace unfoldingWord/language-packs-site`
+
+## Source
+
+- [tc-study packages/language-pack](https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack)
+- [translation-helps-mcp](https://github.com/unfoldingWord/translation-helps-mcp)

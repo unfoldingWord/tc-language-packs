@@ -87,6 +87,7 @@
         <li><a href="#prepare">Make packs</a></li>
         <li><a href="#parts">Download parts</a></li>
         <li><a href="#views">Serve answers from views</a></li>
+        <li><a href="#agents">Give it to your agent</a></li>
         <li><a href="#keys">Keys</a></li>
       </ul>
     </nav>
@@ -266,6 +267,35 @@ export interface PackViews {
     </div>
   </section>
 
+  <section class="recipe wrap" id="agents" aria-labelledby="agents-title">
+    <div class="say">
+      <h2 id="agents-title" data-reveal>Give it to your agent</h2>
+      <p data-reveal style="--d:60ms">An agent skill teaches Claude Code, Codex, Cursor or Gemini CLI what a pack is and how to read one with no internet. It brings a reader that needs only Python: verses, alignments, notes, questions, word links, articles, lexicon entries, and every place a word or an article occurs across books.</p>
+      <p data-reveal style="--d:100ms">Packs are modular, so its answers say which books are not on the device and which pack would bring them.</p>
+      <div data-reveal style="--d:140ms"><a class="button" href="../skills/language-packs.zip">Download the skill</a></div>
+    </div>
+    <div class="code" data-reveal style="--d:100ms">
+<pre><code># Claude Code
+/plugin install language-packs --marketplace unfoldingWord/language-packs-site
+
+# Codex, Cursor, Gemini CLI: unzip into your project
+.agents/skills/language-packs/SKILL.md</code></pre>
+<pre><code>python scripts/langpack.py occurrences originals.langpack.zip es-419.langpack.zip --strong G5485 --text glt
+
+G5485 χάρις: 148 verses in 23 books (unfoldingWord/el-x-koine/ugnt)
+  LUK: 1:30, 2:40, 2:52, 4:22, 6:32, 6:33 … and 2 more
+  JHN: 1:14, 1:16, 1:17
+  …
+  TIT: 1:4 «Gracia», 2:11 «gracia», 3:7 «gracia», 3:15 «gracia»
+  es-419_gl/es-419/glt does not have these books yet: LUK, JHN, ACT, ROM, …</code></pre>
+<pre><code>python scripts/langpack.py notes es-419.langpack.zip --ref "TIT 1:1" --text gst
+
+1:1 κατὰ πίστιν  →  Dios me envió a enseñar … para que confíe más en él  [figs-abstractnouns]
+  **Fe** es un sustantivo abstracto. Aquí se refiere al creer o al confiar en Jesús. …</code></pre>
+      <p class="small soft">Every place a word occurs comes from the packs' word index, the optional <code>index</code> layer of language packs v3; the reader finds the same places in the original's own words when a pack has no index. The skill's files are also at <a href="../skills/language-packs/SKILL.md">SKILL.md</a>, and the site's map for agents at <a href="../llms.txt">llms.txt</a>.</p>
+    </div>
+  </section>
+
   <section class="keys wrap" id="keys" aria-labelledby="keys-title">
     <h2 id="keys-title" data-reveal>Keys</h2>
     <div class="table-wrap" data-reveal style="--d:80ms">
@@ -307,7 +337,7 @@ export interface PackViews {
     <div><a href="../">Overview</a><a href="../inside/">Inside a pack</a><a href="./">Build with it</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
     <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
-    <div><a href="https://git.door43.org/">Door43</a></div>
+    <div><a href="https://git.door43.org/">Door43</a><a href="../skills/language-packs.zip">Agent skill</a></div>
     <p class="credits">Photographs: «Rural Village of Guatemala» by Annkat22, CC BY-SA 4.0. «Kingston Technology DataTraveler G4 USB flash drive» by Dmitry Makeev, CC BY-SA 4.0. «Codex Sinaiticus» by PotatoCow25, CC0. All via Wikimedia Commons. Rows and keys quoted from the es-419 pack of 29 October 2026.</p>
   </div>
   <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">Overview</a></div>
