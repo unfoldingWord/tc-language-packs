@@ -40,7 +40,14 @@
   .inspector tbody tr:hover .rows, .inspector tbody tr.is-picked .rows { color: inherit; }
 
   /* Stats: the team picks its books; the size is worked out from the real packs. */
-  .carry { margin-top: var(--section); background: var(--surface); min-height: 88svh; display: grid; grid-template-rows: auto auto 1fr auto; padding-block: clamp(56px, 8vw, 120px); gap: 28px; }
+  .carry { margin-top: var(--section); background: var(--surface); min-height: 88svh; display: grid; grid-template-rows: auto auto auto 1fr; padding-block: clamp(56px, 8vw, 120px); gap: 28px; }
+  .unpack { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); max-width: 1100px; }
+  .u-col { background: var(--bg); padding: 24px 26px 26px; display: grid; gap: 14px; align-content: start; }
+  .u-col:first-child { clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); }
+  .u-col h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; display: flex; justify-content: space-between; gap: 16px; }
+  .u-col h3 .tab { color: var(--muted); font-weight: 400; }
+  .u-col li strong { font-weight: 500; }
+  .u-col .compare { font-size: 15px; color: var(--muted); }
   .carry h2 { font-size: var(--step-head); }
   .books { display: flex; flex-wrap: wrap; gap: 10px; max-width: 760px; }
   .books label { position: relative; }
@@ -64,10 +71,10 @@
   .bar .s1 { flex-grow: 76; background: var(--ink); color: var(--bg); clip-path: polygon(var(--cut-l) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-l)); }
   .bar .s2 { flex-grow: 12; background: var(--muted); color: var(--bg); }
   .bar .s3 { flex-grow: 12; background: var(--surface); color: var(--ink); }
-  .bar strong { font-weight: 500; font-size: clamp(20px, 2vw, 30px); letter-spacing: -0.03em; line-height: 1.05; display: block; }
+  .bar strong { font-weight: 500; font-size: clamp(18px, 1.6vw, 26px); letter-spacing: -0.02em; line-height: 1.1; display: block; }
   .bar-notes { display: flex; gap: 6px; margin-top: 20px; }
   .bar-notes p { flex-basis: 0; min-width: 0; font-size: var(--step-body); padding-right: 20px; }
-  .bar-notes .n1 { flex-grow: 76; max-width: none; } .bar-notes .n1 span { display: block; max-width: 34ch; }
+  .bar-notes .n1 { flex-grow: 76; max-width: none; } .bar-notes .n1 span { display: block; max-width: 52ch; }
   .bar-notes .n2, .bar-notes .n3 { flex-grow: 12; }
 
   /* It travels in the hand: the card itself, then the ways. */
@@ -152,6 +159,7 @@
     .inspector { width: 560px; max-width: none; }
     .carry { min-height: 84svh; }
     .carry h2 { font-size: 26px; }
+    .unpack { grid-template-columns: 1fr; }
     .figure { font-size: 30vw; }
     .stages h2 { font-size: 11vw; }
     .bar { flex-direction: column; height: 70svh; }
@@ -238,35 +246,49 @@
   <section class="carry wrap" aria-labelledby="carry-title">
     <h2 id="carry-title" data-reveal>What does a team carry?</h2>
     <fieldset class="books" data-ui data-reveal style="--d:80ms; border:0; margin:0; padding:0">
-      <legend class="small soft" style="margin-bottom:10px">The books your team translates, with English helps</legend>
-      <label><input type="checkbox" value="403312" checked><span>Titus <small class="tab">403 KB</small></span></label>
-      <label><input type="checkbox" value="480424" checked><span>Jonah <small class="tab">480 KB</small></span></label>
-      <label><input type="checkbox" value="804576"><span>Ruth <small class="tab">805 KB</small></span></label>
-      <label><input type="checkbox" value="183153"><span>Philemon <small class="tab">183 KB</small></span></label>
-      <label><input type="checkbox" value="126093"><span>3 John <small class="tab">126 KB</small></span></label>
-      <label><input type="checkbox" value="4002656"><span>Romans <small class="tab">4.0 MB</small></span></label>
-      <label><input type="checkbox" value="5685016"><span>Mark <small class="tab">5.7 MB</small></span></label>
+      <legend class="small soft" style="margin-bottom:10px">Pick the books your team translates, with English helps. Tap one to see what it brings.</legend>
+      <label><input type="checkbox" value="403312" data-book="tit" checked><span>Titus <small class="tab">403 KB</small></span></label>
+      <label><input type="checkbox" value="480424" data-book="jon" checked><span>Jonah <small class="tab">480 KB</small></span></label>
+      <label><input type="checkbox" value="804576" data-book="rut"><span>Ruth <small class="tab">805 KB</small></span></label>
+      <label><input type="checkbox" value="183153" data-book="phm"><span>Philemon <small class="tab">183 KB</small></span></label>
+      <label><input type="checkbox" value="126093" data-book="3jn"><span>3 John <small class="tab">126 KB</small></span></label>
+      <label><input type="checkbox" value="4002656" data-book="rom"><span>Romans <small class="tab">4.0 MB</small></span></label>
+      <label><input type="checkbox" value="5685016" data-book="mrk"><span>Mark <small class="tab">5.7 MB</small></span></label>
     </fieldset>
-    <div></div>
+    <div class="unpack" data-ui data-reveal style="--d:140ms">
+      <div class="u-col">
+        <h3>Once, for every book <span class="tab">3.7 MB</span></h3>
+        <ul class="cuts">
+          <li><span><strong class="tab">953</strong> Translation Words articles: what key terms like grace, covenant or redeem mean, and how to translate them <span class="soft tab">2.0 MB</span></span></li>
+          <li><span><strong class="tab">242</strong> Translation Academy articles: how to translate metaphors, passives, idioms and more <span class="soft tab">1.2 MB</span></span></li>
+          <li><span>Greek and Hebrew lexicons, <strong class="tab">14,082</strong> entries <span class="soft tab">564 KB</span></span></li>
+        </ul>
+      </div>
+      <div class="u-col" id="book-col" aria-live="polite">
+        <h3><span id="u-name">Titus</span> <span class="tab" id="u-size">403 KB</span></h3>
+        <ul class="cuts" id="u-list"></ul>
+      </div>
+    </div>
     <div class="carry-foot">
       <p class="figure" aria-live="polite"><span id="mb">4.6</span><span class="unit">MB</span></p>
-      <p class="working">What every book shares (Translation Words, Translation Academy, lexicons and titles: 3.7 MB) and each book with its Greek or Hebrew. These are the English parts of 29 October 2026.</p>
+      <p class="working">The shared part once, then each book you choose. A photo from a phone is usually 2 to 5 MB. These are the English parts of 29 October 2026.</p>
     </div>
   </section>
 
   <section class="stages wrap" aria-labelledby="stages-title">
     <h2 id="stages-title" data-reveal>Made once, opened anywhere</h2>
+    <p class="lead measure" data-reveal style="--d:60ms; margin-bottom:48px">The slow work happens once, on unfoldingWord's build server, each time a resource is published. Nobody waits for it on a phone, and nobody has to run it to use a pack.</p>
     <div class="bar" data-ui data-reveal style="--d:80ms">
-      <div class="s1"><strong>Forty-seven minutes</strong><span class="note-in">Once, on a server with internet: read every English resource from Door43 and find each note's words in the Greek, the Hebrew and each English text.</span></div>
-      <div class="s2"><strong>Fifteen seconds</strong><span class="note-in">On each phone or laptop, with no internet.</span></div>
-      <div class="s3"><strong>Two milliseconds</strong><span class="note-in">To read a verse's notes, every time after.</span></div>
+      <div class="s1"><strong>47 minutes, once, on our server</strong><span class="note-in">Every English resource, every verse of four Bibles, every note placed on its words.</span></div>
+      <div class="s2"><strong>15 seconds, once, on your device</strong><span class="note-in">Open the file with no internet.</span></div>
+      <div class="s3"><strong>2 ms, every read</strong><span class="note-in">A verse's notes, already prepared.</span></div>
     </div>
     <div class="bar-notes">
-      <p class="n1" data-reveal style="--d:140ms"><span>First, once, on a server with internet: download every English resource from Door43, read it, and find each note's words in the Greek, the Hebrew and each English text. All of English needs 15 GB of memory.</span></p>
-      <p class="n2" data-reveal style="--d:200ms">Then, on each phone or laptop, with no internet.</p>
-      <p class="n3" data-reveal style="--d:260ms">Then every read.</p>
+      <p class="n1" data-reveal style="--d:140ms"><span>The server downloads every English resource from Door43 and prepares it: four English Bibles of up to 31,000 verses each, every word linked to the Greek or Hebrew, and every translation note placed on the exact words it explains in the original and in each Bible. All of English takes 47 minutes and 15 GB of memory, more than most phones have. It runs again only when a resource changes.</span></p>
+      <p class="n2" data-reveal style="--d:200ms">Opening a pack copies its prepared rows into the app's storage, once. A whole language with the Greek and Hebrew took 15 seconds on a laptop.</p>
+      <p class="n3" data-reveal style="--d:260ms">After that, reading a verse's notes takes 2 milliseconds, with nothing left to compute.</p>
     </div>
-    <p class="small soft" style="margin-top:28px; max-width:56ch">Preparing: all of English as one build on GitHub's server, October 2026. Opening and reading: measured with Latin American Spanish, the first language packed. The widths follow the first two; reading is too short to draw.</p>
+    <p class="small soft" style="margin-top:28px; max-width:64ch">Preparing: all of English as one build on GitHub's server, October 2026. Opening: Latin American Spanish with its originals (27 MB), the first language packed. Reading: translation-helps-mcp answering from a pack. Widths follow the first two; reading is too short to draw.</p>
   </section>
 
   <section class="where wrap" aria-labelledby="where-title">
@@ -393,6 +415,45 @@
     }
     boxes.forEach(function (b) { b.addEventListener('input', total) })
     total()
+
+    // What the last book touched brings, said in plain words.
+    var BOOKS = {"tit": {"name": "Titus", "bytes": 403312, "chapters": 3, "verses": 46, "words": 659, "original": "Greek", "notes": 202, "questions": 36, "links": 182, "size": {"bibles": 249891, "notes": 95574, "links": 21606, "questions": 5552, "original": 30689}}, "jon": {"name": "Jonah", "bytes": 480424, "chapters": 4, "verses": 48, "words": 688, "original": "Hebrew", "notes": 191, "questions": 34, "links": 200, "size": {"bibles": 286546, "notes": 125726, "links": 25878, "questions": 5475, "original": 36799}}, "rut": {"name": "Ruth", "bytes": 804576, "chapters": 4, "verses": 85, "words": 1307, "original": "Hebrew", "notes": 288, "questions": 56, "links": 297, "size": {"bibles": 510135, "notes": 168631, "links": 38871, "questions": 8568, "original": 78371}}, "phm": {"name": "Philemon", "bytes": 183153, "chapters": 1, "verses": 25, "words": 338, "original": "Greek", "notes": 92, "questions": 18, "links": 74, "size": {"bibles": 109575, "notes": 46781, "links": 7549, "questions": 2356, "original": 16892}}, "3jn": {"name": "3 John", "bytes": 126093, "chapters": 1, "verses": 15, "words": 219, "original": "Greek", "notes": 56, "questions": 15, "links": 40, "size": {"bibles": 75693, "notes": 33604, "links": 4658, "questions": 2202, "original": 9936}}, "rom": {"name": "Romans", "bytes": 4002656, "chapters": 16, "verses": 433, "words": 7116, "original": "Greek", "notes": 2723, "questions": 239, "links": 1665, "size": {"bibles": 2206646, "notes": 1249207, "links": 208037, "questions": 36767, "original": 301999}}, "mrk": {"name": "Mark", "bytes": 5685016, "chapters": 16, "verses": 678, "words": 11320, "original": "Greek", "notes": 3099, "questions": 314, "links": 1614, "size": {"bibles": 3266837, "notes": 1657665, "links": 213520, "questions": 49248, "original": 497746}}}
+    function kb(b) { return b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.round(b / 1e3) + ' KB' }
+    function n(x) { return x.toLocaleString('en-US') }
+    function show(code) {
+      var b = BOOKS[code]
+      if (!b) return
+      document.getElementById('u-name').textContent = b.name
+      document.getElementById('u-size').textContent = kb(b.bytes)
+      var lang = b.original === 'Greek' ? 'Greek' : 'Hebrew'
+      var items = [
+        ['The whole book (' + b.chapters + (b.chapters === 1 ? ' chapter, ' : ' chapters, ') + n(b.verses) + ' verses) in four English Bibles: ULT, UST, BSB and T4T, each word linked to the ' + lang + ' it translates', b.size.bibles],
+        [n(b.notes) + ' translation notes, each pointing at the words it explains', b.size.notes],
+        [n(b.links) + ' key terms marked and linked to their articles', b.size.links],
+        [n(b.questions) + ' questions to check that the translation is understood', b.size.questions],
+        ['The ' + lang + ' text: ' + n(b.words) + ' words, each with its dictionary form and grammar, and every sentence analysed', b.size.original]
+      ]
+      var ul = document.getElementById('u-list')
+      ul.textContent = ''
+      items.forEach(function (it) {
+        var li = document.createElement('li'), sp = document.createElement('span'), sz = document.createElement('span')
+        sz.className = 'soft tab'
+        sz.textContent = ' ' + kb(it[1])
+        sp.textContent = it[0]
+        sp.appendChild(sz)
+        li.appendChild(sp)
+        ul.appendChild(li)
+      })
+      var photo = document.createElement('li')
+      photo.className = 'compare'
+      photo.textContent = b.bytes < 3e6 ? 'All of it is smaller than one photo from a phone.' : 'All of it is about the size of ' + Math.max(1, Math.round(b.bytes / 3e6)) + (Math.round(b.bytes / 3e6) > 1 ? ' phone photos.' : ' phone photo.')
+      ul.appendChild(photo)
+    }
+    boxes.forEach(function (b) {
+      b.addEventListener('input', function () { show(b.getAttribute('data-book')) })
+      b.parentNode.addEventListener('mouseenter', function () { show(b.getAttribute('data-book')) })
+    })
+    show('tit')
   })();
 
   // Titus 1:1, layer by layer: the real rows of one note on κατὰ πίστιν (rtc9), from the English parts.
