@@ -40,7 +40,7 @@
   .u-col h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; display: flex; justify-content: space-between; gap: 16px; }
   .u-col h3 .tab { color: var(--muted); font-weight: 400; }
   .u-col li strong { font-weight: 500; }
-  .u-col .compare { font-size: 15px; color: var(--muted); }
+  .u-col .compare { font-size: var(--step-body); color: var(--ink); font-weight: 500; }
   .carry h2 { font-size: var(--step-head); }
   .books { display: flex; flex-wrap: wrap; gap: 10px; max-width: 760px; }
   .books label { position: relative; }
@@ -201,14 +201,14 @@
     </div>
     <div class="stage cut-xl" data-shutter>
       <div class="inspector" data-ui aria-label="The parts list of a real language">
-        <header><strong>en · parts list</strong><span class="soft tab">595 parts · 165 MB · 29 Oct 2026</span></header>
+        <header><strong>en · parts list</strong><span class="soft tab">595 parts · 165 MB compressed · 29 Oct 2026</span></header>
         <dl class="meta">
           <dt>format</dt><dd>bt-synergy parts list, schema 2</dd>
           <dt>compat</dt><dd class="tab">f2.0-u2.3.0-p6000230-q9-a12-t1</dd>
           <dt>originals</dt><dd class="tab">UGNT v0.34 · UHB v3.0.0 · MACULA, 132 parts</dd>
         </dl>
         <table>
-          <thead><tr><th>Resource</th><th>Release</th><th>Size</th></tr></thead>
+          <thead><tr><th>Resource</th><th>Release</th><th>Download</th></tr></thead>
           <tbody>
             <tr class="is-picked"><td>unfoldingWord® Literal Text</td><td class="tab">v91</td><td class="rows tab">36.5 MB</td></tr>
             <tr><td>unfoldingWord® Simplified Text</td><td class="tab">v91</td><td class="rows tab">43.5 MB</td></tr>
@@ -246,6 +246,7 @@
           <li><span><strong class="tab">953</strong> Translation Words articles: what key terms like grace, covenant or redeem mean, and how to translate them <span class="soft tab">2.0 MB</span></span></li>
           <li><span><strong class="tab">242</strong> Translation Academy articles: how to translate metaphors, passives, idioms and more <span class="soft tab">1.2 MB</span></span></li>
           <li><span>Greek and Hebrew lexicons, <strong class="tab">14,082</strong> entries <span class="soft tab">564 KB</span></span></li>
+          <li class="compare">3.7 MB to download, compressed. On the device it opens into 27.6 MB of ready-to-read data.</li>
         </ul>
       </div>
       <div class="u-col" id="book-col" aria-live="polite">
@@ -255,7 +256,7 @@
     </div>
     <div class="carry-foot">
       <p class="figure" aria-live="polite"><span id="mb">4.6</span><span class="unit">MB</span></p>
-      <p class="working">The shared part once, then each book you choose. A photo from a phone is usually 2 to 5 MB. These are the English parts of 29 October 2026.</p>
+      <p class="working">To download, compressed: the shared part once, then each book you choose. On the device it opens into about nine times as much. A photo from a phone is usually 2 to 5 MB. English parts of 29 October 2026.</p>
     </div>
   </section>
 
@@ -263,14 +264,14 @@
     <h2 id="stages-title" data-reveal>Made once, opened anywhere</h2>
     <p class="lead measure" data-reveal style="--d:60ms; margin-bottom:48px">The slow work happens once, on unfoldingWord's build server, each time a resource is published. Nobody waits for it on a phone, and nobody has to run it to use a pack.</p>
     <div class="bar" data-ui data-reveal style="--d:80ms">
-      <div class="s1"><strong>47 minutes, once, on our server</strong><span class="note-in">Every English resource, every verse of four Bibles, every note placed on its words.</span></div>
-      <div class="s2"><strong>15 seconds, once, on your device</strong><span class="note-in">Open the file with no internet.</span></div>
-      <div class="s3"><strong>2 ms, every read</strong><span class="note-in">A verse's notes, already prepared.</span></div>
+      <div class="s1"><strong>47 minutes, once, for all of English, on our server</strong><span class="note-in">All 66 books and every English resource: four Bibles, every note placed on its words.</span></div>
+      <div class="s2"><strong>15 seconds to open a whole language</strong><span class="note-in">Once, on your device, with no internet. One book takes less.</span></div>
+      <div class="s3"><strong>2 ms for a verse's notes</strong><span class="note-in">Every time you read, already prepared.</span></div>
     </div>
     <div class="bar-notes">
-      <p class="n1" data-reveal style="--d:140ms"><span>The server downloads every English resource from Door43 and prepares it: four English Bibles of up to 31,000 verses each, every word linked to the Greek or Hebrew, and every translation note placed on the exact words it explains in the original and in each Bible. All of English takes 47 minutes and 15 GB of memory, more than most phones have. It runs again only when a resource changes.</span></p>
-      <p class="n2" data-reveal style="--d:200ms">Opening a pack copies its prepared rows into the app's storage, once. A whole language with the Greek and Hebrew took 15 seconds on a laptop.</p>
-      <p class="n3" data-reveal style="--d:260ms">After that, reading a verse's notes takes 2 milliseconds, with nothing left to compute.</p>
+      <p class="n1" data-reveal style="--d:140ms"><span>The server downloads every English resource from Door43 and prepares it: four English Bibles of up to 31,000 verses each, every word linked to the Greek or Hebrew, and every translation note placed on the exact words it explains in the original and in each Bible. That is for all of English at once: all 66 books, 47 minutes and 15 GB of memory, more than most phones have. It runs again only when a resource changes, and then only for the books that changed.</span></p>
+      <p class="n2" data-reveal style="--d:200ms">Opening copies the prepared rows into the app's storage, once. 15 seconds was a whole language with all the Greek and Hebrew (27 MB) on a laptop, not one book.</p>
+      <p class="n3" data-reveal style="--d:260ms">After that, each time someone opens a verse, its notes come back in 2 milliseconds.</p>
     </div>
     <p class="small soft" style="margin-top:28px; max-width:64ch">Preparing: all of English as one build on GitHub's server, October 2026. Opening: Latin American Spanish with its originals (27 MB), the first language packed. Reading: translation-helps-mcp answering from a pack. Widths follow the first two; reading is too short to draw.</p>
   </section>
@@ -401,7 +402,7 @@
     total()
 
     // What the last book touched brings, said in plain words.
-    var BOOKS = {"tit": {"name": "Titus", "bytes": 403312, "chapters": 3, "verses": 46, "words": 659, "original": "Greek", "notes": 202, "questions": 36, "links": 182, "size": {"bibles": 249891, "notes": 95574, "links": 21606, "questions": 5552, "original": 30689}}, "jon": {"name": "Jonah", "bytes": 480424, "chapters": 4, "verses": 48, "words": 688, "original": "Hebrew", "notes": 191, "questions": 34, "links": 200, "size": {"bibles": 286546, "notes": 125726, "links": 25878, "questions": 5475, "original": 36799}}, "rut": {"name": "Ruth", "bytes": 804576, "chapters": 4, "verses": 85, "words": 1307, "original": "Hebrew", "notes": 288, "questions": 56, "links": 297, "size": {"bibles": 510135, "notes": 168631, "links": 38871, "questions": 8568, "original": 78371}}, "phm": {"name": "Philemon", "bytes": 183153, "chapters": 1, "verses": 25, "words": 338, "original": "Greek", "notes": 92, "questions": 18, "links": 74, "size": {"bibles": 109575, "notes": 46781, "links": 7549, "questions": 2356, "original": 16892}}, "3jn": {"name": "3 John", "bytes": 126093, "chapters": 1, "verses": 15, "words": 219, "original": "Greek", "notes": 56, "questions": 15, "links": 40, "size": {"bibles": 75693, "notes": 33604, "links": 4658, "questions": 2202, "original": 9936}}, "rom": {"name": "Romans", "bytes": 4002656, "chapters": 16, "verses": 433, "words": 7116, "original": "Greek", "notes": 2723, "questions": 239, "links": 1665, "size": {"bibles": 2206646, "notes": 1249207, "links": 208037, "questions": 36767, "original": 301999}}, "mrk": {"name": "Mark", "bytes": 5685016, "chapters": 16, "verses": 678, "words": 11320, "original": "Greek", "notes": 3099, "questions": 314, "links": 1614, "size": {"bibles": 3266837, "notes": 1657665, "links": 213520, "questions": 49248, "original": 497746}}}
+    var BOOKS = {"tit": {"name": "Titus", "bytes": 403312, "chapters": 3, "verses": 46, "words": 659, "original": "Greek", "notes": 202, "questions": 36, "links": 182, "size": {"bibles": 249891, "notes": 95574, "links": 21606, "questions": 5552, "original": 30689}, "unpacked": 3799421}, "jon": {"name": "Jonah", "bytes": 480424, "chapters": 4, "verses": 48, "words": 688, "original": "Hebrew", "notes": 191, "questions": 34, "links": 200, "size": {"bibles": 286546, "notes": 125726, "links": 25878, "questions": 5475, "original": 36799}, "unpacked": 4462920}, "rut": {"name": "Ruth", "bytes": 804576, "chapters": 4, "verses": 85, "words": 1307, "original": "Hebrew", "notes": 288, "questions": 56, "links": 297, "size": {"bibles": 510135, "notes": 168631, "links": 38871, "questions": 8568, "original": 78371}, "unpacked": 7521579}, "phm": {"name": "Philemon", "bytes": 183153, "chapters": 1, "verses": 25, "words": 338, "original": "Greek", "notes": 92, "questions": 18, "links": 74, "size": {"bibles": 109575, "notes": 46781, "links": 7549, "questions": 2356, "original": 16892}, "unpacked": 1834459}, "3jn": {"name": "3 John", "bytes": 126093, "chapters": 1, "verses": 15, "words": 219, "original": "Greek", "notes": 56, "questions": 15, "links": 40, "size": {"bibles": 75693, "notes": 33604, "links": 4658, "questions": 2202, "original": 9936}, "unpacked": 1209515}, "rom": {"name": "Romans", "bytes": 4002656, "chapters": 16, "verses": 433, "words": 7116, "original": "Greek", "notes": 2723, "questions": 239, "links": 1665, "size": {"bibles": 2206646, "notes": 1249207, "links": 208037, "questions": 36767, "original": 301999}, "unpacked": 42423333}, "mrk": {"name": "Mark", "bytes": 5685016, "chapters": 16, "verses": 678, "words": 11320, "original": "Greek", "notes": 3099, "questions": 314, "links": 1614, "size": {"bibles": 3266837, "notes": 1657665, "links": 213520, "questions": 49248, "original": 497746}, "unpacked": 57685564}}
     function kb(b) { return b >= 1e6 ? (b / 1e6).toFixed(1) + ' MB' : Math.round(b / 1e3) + ' KB' }
     function n(x) { return x.toLocaleString('en-US') }
     function show(code) {
@@ -430,7 +431,8 @@
       })
       var photo = document.createElement('li')
       photo.className = 'compare'
-      photo.textContent = b.bytes < 3e6 ? 'All of it is smaller than one photo from a phone.' : 'All of it is about the size of ' + Math.max(1, Math.round(b.bytes / 3e6)) + (Math.round(b.bytes / 3e6) > 1 ? ' phone photos.' : ' phone photo.')
+      var like = b.bytes < 3e6 ? 'less than one photo from a phone' : 'about ' + Math.max(1, Math.round(b.bytes / 3e6)) + (Math.round(b.bytes / 3e6) > 1 ? ' phone photos' : ' phone photo')
+      photo.textContent = kb(b.bytes) + ' to download, compressed: ' + like + '. On the device it opens into ' + kb(b.unpacked) + ' of ready-to-read data.'
       ul.appendChild(photo)
     }
     boxes.forEach(function (b) {
