@@ -220,3 +220,6 @@ tbody td:first-child, thead th:first-child { padding-left: 14px; }
   .footer-links div { grid-column: span 6; }
   .blocks { height: 22svh; }
 }
+
+/* The secondary action: the same shape, a quieter fill */
+.button.alt { background: var(--surface); color: var(--ink); }

@@ -10,6 +10,8 @@
 
 ## Agent skills
 
+- [For agents](https://tc-language-packs.unfoldingword.workers.dev/agents/): every way to give the packs to an agent, in one page
+
 - Claude Code: `/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs` (both skills)
 - [Translator skill](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-translator/SKILL.md): help a Bible translator with a passage, with the whole context of each verse ([zip](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-translator.zip))
 - [Developer skill](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev/SKILL.md): build apps that make, open, download or serve packs ([zip](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev.zip)); [the format](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev/references/format.md) and [the code](https://tc-language-packs.unfoldingword.workers.dev/skills/tc-language-packs-dev/references/code.md)

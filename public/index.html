@@ -16,14 +16,7 @@
   .hero-text { grid-column: 1 / span 6; grid-row: 1; padding-top: clamp(40px, 8vh, 120px); display: grid; gap: 24px; align-content: start; position: relative; z-index: 2; }
   .hero h1 { font-size: var(--step-hero); max-width: 9.5ch; }
   .hero-text p { max-width: 36ch; font-size: var(--step-body); }
-  .quick { display: grid; gap: 12px; max-width: 430px; margin-top: 8px; }
-  .quick p { font-size: 16px; }
-  .quick-row { display: flex; flex-wrap: wrap; gap: 6px; }
-  .chip { --c: 7px; display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px 0 16px; background: var(--surface); color: var(--ink); font: 500 15px/1 var(--font); text-decoration: none; border: 0; cursor: pointer; clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%, 0 var(--c)); transition: background-color 160ms, color 160ms, transform 160ms var(--ease-out); }
-  .chip:hover { transform: translateY(-2px); }
-  .chip.is-on { background: var(--ink); color: var(--bg); }
-  .quick code { font-size: 13px; padding: 8px 10px; overflow-wrap: anywhere; display: block; }
-  .quick .small code { display: inline; padding: 0.08em 0.3em; font-size: 0.86em; }
+  .actions { display: flex; flex-wrap: wrap; gap: 10px; }
   .stage { grid-column: 5 / -1; grid-row: 1; align-self: start; margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); margin-top: clamp(380px, 44svh, 460px); background: var(--field); color: var(--field-ink); min-height: 560px; padding: 56px 0 0 56px; overflow: hidden; }
   .inspector { width: 660px; max-width: 100%; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.4; }
   .inspector header { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; padding: 16px 20px; background: var(--surface); }
@@ -122,7 +115,9 @@
   .lineup { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
   .lineup li { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 6fr) auto; gap: 8px var(--gap); align-items: baseline; padding: 22px 18px; }
   .lineup li:nth-child(odd) { background: var(--surface); }
-  .lineup .name { font-size: clamp(22px, 2.1vw, 30px); letter-spacing: -0.02em; line-height: 1.2; }
+  .lineup .name { font-size: clamp(22px, 2.1vw, 30px); letter-spacing: -0.02em; line-height: 1.2; text-decoration: none; }
+  .lineup .name:hover { text-decoration: underline; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .lineup p { max-width: 58ch; }
   .lineup .state { text-align: right; font-weight: 500; }
 
@@ -191,7 +186,7 @@
     <ul>
       <li><a href="inside/">Inside a pack</a></li>
       <li><a href="build/">Build with it</a></li>
-      <li><a href="#readers">Who reads it</a></li>
+      <li><a href="agents/">For agents</a></li>
       <li><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Source</a></li>
     </ul>
   </nav>
@@ -202,18 +197,7 @@
     <div class="hero-text">
       <h1 id="hero-title" data-reveal>A language in one file</h1>
       <p data-reveal style="--d:80ms">A tC Language Pack carries a Bible translation language already prepared: texts aligned to the Greek and Hebrew, notes, questions, words, articles and lexicons. It opens with no internet, ready to read in your app.</p>
-      <div data-reveal style="--d:160ms"><a class="button" href="inside/">See inside a pack</a></div>
-      <div class="quick" data-ui data-reveal style="--d:220ms" aria-labelledby="quick-title">
-        <p id="quick-title">Already know them? Give packs to your agent:</p>
-        <div class="quick-row">
-          <button type="button" class="chip" data-copy="/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs">Claude Code plugin</button>
-          <a class="chip" href="skills/tc-language-packs-translator.zip">Translator skill</a>
-          <a class="chip" href="skills/tc-language-packs-dev.zip">Developer skill</a>
-          <button type="button" class="chip" data-copy="https://tc-helps.mcp.servant.bible/v2/mcp">MCP server</button>
-        </div>
-        <code id="quick-line">/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs</code>
-        <p class="small soft" id="quick-say">Paste it in Claude Code. The skills also work in Codex, Cursor and Gemini CLI: unzip into <code>.agents/skills/</code>.</p>
-      </div>
+      <div class="actions" data-reveal style="--d:160ms"><a class="button" href="inside/">See inside a pack</a><a class="button alt" href="agents/">Use it with your agent</a></div>
     </div>
     <div class="stage cut-xl" data-shutter>
       <div class="inspector" data-ui aria-label="The parts list of a real language">
@@ -363,10 +347,10 @@
   <section class="readers wrap" id="readers" aria-labelledby="readers-title">
     <h2 id="readers-title" data-reveal>Who reads a pack</h2>
     <ul class="lineup" data-reveal style="--d:80ms">
-      <li><span class="name">Servos</span><p>Idiomas Puentes' app for translating a book of the Bible by phone or laptop, in writing and by voice. Opens whole packs from a file or its installer, and downloads parts with internet. Reads every layer.</p><span class="state">In use</span></li>
-      <li><span class="name">translation-helps-mcp</span><p>The MCP server that gives AI assistants Bible texts and helps. Serves packs and parts to apps, and answers notes and word links from views made from a pack.</p><span class="state">In use</span></li>
-      <li><span class="name">tC Study</span><p>Shares the code that makes and stores packs, and the same cache keys. Its reading page cannot open a pack yet.</p><span class="state">Planned</span></li>
-      <li><span class="name">Your app or agent</span><p>A reader, an audio Bible, a checking tool or an offline assistant. Take the layers you need; an <a href="build/#agents">agent skill</a> teaches Claude Code, Codex, Cursor or Gemini CLI to read packs.</p><span class="state">Open</span></li>
+      <li><a class="name" href="https://tc-helps.mcp.servant.bible/v2/" target="_blank" rel="noopener">translation-helps-mcp <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>The MCP server that gives AI assistants Bible texts and helps. Serves packs and parts to apps, and answers notes and word links from views made from a pack.</p><span class="state">In use</span></li>
+      <li><a class="name" href="https://tc-study.pages.dev/" target="_blank" rel="noopener">tC Study <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>Shares the code that makes and stores packs, and the same cache keys. Its reading page cannot open a pack yet.</p><span class="state">Planned</span></li>
+      <li><a class="name" href="https://servos.idiomaspuentes.org/" target="_blank" rel="noopener">Servos <span aria-hidden="true">↗</span><span class="sr">(opens in a new tab)</span></a><p>Idiomas Puentes' app for translating a book of the Bible by phone or laptop, in writing and by voice. Opens whole packs from a file or its installer, and downloads parts with internet. Reads every layer.</p><span class="state">In use</span></li>
+      <li><a class="name" href="agents/">Your app or agent</a><p>A reader, an audio Bible, a checking tool or an offline assistant. Take the layers you need; <a href="agents/">agent skills</a> teach Claude Code, Codex, Cursor or Gemini CLI to read packs.</p><span class="state">Open</span></li>
     </ul>
   </section>
 
@@ -391,7 +375,7 @@
 <footer class="footer wrap">
   <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
   <div class="footer-links">
-    <div><a href="inside/">Inside a pack</a><a href="build/">Build with it</a><a href="#readers">Who reads it</a></div>
+    <div><a href="inside/">Inside a pack</a><a href="build/">Build with it</a><a href="agents/">For agents</a><a href="#readers">Who reads it</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/resource-pipeline">resource-pipeline</a></div>
     <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
     <div><a href="https://git.door43.org/">Door43</a></div>
@@ -480,27 +464,6 @@
     }
     buttons.forEach(function (b) { b.addEventListener('click', function () { show(b.dataset.layer) }) })
     show('part')
-  })();
-
-  // Quick install: a chip shows its command and copies it; the zips download.
-  (function () {
-    var line = document.getElementById('quick-line')
-    var say = document.getElementById('quick-say')
-    var help = {
-      '/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs': 'Copied. Paste it in Claude Code: it installs both skills.',
-      'https://tc-helps.mcp.servant.bible/v2/mcp': 'Copied. Add it as a remote MCP server in your agent: notes and word links come from packs.'
-    }
-    document.querySelectorAll('.quick [data-copy]').forEach(function (b) {
-      b.addEventListener('click', function () {
-        var text = b.getAttribute('data-copy')
-        line.textContent = text
-        document.querySelectorAll('.quick .chip').forEach(function (o) { o.classList.toggle('is-on', o === b) })
-        var done = function () { say.textContent = help[text] }
-        try {
-          navigator.clipboard.writeText(text).then(done, function () { say.textContent = 'Select the line above and copy it.' })
-        } catch (e) { say.textContent = 'Select the line above and copy it.' }
-      })
-    })
   })();
 
   // The prepare dialog writes the real command.

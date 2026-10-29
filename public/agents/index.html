@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tC Language Packs for Agents</title>
+<meta name="description" content="Give tC Language Packs to your AI agent: the Claude Code plugin, the skills for Codex, Cursor and Gemini CLI, the MCP server, and llms.txt.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../site.css">
+<style>
+  /* One page, one job: pick your agent, copy one thing. The hero shows the skill at work; each option below is a row
+     with what it gives and the one thing to copy. */
+  .top { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); padding-block: clamp(32px, 6vw, 96px) 0; }
+  .top-text { grid-column: 1 / span 5; grid-row: 1; display: grid; gap: 24px; align-content: start; position: relative; z-index: 1; }
+  .top h1 { font-size: clamp(3rem, 1.6rem + 5.4vw, 7rem); max-width: 9ch; }
+  .top-text p { max-width: 38ch; }
+  .stage { grid-column: 6 / -1; grid-row: 1; margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); background: var(--field); color: var(--field-ink); padding: 48px 0 0 48px; overflow: hidden; min-height: 520px; }
+  .chat { width: 640px; max-width: 100%; background: var(--bg); color: var(--ink); font-size: 15px; line-height: 1.45; }
+  .chat header { padding: 14px 20px; background: var(--surface); display: flex; justify-content: space-between; gap: 12px; }
+  .chat header strong { font-weight: 500; }
+  .chat .turn { padding: 16px 20px; display: grid; gap: 8px; }
+  .chat .you { background: color-mix(in srgb, var(--ink) 8%, var(--bg)); }
+  .chat .who { font-size: 13px; color: var(--muted); }
+  .chat pre { font-size: 12.5px; padding: 12px 14px; white-space: pre-wrap; }
+  .chat em { font-style: normal; font-weight: 500; }
+
+  .which { padding-block: var(--section) 0; display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); }
+  .which h2 { grid-column: 1 / -1; font-size: var(--step-head); margin-bottom: 20px; }
+  .skill { grid-column: span 6; background: var(--surface); padding: 28px 28px 30px; display: grid; gap: 14px; align-content: start; }
+  .skill:first-of-type { clip-path: polygon(var(--cut-l) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-l)); }
+  .skill .frame { overflow: hidden; margin: -28px -28px 6px; }
+  .skill img { width: 100%; aspect-ratio: 16 / 7; object-fit: cover; object-position: 50% 40%; }
+  .skill h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+  .skill code { font-size: 14px; }
+  .skill .asks { display: grid; gap: 8px; }
+  .skill .asks p { font-size: 16px; color: var(--muted); }
+
+  .ways { padding-block: var(--section) 0; }
+  .ways h2 { font-size: var(--step-head); margin-bottom: 40px; }
+  .way { display: grid; grid-template-columns: minmax(0, 4fr) minmax(0, 7fr); gap: 12px var(--gap); padding: 26px 0; align-items: start; }
+  .way + .way { padding-top: 34px; }
+  .way h3 { font-size: clamp(22px, 2.1vw, 30px); letter-spacing: -0.02em; line-height: 1.15; }
+  .way .what { color: var(--muted); font-size: 16px; margin-top: 8px; max-width: 40ch; }
+  .copyline { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; align-items: stretch; }
+  .copyline pre { font-size: 14px; white-space: pre-wrap; overflow-wrap: anywhere; }
+  .copy { --c: 7px; border: 0; cursor: pointer; padding: 0 16px 0 18px; background: var(--ink); color: var(--bg); font: 500 15px/1 var(--font); clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, 0 100%, 0 var(--c)); transition: transform 160ms var(--ease-out); min-height: 44px; }
+  .copy:hover { transform: translateY(-2px); }
+  .way .then { font-size: 16px; margin-top: 12px; }
+  .way .then a { font-weight: 500; }
+
+  .offline { margin-top: var(--section); display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: end; }
+  .offline figure { grid-column: 1 / span 6; margin: 0; display: grid; gap: 10px; }
+  .offline .frame { overflow: hidden; }
+  .offline img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; }
+  .offline figcaption { font-size: 14px; color: var(--muted); }
+  .offline .text { grid-column: 8 / -1; display: grid; gap: 20px; padding-bottom: 28px; }
+  .offline h2 { font-size: var(--step-head); }
+
+  @media (max-width: 900px) {
+    .top-text { grid-column: 1 / -1; }
+    .stage { grid-column: 1 / -1; grid-row: 2; margin-top: 40px; margin-left: calc(-1 * max(var(--margin), env(safe-area-inset-left, 0px))); padding: 40px 0 0 16px; clip-path: polygon(72px 0, 100% 0, 100% 100%, 0 100%, 0 72px); }
+    .chat { width: 540px; max-width: none; }
+    .skill { grid-column: 1 / -1; }
+    .way { grid-template-columns: 1fr; }
+    .offline figure, .offline .text { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="../">tC Language Packs</a>
+    <ul>
+      <li><a href="../inside/">Inside a pack</a></li>
+      <li><a href="../build/">Build with it</a></li>
+      <li><a href="./" aria-current="page">For agents</a></li>
+      <li><a href="https://github.com/unfoldingWord/tc-language-packs">Source</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="top wrap" aria-labelledby="top-title">
+    <div class="top-text">
+      <h1 id="top-title" data-reveal>Use it with your agent</h1>
+      <p class="lead" data-reveal style="--d:80ms">Two skills teach an AI agent to read packs on your computer, with no internet: one helps a translator with a passage, the other helps a developer build with packs.</p>
+      <div data-reveal style="--d:140ms"><a class="button" href="#ways">Pick your agent</a></div>
+    </div>
+    <div class="stage cut-xl" data-shutter>
+      <div class="chat" data-ui aria-label="A translator asks an agent that has the translator skill">
+        <header><strong>Claude Code · tc-language-packs-translator</strong><span class="soft">offline</span></header>
+        <div class="turn you"><span class="who">Translator</span><p>How should I translate «the grace of God has appeared» in Titus 2:11? In my language grace can't appear.</p></div>
+        <div class="turn"><span class="who">Agent</span>
+<pre>langpack.py context packs/ --ref "TIT 2:11"</pre>
+          <p>Paul speaks of <em>the grace of God</em> as if it were a person who arrived (figs-personification). The note suggests «God is now offering his grace»; the UST says «God is offering to save everyone as a gift that no one deserves». χάρις appears in 148 verses of 23 books; in Titus also in 1:4, 3:7 and 3:15.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="which wrap" aria-labelledby="which-title">
+    <h2 id="which-title" data-reveal>Two skills, one for each job</h2>
+    <article class="skill" data-reveal style="--d:60ms">
+      <div class="frame"><img src="../assets/leningrad-codex-folio-008a.jpg" alt="A page of the Leningrad Codex: columns of Hebrew in brown ink" width="1920" height="2121" loading="lazy"></div>
+      <h3>For translators <code>tc-language-packs-translator</code></h3>
+      <p>Gives the agent the whole context of a verse in one call: the verse in every text on your computer, the Greek or Hebrew word by word with its lexicon, the notes and the words they explain, the questions, the key terms, and where each word appears in other books.</p>
+      <div class="asks"><p>«What does the washing of regeneration mean in Titus 3:5?»</p><p>«Where else does Paul use this word for grace, and how did the ULT translate it?»</p></div>
+    </article>
+    <article class="skill" data-reveal style="--d:120ms">
+      <div class="frame"><img src="../assets/kingston-technology-datatraveler-g4-usb-flash-drive.jpg" alt="USB flash drives" width="1920" height="1280" loading="lazy"></div>
+      <h3>For developers <code>tc-language-packs-dev</code></h3>
+      <p>Teaches a code agent the format: files, manifest, cache keys and their stamps, versions, parts and the parts server, the v3 word index, the TypeScript packages and the views translation-helps-mcp serves.</p>
+      <div class="asks"><p>«Write a Node script that prints a verse and its notes from these parts.»</p><p>«Open packs into IndexedDB in my app and refuse other code versions.»</p></div>
+    </article>
+  </section>
+
+  <section class="ways wrap" id="ways" aria-labelledby="ways-title">
+    <h2 id="ways-title" data-reveal>Pick your agent</h2>
+
+    <div class="way" data-reveal>
+      <div><h3>Claude Code</h3><p class="what">Installs both skills as one plugin. Paste the line in Claude Code.</p></div>
+      <div>
+        <div class="copyline" data-ui><pre>/plugin install tc-language-packs --marketplace unfoldingWord/tc-language-packs</pre><button type="button" class="copy">Copy</button></div>
+        <p class="then soft">Then ask about a verse, with your packs in the folder you work in.</p>
+      </div>
+    </div>
+
+    <div class="way" data-reveal>
+      <div><h3>Codex, Cursor, Gemini CLI</h3><p class="what">They read skills from a folder. Download one or both, and unzip them into your project's <code>.agents/skills/</code>.</p></div>
+      <div>
+        <div class="copyline" data-ui><pre>.agents/skills/tc-language-packs-translator/SKILL.md
+.agents/skills/tc-language-packs-dev/SKILL.md</pre><button type="button" class="copy">Copy</button></div>
+        <p class="then"><a href="../skills/tc-language-packs-translator.zip">Translator skill (.zip, 17 KB)</a> · <a href="../skills/tc-language-packs-dev.zip">Developer skill (.zip, 26 KB)</a></p>
+        <p class="then soft">Gemini CLI can also install from the repository:</p>
+        <div class="copyline" data-ui><pre>gemini skills install https://github.com/unfoldingWord/tc-language-packs.git --path plugins/tc-language-packs/skills/tc-language-packs-translator</pre><button type="button" class="copy">Copy</button></div>
+      </div>
+    </div>
+
+    <div class="way" data-reveal>
+      <div><h3>Any MCP client</h3><p class="what">translation-helps-mcp answers with Bible texts and helps over the internet; its notes and word links come from packs. Add it as a remote server (Streamable HTTP).</p></div>
+      <div>
+        <div class="copyline" data-ui><pre>https://tc-helps.mcp.servant.bible/v2/mcp</pre><button type="button" class="copy">Copy</button></div>
+        <p class="then soft">In Claude Code:</p>
+        <div class="copyline" data-ui><pre>claude mcp add --transport http translation-helps https://tc-helps.mcp.servant.bible/v2/mcp</pre><button type="button" class="copy">Copy</button></div>
+      </div>
+    </div>
+
+    <div class="way" data-reveal>
+      <div><h3>Any agent that reads the web</h3><p class="what">A short map of this site and the skills, written for agents.</p></div>
+      <div>
+        <div class="copyline" data-ui><pre>https://tc-language-packs.unfoldingword.workers.dev/llms.txt</pre><button type="button" class="copy">Copy</button></div>
+        <p class="then"><a href="../skills/tc-language-packs-translator/SKILL.md">Translator SKILL.md</a> · <a href="../skills/tc-language-packs-dev/SKILL.md">Developer SKILL.md</a> · <a href="https://github.com/unfoldingWord/tc-language-packs/tree/main/plugins/tc-language-packs">The plugin on GitHub</a></p>
+      </div>
+    </div>
+  </section>
+
+  <section class="offline wrap" aria-labelledby="offline-title">
+    <figure data-reveal>
+      <div class="frame cut-l" data-drift><img src="../assets/orillas-de-bronce-del-titicaca.jpg" alt="A woman in a bowler hat stands on golden grass above Lake Titicaca, with boats moored below and mountains behind" width="1920" height="966" loading="lazy"></div>
+      <figcaption>Guaqui, on the shore of Lake Titicaca, Bolivia. Photo: Yamil Maidana Tuco, CC BY-SA 4.0, via Wikimedia Commons.</figcaption>
+    </figure>
+    <div class="text">
+      <h2 id="offline-title" data-reveal>Your packs, your computer</h2>
+      <p data-reveal style="--d:60ms">The skills read packs from a folder with Python alone. Nothing goes to a server, and they work where there is no signal. Packs are modular, so every answer says which books are not on your computer.</p>
+      <div data-reveal style="--d:120ms"><a class="button" href="../build/#parts">Get packs</a></div>
+    </div>
+  </section>
+</main>
+
+<footer class="footer wrap" style="margin-top:var(--section)">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
+  <div class="footer-links">
+    <div><a href="../">Overview</a><a href="../inside/">Inside a pack</a><a href="../build/">Build with it</a><a href="./">For agents</a></div>
+    <div><a href="https://github.com/unfoldingWord/tc-language-packs">This site and the skills</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">language-pack package</a></div>
+    <div><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a><a href="https://github.com/idiomaspuentes/servos">Servos</a></div>
+    <div><a href="https://git.door43.org/">Door43</a></div>
+    <p class="credits">Photographs: «Orillas de bronce del Titicaca» by Yamil Maidana Tuco, CC BY-SA 4.0. «Leningrad Codex Folio 008a», public domain. «Kingston Technology DataTraveler G4 USB flash drive» by Dmitry Makeev, CC BY-SA 4.0. All via Wikimedia Commons. The conversation quotes the unfoldingWord Literal and Simplified Texts and Translation Notes, CC BY-SA 4.0.</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">Overview</a></div>
+</footer>
+<script src="../site.js"></script>
+<script>
+  // Copy buttons: the line beside them; a refused clipboard selects the line instead.
+  document.querySelectorAll('.copyline').forEach(function (row) {
+    var pre = row.querySelector('pre'), btn = row.querySelector('.copy')
+    btn.addEventListener('click', function () {
+      var text = pre.textContent
+      var done = function () { btn.textContent = 'Copied'; setTimeout(function () { btn.textContent = 'Copy' }, 1600) }
+      var select = function () { var r = document.createRange(); r.selectNodeContents(pre); var s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = 'Selected' }
+      try { navigator.clipboard.writeText(text).then(done, select) } catch (e) { select() }
+    })
+  })
+</script>
+</body>
+</html>
