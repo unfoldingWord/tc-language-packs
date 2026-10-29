@@ -33,7 +33,7 @@
   .inspector tbody tr:hover .rows, .inspector tbody tr.is-picked .rows { color: inherit; }
 
   /* Stats: the team picks its books; the size is worked out from the real packs. */
-  .carry { margin-top: var(--section); background: var(--surface); min-height: 88svh; display: grid; grid-template-rows: auto auto auto 1fr; padding-block: clamp(56px, 8vw, 120px); gap: 28px; }
+  .carry { margin-top: var(--section); background: var(--surface); min-height: 88svh; display: grid; grid-template-rows: auto; align-content: start; padding-block: clamp(56px, 8vw, 120px); gap: 28px; }
   .unpack { display: grid; grid-template-columns: 1fr 1fr; gap: var(--gap); max-width: 1100px; }
   .u-col { background: var(--bg); padding: 24px 26px 26px; display: grid; gap: 14px; align-content: start; }
   .u-col:first-child { clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); }
@@ -51,8 +51,8 @@
   .books input:checked + span small { color: inherit; opacity: 0.85; }
   .books input:focus-visible + span { outline: 3px solid var(--ink); outline-offset: 3px; }
   .books label:hover span { transform: translateY(-2px); }
-  .carry-foot { display: flex; justify-content: space-between; align-items: flex-end; gap: 32px; flex-wrap: wrap; }
-  .figure { font-size: clamp(140px, 19vw, 320px); font-weight: 500; letter-spacing: -0.06em; line-height: 0.8; font-variant-numeric: tabular-nums; }
+  .carry-foot { display: flex; justify-content: flex-start; align-items: flex-end; gap: clamp(24px, 4vw, 64px); flex-wrap: wrap; margin-bottom: 12px; }
+  .figure { font-size: clamp(96px, 12vw, 200px); font-weight: 500; letter-spacing: -0.06em; line-height: 0.8; font-variant-numeric: tabular-nums; }
   .figure .unit { font-size: 0.22em; letter-spacing: -0.02em; margin-left: 0.1em; }
   .working { max-width: 34ch; font-size: var(--step-body); }
 
@@ -169,7 +169,8 @@
     .carry { min-height: 84svh; }
     .carry h2 { font-size: 26px; }
     .unpack { grid-template-columns: 1fr; }
-    .figure { font-size: 30vw; }
+    .figure { font-size: 20vw; line-height: 0.95; }
+    .carry-foot { padding-top: 8px; }
     .stages h2 { font-size: 11vw; }
     .bar { flex-direction: column; height: 70svh; }
     .bar > div { min-height: 72px; }
@@ -244,6 +245,10 @@
 
   <section class="carry wrap" aria-labelledby="carry-title">
     <h2 id="carry-title" data-reveal>What does a team carry?</h2>
+    <div class="carry-foot">
+      <p class="figure" aria-live="polite"><span id="mb">4.6</span><span class="unit">MB</span></p>
+      <p class="working">To download, compressed: the shared part once, then each book you choose. On the device it opens into about nine times as much. A photo from a phone is usually 2 to 5 MB. English parts of 29 October 2026.</p>
+    </div>
     <fieldset class="books" data-ui data-reveal style="--d:80ms; border:0; margin:0; padding:0">
       <legend class="small soft" style="margin-bottom:10px">Pick the books your team translates, with English helps. Tap one to see what it brings.</legend>
       <label><input type="checkbox" value="403312" data-book="tit" checked><span>Titus <small class="tab">403 KB</small></span></label>
@@ -268,10 +273,6 @@
         <h3><span id="u-name">Titus</span> <span class="tab" id="u-size">403 KB</span></h3>
         <ul class="cuts" id="u-list"></ul>
       </div>
-    </div>
-    <div class="carry-foot">
-      <p class="figure" aria-live="polite"><span id="mb">4.6</span><span class="unit">MB</span></p>
-      <p class="working">To download, compressed: the shared part once, then each book you choose. On the device it opens into about nine times as much. A photo from a phone is usually 2 to 5 MB. English parts of 29 October 2026.</p>
     </div>
   </section>
 
