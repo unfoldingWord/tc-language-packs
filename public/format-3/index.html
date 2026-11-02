@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tC Language Packs for translators</title>
+<meta name="description" content="A tC Language Pack carries a whole language's Bible translation helps, with a map of the whole Bible, on any device and with no internet. What it holds and what it lets translators do.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../site.css">
+<style>
+  /* The page follows one word through the Bible: the hero's cobalt stage, cut like an SD card, holds the map of
+     χάρις across the New Testament; then the problem, the contents, the sizes, what it lets a translator do,
+     the modules, the apps and where it stands. */
+  .top { display: grid; grid-template-columns: repeat(12, 1fr); column-gap: var(--gap); padding-block: clamp(32px, 6vw, 96px) 0; }
+  .top-text { grid-column: 1 / span 8; display: grid; gap: 24px; align-content: start; }
+  .top h1 { font-size: clamp(2.75rem, 1.4rem + 5vw, 6rem); max-width: 14ch; }
+  .top .lead { max-width: 46ch; }
+  .eyebrow { font-size: var(--step-small); color: var(--muted); letter-spacing: 0.01em; }
+
+  .stage { grid-column: 3 / -1; margin-top: clamp(40px, 6vw, 88px); margin-right: calc(-1 * max(var(--margin), env(safe-area-inset-right, 0px))); background: var(--field); color: var(--field-ink); padding: clamp(24px, 4vw, 56px); padding-right: max(var(--margin), env(safe-area-inset-right, 0px), clamp(24px, 4vw, 56px)); display: grid; gap: 22px; }
+  .word { display: flex; flex-wrap: wrap; gap: 8px 22px; align-items: baseline; justify-content: space-between; }
+  .word .gr { font-size: clamp(2.6rem, 1.6rem + 3vw, 4.5rem); font-weight: 500; letter-spacing: -0.03em; line-height: 1; }
+  .word .gloss { font-size: var(--step-lead); opacity: 0.9; margin-left: 14px; }
+  .word code { background: none; color: inherit; border: 1px solid currentColor; padding: 0.15em 0.45em; font-size: 14px; margin-left: 12px; vertical-align: 0.35em; }
+  .tally { font-size: var(--step-lead); font-variant-numeric: tabular-nums; }
+  .chart-scroll { overflow-x: auto; }
+  .chart, .bk { display: grid; grid-template-columns: repeat(27, minmax(0, 1fr)); gap: 4px; min-width: 300px; }
+  .chart { height: 200px; align-items: end; padding-top: 20px; }
+  .col { position: relative; height: 100%; display: flex; flex-direction: column; justify-content: flex-end; min-width: 0; }
+  .bar { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--field-ink) 55%, transparent) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--field-ink) 55%, transparent); }
+  .bar.zero { height: 2px !important; box-shadow: none; background: color-mix(in srgb, var(--field-ink) 40%, transparent); }
+  .col.here .bar { background: var(--field-ink); box-shadow: none; clip-path: polygon(5px 0, 100% 0, 100% 100%, 0 100%, 0 5px); }
+  .col .n { position: absolute; left: 50%; transform: translateX(-50%); font-size: 12px; font-variant-numeric: tabular-nums; opacity: 0.9; white-space: nowrap; }
+  .bk span { font-family: var(--mono); font-size: 10px; text-transform: uppercase; writing-mode: vertical-rl; transform: rotate(180deg); justify-self: center; padding-top: 6px; opacity: 0.85; }
+  .bk span.here { opacity: 1; font-weight: 400; text-decoration: underline; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 24px; font-size: 15px; }
+  .legend i { display: inline-block; width: 16px; height: 12px; margin-right: 8px; vertical-align: -1px; }
+  .legend .k-here { background: var(--field-ink); }
+  .legend .k-away { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--field-ink) 55%, transparent) 0 2px, transparent 2px 6px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--field-ink) 55%, transparent); }
+  .stage .note { max-width: 62ch; }
+  .stage .src { font-size: 14px; opacity: 0.88; max-width: 70ch; }
+
+  section.part { padding-block: var(--section) 0; }
+  .part h2 { font-size: var(--step-head); max-width: 18ch; }
+  .head { display: grid; gap: 22px; margin-bottom: clamp(36px, 5vw, 64px); }
+  .head p { max-width: 62ch; }
+
+  .problems { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: clamp(28px, 5vw, 72px); }
+  .problem { display: grid; gap: 12px; align-content: start; }
+  .big { font-size: clamp(80px, 9vw, 160px); font-weight: 500; letter-spacing: -0.06em; line-height: 0.8; font-variant-numeric: tabular-nums; }
+  .big .unit { font-size: 0.22em; letter-spacing: -0.02em; margin-left: 0.15em; }
+  .problem h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+
+  .holds { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--gap); list-style: none; margin: 0; padding: 0; }
+  .holds li { background: var(--surface); padding: 22px 24px 24px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+  .holds li:first-child { clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); }
+  .holds code { justify-self: start; font-size: 13px; background: var(--bg); }
+  .holds strong { font-weight: 500; font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+
+  .sizes-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: var(--gap); align-items: start; }
+  .sizes-grid .head { grid-column: 1 / span 6; margin: 0; }
+  .sizes { grid-column: 8 / -1; display: grid; gap: 28px; min-width: 0; }
+  .size { display: grid; gap: 10px; }
+  .size-row { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; flex-wrap: wrap; }
+  .size-row strong { font-weight: 500; }
+  .size-row .tab { font-size: var(--step-lead); font-weight: 500; letter-spacing: -0.02em; }
+  .meter { height: 18px; background: var(--ink); min-width: 4px; clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px); }
+
+  .caps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: clamp(36px, 4vw, 56px) var(--gap); }
+  .cap { display: grid; gap: 10px; align-content: start; border-top: 3px solid var(--ink); padding-top: 18px; min-width: 0; }
+  .cap h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+  .cap .eg { font-size: 16px; background: var(--surface); padding: 10px 14px; clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); }
+  .cap .tag { font-size: var(--step-small); color: var(--muted); }
+
+  .tiers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: var(--gap); align-items: start; }
+  .tier { background: var(--surface); padding: 24px 26px 26px; display: grid; gap: 14px; align-content: start; min-width: 0; }
+  .tier.core { background: var(--field); color: var(--field-ink); clip-path: polygon(var(--cut-l) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-l)); }
+  .tier h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; padding-left: 4px; }
+  .tier ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+  .tier li { display: grid; gap: 4px; padding-top: 14px; border-top: 1px solid color-mix(in srgb, currentColor 30%, transparent); }
+  .tier li strong { font-weight: 500; }
+  .tier li .tab { font-weight: 500; }
+  .estimate { margin-top: 18px; font-size: var(--step-small); color: var(--muted); }
+
+  .apps { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: var(--gap); }
+  .app { background: var(--surface); padding: 22px 24px 24px; display: grid; gap: 8px; align-content: start; }
+  .app .role { font-size: var(--step-small); color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; }
+  .app h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+  .adopt { margin-top: clamp(40px, 5vw, 64px); display: grid; gap: 18px; max-width: 70ch; }
+  .adopt h3 { font-size: var(--step-lead); letter-spacing: -0.02em; }
+
+  .phases { list-style: none; margin: 0; padding: 0; }
+  .phase { display: grid; grid-template-columns: 10rem 1fr; gap: var(--gap); padding-block: 22px; border-top: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); }
+  .phase:last-child { border-bottom: 1px solid color-mix(in srgb, var(--ink) 30%, transparent); }
+  .state { justify-self: start; align-self: start; font-size: 14px; font-weight: 500; padding: 7px 12px 7px 14px; clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px); white-space: nowrap; }
+  .state.done { background: var(--ink); color: var(--bg); }
+  .state.now { background: var(--surface); color: var(--ink); box-shadow: inset 0 0 0 2px var(--ink); }
+  .state.next { background: transparent; color: var(--muted); box-shadow: inset 0 0 0 1px var(--muted); }
+  .phase h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 6px; }
+
+  .endnav { padding-block: var(--section); display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: center; }
+
+  @media (max-width: 900px) {
+    .top-text, .stage { grid-column: 1 / -1; }
+    .sizes-grid .head, .sizes { grid-column: 1 / -1; }
+  }
+  @media (max-width: 560px) {
+    .chart { height: 150px; }
+    .col .n { display: none; }
+    .col.here .n, .col.peak .n { display: block; }
+    .phase { grid-template-columns: 1fr; gap: 10px; }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .bar { transform-origin: bottom; animation: rise 800ms var(--ease-out) both; animation-delay: calc(240ms + var(--i) * 20ms); }
+    @keyframes rise { from { transform: scaleY(0.12); } to { transform: none; } }
+  }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="../">tC Language Packs</a>
+    <ul>
+      <li><a href="../inside/">Inside a pack</a></li>
+      <li><a href="../build/">Build with it</a></li>
+      <li><a href="../agents/">For agents</a></li>
+      <li><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Source</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="top wrap" aria-labelledby="top-title">
+    <div class="top-text">
+      <p class="eyebrow" data-reveal>For Bible translators, and the apps that serve them · In development, November 2026</p>
+      <h1 id="top-title" data-reveal style="--d:60ms">A whole language’s translation helps, on any device, with no internet.</h1>
+      <p class="lead" data-reveal style="--d:120ms">A language pack carries everything a translator needs for one language: a Bible for translators aligned word by word to the Hebrew and Greek, the notes, the questions, the key terms, the Academy articles, a lexicon and Bible stories. It is small enough to pass on a memory card, and it carries a map of the whole Bible.</p>
+    </div>
+
+    <figure class="stage cut-xl" data-shutter aria-labelledby="fig-cap" style="margin-bottom:0;margin-left:0">
+      <div>
+        <div class="word">
+          <div><span class="gr" lang="grc">χάρις</span><span class="gloss">grace</span><code>G5485</code></div>
+          <div class="tally">156 times · 23 books</div>
+        </div>
+      </div>
+      <div class="chart-scroll">
+        <div class="chart" id="chart" role="img" aria-label="Occurrences of the Greek word charis in each New Testament book. Romans has the most, 25. Titus has 4. Matthew, Mark, 1 John and 3 John have none."></div>
+        <div class="bk" id="books" aria-hidden="true"></div>
+      </div>
+      <div class="legend">
+        <span><i class="k-here"></i>On this device: Titus</span>
+        <span><i class="k-away"></i>Not on this device. The map knows it is there.</span>
+      </div>
+      <p class="note" id="fig-cap">A translator working on Titus touches <em>grace</em> in Titus 2:11. The pack shows the 4 places in Titus, and the map says there are 152 more in 22 other books, even though those books were never downloaded.</p>
+      <p class="src">Counted in the Greek New Testament (UGNT v0.34) for this page. In the Old Testament, its Hebrew counterpart <span lang="hbo">חֵן</span> appears 69 times in 16 books.</p>
+    </figure>
+  </section>
+
+  <section class="part wrap" aria-labelledby="problem-title">
+    <div class="head">
+      <h2 id="problem-title" data-reveal>Translation helps live online, in many places. Translators often don’t.</h2>
+      <p class="lead" data-reveal style="--d:60ms">Many Bible translation teams work where the internet is slow, expensive or missing, on low-cost phones and old laptops. The helps they rely on are published online as dozens of separate collections. Before an app can show them, they have to be downloaded, read, and connected: each note matched to the exact Greek or Hebrew words it talks about, and to the words that translate them in the Bible.</p>
+    </div>
+    <div class="problems">
+      <div class="problem" data-reveal>
+        <div class="big tab">7–9<span class="unit">min</span></div>
+        <h3>to prepare one language on a computer</h3>
+        <p>Preparing the Spanish helps takes a computer 7 to 9 minutes and more than 1 GB of memory. A cheap phone cannot do it. Without internet, nothing can. A pack does that work once, on a server, and every device opens the result in seconds.</p>
+      </div>
+      <div class="problem" data-reveal style="--d:80ms">
+        <div class="big tab">66<span class="unit">books</span></div>
+        <h3>that rarely talk to each other</h3>
+        <p>The helps for each book are published on their own. A note in Titus knows nothing about Romans, so following a word, a figure of speech or a person across the Bible means having every book on hand and searching them one by one. On a phone with room for only a few books, that is out of reach.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="holds-title">
+    <div class="head">
+      <h2 id="holds-title" data-reveal>One language, ready to read</h2>
+      <p data-reveal style="--d:60ms">Each piece arrives on its own, so a phone can carry one book or the whole Bible. The original Greek and Hebrew, and the map of the whole Bible, are shared by every language and travel once.</p>
+    </div>
+    <ul class="holds" data-reveal style="--d:100ms">
+      <li><code>book</code><strong>A book of the Bible</strong><span>In the Bibles for translators, aligned word by word to the original, with their notes, questions and key-term links, each already placed in the text.</span></li>
+      <li><code>original</code><strong>Hebrew and Greek</strong><span>Every word with its form, lemma, Strong number and morphology.</span></li>
+      <li><code>articles</code><strong>Key terms and Academy</strong><span>Word articles and Translation Academy, grouped, in sections that keep their names.</span></li>
+      <li><code>lexicon</code><strong>Lexicon entries</strong><span>Meanings of Hebrew and Greek words, in the language’s own lexicon.</span></li>
+      <li><code>stories</code><strong>Open Bible Stories</strong><span>With their notes, questions and word links.</span></li>
+      <li><code>map</code><strong>The map of the whole Bible</strong><span>Where every original word, key term and Academy article appears, book by book and verse by verse. Next: the people, places and events of the Bible, in a module of their own.</span></li>
+      <li><code>catalog</code><strong>The table of contents</strong><span>Which pieces exist, how big they are, what they need, and each resource’s license and credits.</span></li>
+    </ul>
+  </section>
+
+  <section class="part wrap sizes-grid" aria-labelledby="size-title">
+    <div class="head">
+      <h2 id="size-title" data-reveal>Small enough for any phone</h2>
+      <p data-reveal style="--d:60ms">Each book is stored as small, compressed columns, and a device takes only the books it needs. These sizes were measured on real data.</p>
+      <p data-reveal style="--d:100ms">The map adds little: the map of the whole Bible and the Spanish map weigh 0.73 MB together.</p>
+    </div>
+    <div class="sizes" data-reveal style="--d:120ms">
+      <div class="size">
+        <div class="size-row"><strong>Titus, Latin American Spanish</strong><span class="tab">35 KB</span></div>
+        <div class="meter" style="width:3%"></div>
+      </div>
+      <div class="size">
+        <div class="size-row"><strong>The map of the Bible, with the Spanish map</strong><span class="tab">0.73 MB</span></div>
+        <div class="meter" style="width:62.4%"></div>
+      </div>
+      <div class="size">
+        <div class="size-row"><strong>Psalms, English, all 150 chapters</strong><span class="tab">1.17 MB</span></div>
+        <div class="meter" style="width:100%"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="do-title">
+    <div class="head">
+      <h2 id="do-title" data-reveal>Everything a translator needs, wherever they are</h2>
+    </div>
+    <div class="caps">
+      <div class="cap" data-reveal>
+        <h3>Work with no connection</h3>
+        <p>Open a language on a phone or a computer and read the text, its alignment, notes, questions, articles and lexicon offline. Nothing is prepared on the device.</p>
+      </div>
+      <div class="cap" data-reveal style="--d:60ms">
+        <h3>Pass it hand to hand</h3>
+        <p>Move a language by SD card, USB or Bluetooth in one transfer file. An update carries only the pieces that changed.</p>
+      </div>
+      <div class="cap" data-reveal style="--d:120ms">
+        <h3>Follow a word through the Bible</h3>
+        <p>From any word of the original, see every book and verse where it appears, and, in the books on the device, how each Bible for translators rendered it.</p>
+        <div class="eg">Touch <em>grace</em> in Titus 2:11 → 156 places in 23 books.</div>
+      </div>
+      <div class="cap" data-reveal>
+        <h3>See where an Academy article applies</h3>
+        <p>Find every note that points to an article, book by book, and how many notes in this language use it.</p>
+        <div class="eg">Notes that point to <em>Metaphor</em>, across the whole Bible.</div>
+      </div>
+      <div class="cap" data-reveal style="--d:60ms">
+        <h3>Know what is missing</h3>
+        <p>The map tells “none” apart from “not on this device”, so an app can say what is out there without pretending it isn’t.</p>
+        <div class="eg">“And 22 more books, not on this device.”</div>
+      </div>
+      <div class="cap" data-reveal style="--d:120ms">
+        <h3>Trust what arrives</h3>
+        <p>Every piece is named by a fingerprint of its content and checks itself when opened. Building the same pack twice gives the same bytes.</p>
+      </div>
+      <div class="cap" data-reveal>
+        <h3>Keep references working</h3>
+        <p>Books, verses, words, notes and article sections keep their names from one release to the next, so a saved link or citation still resolves after an update.</p>
+      </div>
+      <div class="cap" data-reveal style="--d:60ms">
+        <h3>Carry the credits</h3>
+        <p>Each resource travels with its license and attribution, so any app can show who made it and how it may be used.</p>
+      </div>
+      <div class="cap" data-reveal style="--d:120ms">
+        <span class="tag">Coming with the maps</span>
+        <h3>Find people, places and events</h3>
+        <p>Every person, place and event of the Bible with all its verses and relations, and the passages each Bible story tells. Search people and places by the name your own Bible uses: the alignment gives each name in every language with an aligned text, and shows where one name was spelled two ways.</p>
+        <div class="eg">Abraham: his family, where he lived, every verse. “Abraham” in Genesis, “Abrahán” in Romans?</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="modules-title">
+    <div class="head">
+      <h2 id="modules-title" data-reveal>Take only what you need</h2>
+      <p data-reveal style="--d:60ms">A phone with little space should not carry what its translator will never open. The pack comes in layers: what everyone needs, what is light enough to come along by itself, and what an app offers with its size before downloading.</p>
+    </div>
+    <div class="tiers" data-reveal style="--d:100ms">
+      <div class="tier core">
+        <h3>Always</h3>
+        <ul>
+          <li><strong>Texts, helps and the original</strong><span>The Bibles for translators, notes, questions, articles, lexicon and the Hebrew and Greek.</span></li>
+          <li><strong>The map of words and articles</strong><span>Where every word of the original, key term and Academy article appears.</span></li>
+        </ul>
+      </div>
+      <div class="tier">
+        <h3>Comes along by itself</h3>
+        <ul>
+          <li><strong>Topics</strong><span>People, places, events, Bible stories and book outlines. A module of its own, so a weekly update of its sources never makes a device download the rest again.</span></li>
+        </ul>
+      </div>
+      <div class="tier">
+        <h3>On request</h3>
+        <ul>
+          <li><strong>Animals and plants</strong><span>About 450 photos from the United Bible Societies’ handbooks for translators, each tied to its Hebrew or Greek word and its verses.</span><span class="tab">≈10 MB · 600 px for computers ≈32 MB</span></li>
+          <li><strong>Bible story pictures</strong><span>The 598 illustrations of Open Bible Stories, frame by frame.</span><span class="tab">≈20 MB</span></li>
+          <li><strong>Bible maps in your language</strong><span>Coasts, rivers, relief and ancient roads drawn without names, so each place is labeled in the translator’s own language. Later.</span><span class="tab">≈5–15 MB, plus relief</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="estimate">Sizes of the add-ons are estimates from samples; nothing has been built yet.</p>
+  </section>
+
+  <section class="part wrap" aria-labelledby="apps-title">
+    <div class="head">
+      <h2 id="apps-title" data-reveal>One format, open to every app</h2>
+      <p data-reveal style="--d:60ms">The format is written as an open specification, so an app does not need anyone else’s code to read it.</p>
+    </div>
+    <div class="apps" data-reveal style="--d:100ms">
+      <div class="app"><span class="role">Translate</span><h3>Servos</h3><p>Offline-first app for translating a book of the Bible on phones and computers, with packs passed by card, USB or Bluetooth.</p></div>
+      <div class="app"><span class="role">Study</span><h3>tC Study</h3><p>Bible reading and study with the translation helps, learning to load a language from packs, one book at a time.</p></div>
+      <div class="app"><span class="role">Ask</span><h3>Translation Helps MCP</h3><p>Gives AI assistants the notes, terms and texts of a language, so one pack could serve both the translator and their assistant, even offline.</p></div>
+      <div class="app"><span class="role">Build</span><h3>Your app</h3><p>A reader, an audio Bible, a checking tool or a study app can take the pieces it needs and ignore the rest.</p></div>
+    </div>
+    <div class="adopt" data-reveal>
+      <h3>Why another team can adopt it</h3>
+      <ul class="cuts">
+        <li><span>Every piece has a published schema (CDDL) that a reader in any language can check against.</span></li>
+        <li><span>Two readers written apart, one in TypeScript and one in Python, must give the same output for every test case.</span></li>
+        <li><span>Written rules say what a minor version may add and what needs a new major version. Older readers skip what they do not know.</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="part wrap" aria-labelledby="stands-title">
+    <div class="head">
+      <h2 id="stands-title" data-reveal>Built in phases, measured first</h2>
+      <p data-reveal style="--d:60ms">The format is being built now, in phases, and nothing is published yet.</p>
+    </div>
+    <ol class="phases" data-reveal style="--d:100ms">
+      <li class="phase"><span class="state done">Done</span><div><h3>Phase 0 · Measure</h3><p>The design was tried on real packs before anything was written down. The sizes above come from it.</p></div></li>
+      <li class="phase"><span class="state done">Done</span><div><h3>Phase 1 · The container and the readers</h3><p>The specification, the builders, the TypeScript and Python readers, and the frozen test cases.</p></div></li>
+      <li class="phase"><span class="state now">In progress</span><div><h3>Phase 2 · The maps</h3><p>The map of the whole Bible and each language’s map: word counts, key terms, Academy usage and what each book holds. Then the topics: people, places, events and the passages of each Bible story, from sources already chosen.</p></div></li>
+      <li class="phase"><span class="state next">Planned</span><div><h3>Add-ons · Pictures, then maps</h3><p>Photos of animals and plants first, then the Bible story pictures, then maps drawn with names in each language.</p></div></li>
+      <li class="phase"><span class="state next">Next</span><div><h3>Phase 3 · Signatures</h3><p>So a pack passed from hand to hand can prove who made it, with no internet.</p></div></li>
+    </ol>
+  </section>
+
+  <div class="endnav wrap">
+    <a class="button" href="https://github.com/unfoldingWord/tc-study/pull/67">Read the specification</a>
+    <a class="button alt" href="../">Back to the overview</a>
+  </div>
+</main>
+
+<footer class="footer wrap">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
+  <div class="footer-links">
+    <div><a href="../">Overview</a><a href="../inside/">Inside a pack</a><a href="../build/">Build with it</a><a href="../agents/">For agents</a></div>
+    <div><a href="https://github.com/unfoldingWord/tc-study/pull/67">The specification</a><a href="https://github.com/unfoldingWord/translation-helps-mcp">translation-helps-mcp</a></div>
+    <div><a href="https://github.com/idiomaspuentes/servos">Servos</a><a href="https://git.door43.org/">Door43</a></div>
+    <p class="credits">Packs are built from the openly licensed translation resources published on Door43. People and places will come from STEPBible’s TIPNR (CC BY 4.0), events from Theographic Bible Metadata (CC BY-SA 4.0), and the story passages from unfoldingWord’s Open Bible Stories (CC BY-SA 4.0). Animal and plant photos come from the United Bible Societies’ open handbooks (CC BY-SA 4.0, each photo with its own credit), story pictures from Sweet Publishing (CC BY-SA 3.0). Maps would be drawn from Natural Earth and SRTM (public domain), Itiner-e (CC BY 4.0) and the UBS Bible Routes (CC BY-SA 4.0). The format’s final name and file extension are still to be decided.</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../inside/">Inside a pack</a></div>
+</footer>
+
+<script>
+(function () {
+  var books = ['mat','mrk','luk','jhn','act','rom','1co','2co','gal','eph','php','col','1th','2th','1ti','2ti','tit','phm','heb','jas','1pe','2pe','1jn','2jn','3jn','jud','rev'];
+  var counts = [0,0,8,4,17,25,10,18,7,12,3,5,2,4,4,5,4,2,8,2,10,2,0,1,0,1,2];
+  var max = 25;
+  var chart = document.getElementById('chart');
+  var labels = document.getElementById('books');
+  books.forEach(function (b, i) {
+    var n = counts[i];
+    var col = document.createElement('div');
+    col.className = 'col' + (b === 'tit' ? ' here' : '') + (n === max ? ' peak' : '');
+    col.title = b.toUpperCase() + ': ' + n;
+    var bar = document.createElement('div');
+    bar.className = 'bar' + (n === 0 ? ' zero' : '');
+    bar.style.height = (n / max * 100) + '%';
+    bar.style.setProperty('--i', i);
+    var num = document.createElement('span');
+    num.className = 'n';
+    num.textContent = n;
+    num.style.bottom = 'calc(' + (n / max * 100) + '% + 4px)';
+    col.appendChild(num);
+    col.appendChild(bar);
+    chart.appendChild(col);
+    var l = document.createElement('span');
+    l.textContent = b;
+    if (b === 'tit') l.className = 'here';
+    labels.appendChild(l);
+  });
+})();
+</script>
+<script src="../site.js"></script>
+</body>
+</html>
