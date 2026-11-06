@@ -45,7 +45,11 @@ packed into one file. It was built from `unfoldingWord/tc-study` at `063b69a9` w
 bun build packages/language-pack-client/src/index.ts --target=browser --format=esm --minify --outfile language-pack-client.js
 ```
 
-Rebuild it when the library changes. The page trusts the staging publisher key (`78d2e6299a2de4d0`, from
+Rebuild it when the library changes.
+
+`tc-packs-mcp.mjs` and `tc-packs-translator.zip` in the same folder are the local MCP server and its skill, from
+`packages/language-pack-mcp` of tC Study: `bun run bundle` there writes `dist/tc-packs-mcp.mjs`, and the zip holds
+`skill/tc-packs-translator/`. Copy both again when the package changes. The page trusts the staging publisher key (`78d2e6299a2de4d0`, from
 `packages/language-pack-v3/keys/`); a page that reads production needs the production key.
 
 ## Preview

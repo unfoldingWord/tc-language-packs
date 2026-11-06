@@ -85,6 +85,18 @@
   details pre { margin-top: 10px; max-height: 420px; font-size: 13px; }
   .err { background: var(--surface); padding: 18px 22px; border-left: 4px solid var(--ink); }
 
+  .assist { padding-block: var(--section) 0; display: grid; gap: 22px; }
+  .assist h2 { font-size: var(--step-head); max-width: 16ch; }
+  .assist .lead { max-width: 60ch; }
+  .steps { list-style: none; counter-reset: step; margin: 0; padding: 0; display: grid; gap: 28px; max-width: 980px; }
+  .steps > li { counter-increment: step; display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 0 16px; }
+  .steps > li::before { content: counter(step); grid-row: 1 / span 9; font-size: var(--step-head); font-weight: 500; line-height: 0.9; letter-spacing: -0.05em; }
+  .steps h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; margin-bottom: 8px; }
+  .steps p + p { margin-top: 10px; }
+  .hosts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: var(--gap); margin-top: 6px; }
+  .host { background: var(--surface); padding: 20px 22px; display: grid; gap: 10px; align-content: start; min-width: 0; max-width: 980px; }
+  .host pre { font-size: 13px; }
+  .host pre.wrapline { white-space: pre-wrap; overflow-wrap: anywhere; }
   .about { padding-block: var(--section); display: grid; gap: 18px; max-width: 70ch; }
   .about h2 { font-size: var(--step-head); }
 
@@ -153,6 +165,55 @@
       <div class="examples" id="examples"></div>
     </form>
     <div class="answer" id="answer" aria-live="polite"></div>
+  </section>
+
+  <section class="assist wrap" aria-labelledby="assist-title">
+    <h2 id="assist-title">Use it from your assistant</h2>
+    <p class="lead">The same packs, inside the AI assistant you already use: Cursor, Claude Desktop, Claude Code, or a free one that runs a model on your own computer, such as Atomic Chat or LM Studio. A small server on your computer keeps the packs in a folder and answers the assistant’s questions. With a local model, nothing leaves the computer once the language is downloaded.</p>
+    <ol class="steps">
+      <li>
+        <h3>Install Node.js</h3>
+        <p>Version 20 or later, from <a href="https://nodejs.org">nodejs.org</a>. The server is one file that Node runs.</p>
+      </li>
+      <li>
+        <h3>Download the server</h3>
+        <p><a class="button" href="tc-packs-mcp.mjs" download>tc-packs-mcp.mjs · 1.1 MB</a></p>
+        <p class="soft">Keep it in a folder you will not move, for example <code>C:\tc\tc-packs-mcp.mjs</code> or <code>~/tc/tc-packs-mcp.mjs</code>. The packs go to <code>~/.tc-language-packs</code>.</p>
+      </li>
+      <li>
+        <h3>Add it to your assistant</h3>
+        <div class="hosts">
+          <div class="host">
+            <span class="label">Cursor, Claude Desktop and most hosts</span>
+            <p class="soft">In <code>.cursor/mcp.json</code> or <code>claude_desktop_config.json</code>, with the path where you saved the file:</p>
+            <pre><code>{
+  "mcpServers": {
+    "tc-language-packs": {
+      "command": "node",
+      "args": ["C:/tc/tc-packs-mcp.mjs"]
+    }
+  }
+}</code></pre>
+          </div>
+          <div class="host">
+            <span class="label">Atomic Chat</span>
+            <p>Settings → MCP Servers → add a server of type STDIO. Command: <code>node</code>. Argument: the path to <code>tc-packs-mcp.mjs</code>. Pick a model that can call tools.</p>
+            <span class="label">Claude Code</span>
+            <pre class="wrapline"><code>claude mcp add tc-language-packs -- node C:/tc/tc-packs-mcp.mjs</code></pre>
+          </div>
+        </div>
+      </li>
+      <li>
+        <h3>Ask</h3>
+        <p>First: <em>“Install Latin American Spanish with Titus.”</em> It takes about a minute. Then, in your own words: <em>“¿Qué dicen las notas de Tito 2:11?”</em>, <em>“How was grace translated in Titus?”</em>, <em>“¿Dónde más aparece la metáfora en la Biblia?”</em></p>
+      </li>
+    </ol>
+    <div class="host">
+      <span class="label">A skill for translators</span>
+      <p>Hosts that read skills (Claude Code, Codex, Cursor) can also take a short guide that tells the assistant which tool answers which question, and to answer in the translator’s language with references. Unzip it into <code>.claude/skills/</code> or <code>.agents/skills/</code>.</p>
+      <p><a class="button" href="tc-packs-translator.zip" download>tc-packs-translator.zip</a></p>
+    </div>
+    <p class="soft">The server has nine tools: <code>install_language</code>, <code>status</code>, <code>lookup_term</code>, <code>passage</code>, <code>across_bible</code>, <code>renderings</code>, <code>article</code>, <code>topics</code> and <code>search</code>. It downloads from the same test server as this page. Its source is <a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack-mcp">language-pack-mcp</a> in tC Study.</p>
   </section>
 
   <section class="about wrap" aria-labelledby="about-title">
@@ -433,7 +494,8 @@ function cleanNote(md) {
     .replace(/\((?:ver|see):\s*(?:\[\[[^\]]+\]\]|rc:\/\/[^)\s]+)\)/gi, '')
     .replace(/\[\[([^\]]+)\]\]/g, '$1')
     .replace(/\*\*/g, '')
-    .replace(/[ 	]+\./g, '.')
+    .replace(/[ \t]+\./g, '.')
+    .replace(/(?<!\.)\.\.(?!\.)/g, '.')
     .trim()
 }
 
