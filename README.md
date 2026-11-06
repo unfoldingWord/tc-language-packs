@@ -34,6 +34,20 @@ After changing the reader or a skill, run `python tools/publish_skills.py`: it c
 publishes them in `public/skills/` with their zips. Check with `claude plugin validate .` and
 `claude plugin validate ./plugins/tc-language-packs --strict`.
 
+## The page that tries a pack
+
+`public/format-3/try/` downloads a language in format 3 from the staging Worker
+(`translation-helps-mcp-v2-preview.unfoldingword.workers.dev`, routes `/v3/packs/…`) into the browser's IndexedDB and
+asks it the client library's queries. `language-pack-client.js` next to it is `@bt-synergy/language-pack-client`
+packed into one file. It was built from `unfoldingWord/tc-study` at `063b69a9` with:
+
+```bash
+bun build packages/language-pack-client/src/index.ts --target=browser --format=esm --minify --outfile language-pack-client.js
+```
+
+Rebuild it when the library changes. The page trusts the staging publisher key (`78d2e6299a2de4d0`, from
+`packages/language-pack-v3/keys/`); a page that reads production needs the production key.
+
 ## Preview
 
 ```bash
