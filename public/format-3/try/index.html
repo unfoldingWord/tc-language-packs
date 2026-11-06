@@ -270,6 +270,8 @@ async function loadBooksMarks(l) {
 async function ready(l, book) {
   reader = await client.open(l)
   current = { lang: l, book }
+  alignCache.clear()
+  titleCache.clear()
   $('console').setAttribute('aria-disabled', 'false')
   setQuery(active, true)
 }
@@ -350,7 +352,8 @@ async function ask(name, arg) {
   try {
     const answer = await q.run(arg.trim())
     const ms = Math.round(performance.now() - t0)
-    out.replaceChildren(...[].concat(q.show(answer), apiCard(q.call(arg.trim()), answer, ms)))
+    const shown = await q.show(answer)
+    out.replaceChildren(...[].concat(shown, apiCard(q.call(arg.trim()), answer, ms)))
   } catch (e) {
     out.replaceChildren(el('div', { class: 'err' }, [el('strong', { text: e?.code ?? 'Error' }), el('p', { text: e?.message ?? String(e) })]), apiCard(q.call(arg.trim()), { error: e?.code, message: e?.message }, 0))
   }
@@ -374,6 +377,52 @@ function missingLine(answer) {
     : `Needs ${n.map((x) => x.unit).join(', ')}, not in this browser.` })
 }
 
+// The words of each Bible for translators that translate the given positions of the original (a note's or a link's
+// quote), by the book's alignment. Words next to each other join with a space; a gap becomes " … ".
+const alignCache = new Map()
+async function alignIndex(book) {
+  if (alignCache.has(book)) return alignCache.get(book)
+  const model = await reader.book(book)
+  const texts = []
+  for (const t of model?.texts ?? []) {
+    if (!t.align) continue
+    const words = []
+    const byPos = new Map()
+    for (const piece of t.pieces) {
+      if (!piece[1]) continue
+      const ordinal = words.length
+      words.push(piece[0])
+      for (const pos of t.align[ordinal] ?? []) {
+        if (!byPos.has(pos)) byPos.set(pos, [])
+        byPos.get(pos).push(ordinal)
+      }
+    }
+    texts.push({ res: t.res, words, byPos })
+  }
+  alignCache.set(book, texts)
+  return texts
+}
+async function quoteIn(book, positions) {
+  if (!positions?.length) return []
+  const out = []
+  for (const t of await alignIndex(book)) {
+    const ordinals = [...new Set(positions.flatMap((pos) => t.byPos.get(pos) ?? []))].sort((a, b) => a - b)
+    if (!ordinals.length) continue
+    let text = ''
+    ordinals.forEach((o, i) => { text += (i === 0 ? '' : o === ordinals[i - 1] + 1 ? ' ' : ' … ') + t.words[o] })
+    out.push({ res: t.res, text })
+  }
+  return out
+}
+const titleCache = new Map()
+async function titleOf(id) {
+  if (titleCache.has(id)) return titleCache.get(id)
+  let title = null
+  try { title = (await reader.article(id))?.data?.title ?? null } catch {}
+  titleCache.set(id, title)
+  return title
+}
+
 function conceptChip(id, label) {
   return el('button', { class: 'chip', type: 'button', title: id, text: label ?? id, onclick: () => ask(id.startsWith('ta:') || id.startsWith('tw:') ? 'books' : 'books', id) })
 }
@@ -388,24 +437,36 @@ function cleanNote(md) {
     .trim()
 }
 
-function showPassage(a) {
+async function showPassage(a) {
   const d = a.data
   if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That book is not in this browser.' }), missingLine(a)])]
   const head = el('h3', { text: `${NAMES[d.book] ?? d.book} ${d.ref}` })
   const texts = el('div', { class: 'texts' }, (d.texts ?? []).map((t) => el('div', {}, [el('small', { text: shortRes(t.res) }), el('p', { text: t.text })])))
-  const terms = (d.links ?? []).filter((l) => l.concept)
+  const terms = [...new Map((d.links ?? []).filter((l) => l.concept).map((l) => [l.concept, l])).values()]
+  const termChips = await Promise.all(terms.map(async (l) => {
+    const said = (await quoteIn(d.book, l.quote))[0]?.text
+    const title = await titleOf(l.concept)
+    return conceptChip(l.concept, `${said ?? l.cols?.origWords ?? ''} · ${title ?? l.concept}`)
+  }))
   const termCard = terms.length ? el('div', { class: 'card' }, [
     el('span', { class: 'label', text: 'Key terms in this verse · touch one to see it across the Bible' }),
-    el('div', { class: 'chips' }, [...new Map(terms.map((l) => [l.concept, l])).values()].map((l) => conceptChip(l.concept, `${l.cols?.origWords ?? ''} · ${l.concept}`))),
+    el('div', { class: 'chips' }, termChips),
   ]) : null
   const notes = (d.notes ?? []).filter((n) => cleanNote(n.cols?.note))
+  const noteItems = await Promise.all(notes.map(async (n) => {
+    const quotes = await quoteIn(d.book, n.quote)
+    const orig = n.cols?.quote && !cleanNote(n.cols?.note).startsWith(n.cols.quote) ? n.cols.quote : null
+    const title = n.concept ? await titleOf(n.concept) : null
+    return el('li', {}, [
+      quotes.length ? el('strong', { text: quotes.map((q) => (quotes.length > 1 ? `${shortRes(q.res)}: ` : '') + `«${q.text}»`).join('  ·  ') }) : orig ? el('strong', { text: orig }) : null,
+      quotes.length && orig ? el('span', { class: 'soft', lang: d.book && BOOKS.indexOf(d.book) < 39 ? 'hbo' : 'grc', text: orig }) : null,
+      el('p', { class: 'note-md', text: cleanNote(n.cols?.note) }),
+      n.concept ? el('div', { class: 'chips' }, [conceptChip(n.concept, title ?? n.concept)]) : null,
+    ])
+  }))
   const noteCard = notes.length ? el('div', { class: 'card' }, [
     el('span', { class: 'label', text: `Notes (${notes.length})` }),
-    el('ul', { class: 'list' }, notes.map((n) => el('li', {}, [
-      n.cols?.quote && !cleanNote(n.cols?.note).startsWith(n.cols.quote) ? el('strong', { text: n.cols.quote }) : null,
-      el('p', { class: 'note-md', text: cleanNote(n.cols?.note) }),
-      n.concept ? el('div', { class: 'chips' }, [conceptChip(n.concept, n.concept)]) : null,
-    ]))),
+    el('ul', { class: 'list' }, noteItems),
   ]) : null
   const qs = d.questions ?? []
   const qCard = qs.length ? el('div', { class: 'card' }, [
