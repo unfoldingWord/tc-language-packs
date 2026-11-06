@@ -1,0 +1,509 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Try a tC Language Pack</title>
+<meta name="description" content="Download a language from the test server into your browser and ask it what a translator would ask: a verse with its notes, a word through the whole Bible, an article, the people and places of a book.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="icon" href="../../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../../site.css">
+<style>
+  /* Two steps on one page: the cobalt stage takes a language into this browser, then a console asks it questions.
+     Every answer shows three ways: as a translator would read it, as the call an app makes, and as the JSON it gets. */
+  .top { display: grid; gap: 24px; padding-block: clamp(32px, 6vw, 88px) clamp(32px, 4vw, 56px); }
+  .top h1 { font-size: clamp(2.75rem, 1.4rem + 5vw, 6rem); max-width: 12ch; }
+  .top .lead { max-width: 52ch; }
+  .eyebrow { font-size: var(--step-small); color: var(--muted); }
+
+  .stage { background: var(--field); color: var(--field-ink); padding: clamp(24px, 4vw, 56px); display: grid; gap: 22px; }
+  .stage h2, .console h2 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+  .step { font-size: var(--step-small); opacity: 0.88; }
+  .row { display: flex; flex-wrap: wrap; gap: 12px 16px; align-items: center; }
+  .langs { display: flex; flex-wrap: wrap; gap: 10px; }
+  .langs label { position: relative; }
+  .langs input { position: absolute; opacity: 0; inset: 0; cursor: pointer; }
+  .langs span { display: inline-flex; min-height: 48px; align-items: center; padding: 0 20px; background: color-mix(in srgb, var(--field-ink) 12%, var(--field)); clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s)); }
+  .langs input:checked + span { background: var(--field-ink); color: var(--field); }
+  .langs input:focus-visible + span { outline: 3px solid var(--field-ink); outline-offset: 3px; }
+  select, input[type="text"] { font: inherit; font-size: 16px; min-height: 48px; padding: 0 14px; border: 0; background: var(--bg); color: var(--ink); max-width: 100%; }
+  select { min-width: 220px; }
+  .stage .button { background: var(--field-ink); color: var(--field); }
+  .button[disabled] { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .meter { height: 14px; background: color-mix(in srgb, var(--field-ink) 18%, var(--field)); overflow: hidden; }
+  .meter > div { height: 100%; width: 0; background: var(--field-ink); transition: width 200ms; }
+  .status { font-size: 16px; min-height: 1.5em; }
+  .stage .fine { font-size: 14px; opacity: 0.88; max-width: 72ch; }
+  .linkish { background: none; border: 0; color: inherit; font: inherit; text-decoration: underline; cursor: pointer; padding: 0; }
+
+  .console { padding-block: clamp(48px, 6vw, 96px) 0; display: grid; gap: 22px; }
+  .console[aria-disabled="true"] .tabs, .console[aria-disabled="true"] .ask { opacity: 0.45; pointer-events: none; }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tabs button { font: 500 15px/1 var(--font); min-height: 44px; padding: 0 16px; border: 0; background: var(--surface); color: var(--ink); cursor: pointer; clip-path: polygon(8px 0, 100% 0, 100% 100%, 0 100%, 0 8px); }
+  .tabs button[aria-selected="true"] { background: var(--ink); color: var(--bg); }
+  .ask { display: grid; gap: 12px; max-width: 760px; }
+  .ask p { color: var(--muted); }
+  .ask .row input { flex: 1 1 220px; background: var(--surface); }
+  .examples { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 15px; }
+  .examples button { background: none; border: 0; padding: 0; font: inherit; color: var(--ink); text-decoration: underline; cursor: pointer; }
+
+  .answer { display: grid; gap: 18px; margin-top: 8px; }
+  .card { background: var(--surface); padding: 22px 24px; display: grid; gap: 14px; min-width: 0; }
+  .card h3 { font-size: var(--step-lead); letter-spacing: -0.02em; line-height: 1.15; }
+  .call { font-size: 14px; color: var(--muted); }
+  .texts { display: grid; gap: 10px; }
+  .texts p { font-size: var(--step-lead); line-height: 1.35; }
+  .texts small, .label { font-size: 13px; color: var(--muted); letter-spacing: 0.04em; text-transform: uppercase; display: block; margin-bottom: 2px; }
+  .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  .list li { display: grid; gap: 4px; padding-top: 12px; border-top: 1px solid color-mix(in srgb, var(--ink) 25%, transparent); }
+  .list li:first-child { padding-top: 0; border-top: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip { font: 15px/1.2 var(--font); border: 0; padding: 8px 12px; background: var(--bg); color: var(--ink); cursor: pointer; clip-path: polygon(6px 0, 100% 0, 100% 100%, 0 100%, 0 6px); }
+  .chip:hover { background: var(--ink); color: var(--bg); }
+  .chip.static { cursor: default; }
+  .chip.static:hover { background: var(--bg); color: var(--ink); }
+  .note-md { white-space: pre-line; }
+  .tally { font-size: var(--step-lead); font-variant-numeric: tabular-nums; }
+  .bscroll { overflow-x: auto; }
+  .bchart, .blabels { display: grid; grid-template-columns: repeat(66, minmax(0, 1fr)); gap: 2px; min-width: 560px; }
+  .bchart { height: 140px; align-items: end; }
+  .bchart div { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 50%, transparent) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 50%, transparent); min-height: 2px; }
+  .bchart div.here { background: var(--ink); box-shadow: none; }
+  .bchart div.none { background: none; box-shadow: none; border-bottom: 2px dotted color-mix(in srgb, var(--ink) 40%, transparent); }
+  .bchart div.zero { background: color-mix(in srgb, var(--ink) 30%, transparent); box-shadow: none; height: 2px !important; }
+  .blabels span { font-family: var(--mono); font-size: 9px; writing-mode: vertical-rl; transform: rotate(180deg); justify-self: center; padding-top: 4px; color: var(--muted); text-transform: uppercase; }
+  .blabels span.here { color: var(--ink); text-decoration: underline; }
+  .legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 14px; color: var(--muted); }
+  .legend i { display: inline-block; width: 14px; height: 11px; margin-right: 7px; vertical-align: -1px; }
+  .k-here { background: var(--ink); }
+  .k-away { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--ink) 50%, transparent) 0 2px, transparent 2px 5px); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--ink) 50%, transparent); }
+  .k-none { border-bottom: 2px dotted color-mix(in srgb, var(--ink) 40%, transparent); height: 6px !important; }
+  .missing { font-size: 15px; color: var(--muted); }
+  details summary { cursor: pointer; font-size: 15px; }
+  details pre { margin-top: 10px; max-height: 420px; font-size: 13px; }
+  .err { background: var(--surface); padding: 18px 22px; border-left: 4px solid var(--ink); }
+
+  .about { padding-block: var(--section); display: grid; gap: 18px; max-width: 70ch; }
+  .about h2 { font-size: var(--step-head); }
+
+  @media (max-width: 560px) {
+    select { min-width: 0; width: 100%; }
+  }
+</style>
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="../../">tC Language Packs</a>
+    <ul>
+      <li><a href="../../inside/">Inside a pack</a></li>
+      <li><a href="../../build/">Build with it</a></li>
+      <li><a href="../../agents/">For agents</a></li>
+      <li><a href="../">For translators</a></li>
+      <li><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack">Source</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="top wrap" aria-labelledby="top-title">
+    <p class="eyebrow">Live on the test server · English and Latin American Spanish</p>
+    <h1 id="top-title">Try a pack</h1>
+    <p class="lead">Take a language into this browser, then ask it what a translator would ask: a verse with its notes, a word through the whole Bible, an article, the people and places of a book. It runs here, on the same library an app uses, and keeps working with no internet once it is downloaded.</p>
+  </section>
+
+  <section class="wrap" aria-labelledby="get-title">
+    <div class="stage cut-l">
+      <p class="step">Step 1</p>
+      <h2 id="get-title">Take a language into this browser</h2>
+      <div class="langs" role="radiogroup" aria-label="Language">
+        <label><input type="radio" name="lang" value="es-419" checked><span>Latin American Spanish</span></label>
+        <label><input type="radio" name="lang" value="en"><span>English</span></label>
+      </div>
+      <div class="row">
+
+        <select id="book" aria-label="Book"><option>Loading the catalog…</option></select>
+        <button class="button" id="get" disabled>Download</button>
+      </div>
+      <div class="meter" aria-hidden="true"><div id="bar"></div></div>
+      <p class="status" id="status" role="status" aria-live="polite">Reading the catalog from the test server…</p>
+      <p class="fine">Besides the book, the download brings what every book shares: the Greek or Hebrew of that book, the map of the whole Bible, the topics, and the key-term and Academy articles. Every catalog is checked against the publisher’s signature before anything is kept. <button class="linkish" id="forget" type="button">Remove the packs from this browser</button></p>
+    </div>
+  </section>
+
+  <section class="console wrap" id="console" aria-disabled="true" aria-labelledby="ask-title">
+    <p class="eyebrow">Step 2</p>
+    <h2 id="ask-title">Ask it</h2>
+    <div class="tabs" role="tablist" aria-label="Question">
+      <button role="tab" data-q="passage" aria-selected="true">A verse</button>
+      <button role="tab" data-q="books" aria-selected="false">Through the Bible</button>
+      <button role="tab" data-q="renderings" aria-selected="false">How it was translated</button>
+      <button role="tab" data-q="article" aria-selected="false">An article</button>
+      <button role="tab" data-q="topics" aria-selected="false">People and places</button>
+      <button role="tab" data-q="search" aria-selected="false">Search</button>
+    </div>
+    <form class="ask" id="ask">
+      <p id="hint"></p>
+      <div class="row">
+        <input type="text" id="arg" aria-label="Question" autocomplete="off" spellcheck="false">
+        <button class="button" type="submit">Ask</button>
+      </div>
+      <div class="examples" id="examples"></div>
+    </form>
+    <div class="answer" id="answer" aria-live="polite"></div>
+  </section>
+
+  <section class="about wrap" aria-labelledby="about-title">
+    <h2 id="about-title">What this page does</h2>
+    <p>It downloads the language’s signed catalog, then only the pieces of the chosen book and the shared maps, from <code>translation-helps-mcp-v2-preview.unfoldingword.workers.dev</code>. That is a test server: the packs there are real, but they may change or be rebuilt.</p>
+    <p>Everything is kept in this browser’s storage, and the questions are answered here, with no server. Nothing you type leaves the page.</p>
+    <p>The library is <code>@bt-synergy/language-pack-client</code>, from tC Study, packed into one file for this page. Each answer shows the call an app makes and the JSON it gets back.</p>
+    <p><a class="button alt" href="../">Back to the page for translators</a></p>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">p</span><span style="height:74%">a</span><span style="height:96%">c</span><span style="height:70%">k</span><span style="height:88%">s</span></div>
+  <div class="footer-links">
+    <div><a href="../../">Overview</a><a href="../../inside/">Inside a pack</a><a href="../../build/">Build with it</a><a href="../../agents/">For agents</a><a href="../">For translators</a></div>
+    <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack-v3/spec">The specification</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack-client">The client library</a></div>
+    <div><a href="https://github.com/idiomaspuentes/servos">Servos</a><a href="https://git.door43.org/">Door43</a></div>
+    <p class="credits">The packs are built from the openly licensed translation resources published on Door43. Each answer names its sources in its JSON (<code>cites</code>).</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">For translators</a></div>
+</footer>
+
+<script type="module">
+import { createClient, httpSource, indexedDbStore, memoryStore } from './language-pack-client.js'
+
+const SERVER = 'https://translation-helps-mcp-v2-preview.unfoldingword.workers.dev'
+// The staging publisher's public key (language-pack-v3/keys/78d2e6299a2de4d0.pub).
+const KEY_ID = '78d2e6299a2de4d0'
+const KEY_HEX = 'c2057cec32b948452849e7fcba6af323961a091ea82645eb297bb368e1c8d911'
+const DB = 'tc-language-packs-try'
+const SHARED_UNITS = ['art:tw:kt', 'art:tw:names', 'art:tw:other', 'art:ta:translate']
+const BOOKS = ['gen','exo','lev','num','deu','jos','jdg','rut','1sa','2sa','1ki','2ki','1ch','2ch','ezr','neh','est','job','psa','pro','ecc','sng','isa','jer','lam','ezk','dan','hos','jol','amo','oba','jon','mic','nam','hab','zep','hag','zec','mal','mat','mrk','luk','jhn','act','rom','1co','2co','gal','eph','php','col','1th','2th','1ti','2ti','tit','phm','heb','jas','1pe','2pe','1jn','2jn','3jn','jud','rev']
+const NAMES = { gen:'Genesis', exo:'Exodus', lev:'Leviticus', num:'Numbers', deu:'Deuteronomy', jos:'Joshua', jdg:'Judges', rut:'Ruth', '1sa':'1 Samuel', '2sa':'2 Samuel', '1ki':'1 Kings', '2ki':'2 Kings', '1ch':'1 Chronicles', '2ch':'2 Chronicles', ezr:'Ezra', neh:'Nehemiah', est:'Esther', job:'Job', psa:'Psalms', pro:'Proverbs', ecc:'Ecclesiastes', sng:'Song of Songs', isa:'Isaiah', jer:'Jeremiah', lam:'Lamentations', ezk:'Ezekiel', dan:'Daniel', hos:'Hosea', jol:'Joel', amo:'Amos', oba:'Obadiah', jon:'Jonah', mic:'Micah', nam:'Nahum', hab:'Habakkuk', zep:'Zephaniah', hag:'Haggai', zec:'Zechariah', mal:'Malachi', mat:'Matthew', mrk:'Mark', luk:'Luke', jhn:'John', act:'Acts', rom:'Romans', '1co':'1 Corinthians', '2co':'2 Corinthians', gal:'Galatians', eph:'Ephesians', php:'Philippians', col:'Colossians', '1th':'1 Thessalonians', '2th':'2 Thessalonians', '1ti':'1 Timothy', '2ti':'2 Timothy', tit:'Titus', phm:'Philemon', heb:'Hebrews', jas:'James', '1pe':'1 Peter', '2pe':'2 Peter', '1jn':'1 John', '2jn':'2 John', '3jn':'3 John', jud:'Jude', rev:'Revelation' }
+
+const $ = (id) => document.getElementById(id)
+const el = (tag, props = {}, kids = []) => {
+  const n = document.createElement(tag)
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') n.className = v
+    else if (k === 'text') n.textContent = v
+    else if (k.startsWith('on')) n.addEventListener(k.slice(2), v)
+    else n.setAttribute(k, v)
+  }
+  for (const kid of [].concat(kids)) if (kid != null) n.append(kid)
+  return n
+}
+const kb = (b) => (b >= 1048576 ? (b / 1048576).toFixed(1) + ' MB' : Math.max(1, Math.round(b / 1024)) + ' KB')
+const lang = () => document.querySelector('input[name="lang"]:checked').value
+const shortRes = (res) => String(res).split('/').pop().toUpperCase()
+
+const trust = { trustedKeys: { [KEY_ID]: Uint8Array.from(KEY_HEX.match(/../g), (p) => parseInt(p, 16)) } }
+let store
+try { store = await indexedDbStore({ name: DB }) } catch { store = memoryStore() }
+const client = createClient({ store, source: httpSource({ base: SERVER }), trust })
+let reader = null
+let current = null // { lang, book }
+
+// ---- Step 1: the catalog, the book list, the download ----
+
+async function loadCatalog() {
+  const l = lang()
+  $('get').disabled = true
+  $('book').replaceChildren(el('option', { text: 'Loading the catalog…' }))
+  $('status').textContent = 'Reading the catalog from the test server…'
+  try {
+    await client.refresh(l)
+    const st = await client.status(l)
+    const books = st.units.filter((u) => /\/book:/.test(u.key) && u.bytes > 0)
+      .map((u) => ({ code: u.key.split('book:')[1], bytes: u.bytes, installed: u.installed }))
+      .sort((a, b) => BOOKS.indexOf(a.code) - BOOKS.indexOf(b.code))
+    const pick = books.find((b) => b.code === 'tit') ?? books[0]
+    $('book').replaceChildren(...books.map((b) => el('option', { value: b.code, text: `${NAMES[b.code] ?? b.code} · ${kb(b.bytes)}${b.installed ? ' · in this browser' : ''}` })))
+    if (pick) $('book').value = pick.code
+    $('get').disabled = false
+    const rev = st.published?.revision ?? st.active?.revision
+    $('status').textContent = `${books.length} books in this language${rev ? ', revision ' + rev : ''}. The signature checked out.`
+    const installed = books.find((b) => b.installed)
+    if (installed) await ready(l, installed.code)
+  } catch (e) {
+    $('status').textContent = 'The catalog could not be read: ' + (e?.code ? e.code + ' — ' : '') + (e?.message ?? e)
+  }
+}
+
+async function download() {
+  const l = lang(), book = $('book').value
+  $('get').disabled = true
+  $('bar').style.width = '0%'
+  $('status').textContent = 'Downloading…'
+  try {
+    const report = await client.install(l, { books: [book], defaults: true, units: SHARED_UNITS }, {
+      onProgress: (p) => {
+        $('bar').style.width = (p.total ? Math.round((p.done / p.total) * 100) : 0) + '%'
+        $('status').textContent = `Downloading: ${p.done} of ${p.total} pieces · ${kb(p.bytes)}`
+      },
+    })
+    $('bar').style.width = '100%'
+    $('status').textContent = `Ready: ${NAMES[book] ?? book} with the shared maps and articles, ${kb(report.bytes ?? 0)} downloaded and checked.`
+    await ready(l, book)
+    await loadBooksMarks(l)
+  } catch (e) {
+    $('status').textContent = 'The download stopped: ' + (e?.code ? e.code + ' — ' : '') + (e?.message ?? e) + '. What was complete is kept; try again.'
+  } finally {
+    $('get').disabled = false
+  }
+}
+
+async function loadBooksMarks(l) {
+  const st = await client.status(l)
+  for (const o of $('book').options) {
+    const u = st.units.find((x) => x.key.endsWith('/book:' + o.value))
+    if (u) o.textContent = `${NAMES[o.value] ?? o.value} · ${kb(u.bytes)}${u.installed ? ' · in this browser' : ''}`
+  }
+}
+
+async function ready(l, book) {
+  reader = await client.open(l)
+  current = { lang: l, book }
+  $('console').setAttribute('aria-disabled', 'false')
+  setQuery(active, true)
+}
+
+// ---- Step 2: the questions ----
+
+const Q = {
+  passage: {
+    hint: 'A reference in the downloaded book. The answer has the Bibles for translators, the notes, the questions and the key terms of that verse.',
+    call: (a) => `reader.passage(${JSON.stringify(a)})`,
+    run: (a) => reader.passage(a),
+    examples: () => [`${current.book} 2:11`, `${current.book} 1:1`, `${current.book} 3:5`],
+    first: () => `${current.book} ${current.book === 'tit' ? '2:11' : '1:1'}`,
+    show: showPassage,
+  },
+  books: {
+    hint: 'A key term (tw:…) or an Academy article (ta:…). The answer counts it in every book of the Bible, downloaded or not.',
+    call: (a) => `reader.books(${a.startsWith('ta:') ? `{ article: ${JSON.stringify(a)} }` : `{ concept: ${JSON.stringify(a)} }`})`,
+    run: (a) => reader.books(a.startsWith('ta:') ? { article: a } : { concept: a }),
+    examples: () => ['tw:kt/grace', 'tw:kt/faith', 'ta:translate/figs-metaphor'],
+    first: () => 'tw:kt/grace',
+    show: showBooks,
+  },
+  renderings: {
+    hint: 'A Strong’s number. The answer lists the words this language’s Bibles used for it, with where.',
+    call: (a) => `reader.renderings({ strong: ${JSON.stringify(a)} })`,
+    run: (a) => reader.renderings({ strong: a }),
+    examples: () => ['G5485', 'G4102', 'G2316'],
+    first: () => 'G5485',
+    show: showRenderings,
+  },
+  article: {
+    hint: 'A key-term or Academy article, in this language.',
+    call: (a) => `reader.article(${JSON.stringify(a)})`,
+    run: (a) => reader.article(a),
+    examples: () => ['tw:kt/grace', 'ta:translate/figs-metaphor', 'tw:names/paul'],
+    first: () => 'tw:kt/grace',
+    show: showArticle,
+  },
+  topics: {
+    hint: 'A book code. The answer lists its people, places, events and stories, with the names this language’s Bible gives them.',
+    call: (a) => `reader.topics({ book: ${JSON.stringify(a)} })`,
+    run: (a) => reader.topics({ book: a }),
+    examples: () => [current.book, 'rut', 'jon'],
+    first: () => current.book,
+    show: showTopics,
+  },
+  search: {
+    hint: 'Words to find in the downloaded book: its texts, notes and questions.',
+    call: (a) => `reader.search(${JSON.stringify(a)})`,
+    run: (a) => reader.search(a),
+    examples: () => (current.lang === 'en' ? ['grace', 'good works', 'elders'] : ['gracia', 'buenas obras', 'ancianos']),
+    first: () => (current.lang === 'en' ? 'grace' : 'gracia'),
+    show: showSearch,
+  },
+}
+let active = 'passage'
+
+function setQuery(name, runIt) {
+  active = name
+  for (const b of document.querySelectorAll('.tabs button')) b.setAttribute('aria-selected', String(b.dataset.q === name))
+  const q = Q[name]
+  $('hint').textContent = q.hint
+  if (!current) return
+  $('arg').value = q.first()
+  $('examples').replaceChildren(el('span', { class: 'soft', text: 'Try:' }), ...q.examples().map((x) => el('button', { type: 'button', text: x, onclick: () => ask(name, x) })))
+  if (runIt) ask(name, $('arg').value)
+}
+
+async function ask(name, arg) {
+  if (!reader) return
+  if (name !== active) setQuery(name, false)
+  $('arg').value = arg
+  const q = Q[name]
+  const out = $('answer')
+  out.replaceChildren(el('p', { class: 'soft', text: 'Asking…' }))
+  const t0 = performance.now()
+  try {
+    const answer = await q.run(arg.trim())
+    const ms = Math.round(performance.now() - t0)
+    out.replaceChildren(...[].concat(q.show(answer), apiCard(q.call(arg.trim()), answer, ms)))
+  } catch (e) {
+    out.replaceChildren(el('div', { class: 'err' }, [el('strong', { text: e?.code ?? 'Error' }), el('p', { text: e?.message ?? String(e) })]), apiCard(q.call(arg.trim()), { error: e?.code, message: e?.message }, 0))
+  }
+}
+
+function apiCard(call, answer, ms) {
+  return el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: 'The call' }),
+    el('pre', {}, el('code', { text: `const reader = await client.open(${JSON.stringify(current.lang)})\nconst answer = await ${call}${ms ? `  // ${ms} ms in this browser` : ''}` })),
+    el('details', {}, [el('summary', { text: 'The answer as JSON' }), el('pre', {}, el('code', { text: JSON.stringify(answer, null, 2) }))]),
+  ])
+}
+
+function missingLine(answer) {
+  const n = answer?.notInstalled ?? []
+  if (!n.length) return null
+  const books = [...new Set(n.map((x) => x.book).filter(Boolean))]
+  const bytes = n.reduce((s, x) => s + (x.bytes ?? 0), 0)
+  return el('p', { class: 'missing', text: books.length
+    ? `Also in ${books.map((b) => NAMES[b] ?? b).join(', ')}, which ${books.length === 1 ? 'is' : 'are'} not in this browser (${kb(bytes)}).`
+    : `Needs ${n.map((x) => x.unit).join(', ')}, not in this browser.` })
+}
+
+function conceptChip(id, label) {
+  return el('button', { class: 'chip', type: 'button', title: id, text: label ?? id, onclick: () => ask(id.startsWith('ta:') || id.startsWith('tw:') ? 'books' : 'books', id) })
+}
+
+function cleanNote(md) {
+  return String(md ?? '')
+    .replace(/^#+\s*/gm, '')
+    .replace(/\((?:ver|see):\s*(?:\[\[[^\]]+\]\]|rc:\/\/[^)\s]+)\)/gi, '')
+    .replace(/\[\[([^\]]+)\]\]/g, '$1')
+    .replace(/\*\*/g, '')
+    .replace(/[ 	]+\./g, '.')
+    .trim()
+}
+
+function showPassage(a) {
+  const d = a.data
+  if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That book is not in this browser.' }), missingLine(a)])]
+  const head = el('h3', { text: `${NAMES[d.book] ?? d.book} ${d.ref}` })
+  const texts = el('div', { class: 'texts' }, (d.texts ?? []).map((t) => el('div', {}, [el('small', { text: shortRes(t.res) }), el('p', { text: t.text })])))
+  const terms = (d.links ?? []).filter((l) => l.concept)
+  const termCard = terms.length ? el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: 'Key terms in this verse · touch one to see it across the Bible' }),
+    el('div', { class: 'chips' }, [...new Map(terms.map((l) => [l.concept, l])).values()].map((l) => conceptChip(l.concept, `${l.cols?.origWords ?? ''} · ${l.concept}`))),
+  ]) : null
+  const notes = (d.notes ?? []).filter((n) => cleanNote(n.cols?.note))
+  const noteCard = notes.length ? el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `Notes (${notes.length})` }),
+    el('ul', { class: 'list' }, notes.map((n) => el('li', {}, [
+      n.cols?.quote && !cleanNote(n.cols?.note).startsWith(n.cols.quote) ? el('strong', { text: n.cols.quote }) : null,
+      el('p', { class: 'note-md', text: cleanNote(n.cols?.note) }),
+      n.concept ? el('div', { class: 'chips' }, [conceptChip(n.concept, n.concept)]) : null,
+    ]))),
+  ]) : null
+  const qs = d.questions ?? []
+  const qCard = qs.length ? el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: 'Questions' }),
+    el('ul', { class: 'list' }, qs.map((q) => el('li', {}, [el('strong', { text: q.cols?.question ?? '' }), el('p', { text: q.cols?.response ?? '' })]))),
+  ]) : null
+  return [el('div', { class: 'card' }, [head, texts]), termCard, noteCard, qCard]
+}
+
+function showBooks(a) {
+  const d = a.data
+  if (!d || d.installed === false || !d.books) return [el('div', { class: 'card' }, [el('p', { text: 'The map that answers this is not in this browser.' }), missingLine(a)])]
+  const isArticle = $('arg').value.trim().startsWith('ta:')
+  const cells = BOOKS.map((b) => ({ b, ...(d.books[b] ?? { state: 'none' }) }))
+  const max = Math.max(1, ...cells.map((c) => c.count ?? 0))
+  const withAny = cells.filter((c) => (c.count ?? 0) > 0)
+  const total = withAny.reduce((s, c) => s + c.count, 0)
+  const away = withAny.filter((c) => !c.installed)
+  const chart = el('div', { class: 'bscroll' }, [
+    el('div', { class: 'bchart', role: 'img', 'aria-label': `${total} in ${withAny.length} books` }, cells.map((c) => {
+      const cls = c.state === 'none' ? 'none' : c.state === 'zero' || !c.count ? 'zero' : c.installed ? 'here' : ''
+      const bar = el('div', { class: cls, title: `${NAMES[c.b]}: ${c.state === 'none' ? 'no source' : (c.count ?? 0)}` })
+      if (c.count) bar.style.height = Math.max(3, (c.count / max) * 100) + '%'
+      return bar
+    })),
+    el('div', { class: 'blabels', 'aria-hidden': 'true' }, cells.map((c) => el('span', { class: c.installed ? 'here' : '', text: c.b }))),
+  ])
+  return [el('div', { class: 'card' }, [
+    el('div', { class: 'tally', text: isArticle ? `${total} notes point to it, in ${withAny.length} books` : `${total} links to this key term, in ${withAny.length} books` }),
+    el('p', { class: 'missing', text: isArticle ? 'Counted in this language’s translation notes.' : 'Counted in the English Translation Words links of each book, which every language shares.' }),
+    chart,
+    el('div', { class: 'legend' }, [el('span', {}, [el('i', { class: 'k-here' }), 'In this browser']), el('span', {}, [el('i', { class: 'k-away' }), 'Not downloaded: the map knows']), el('span', {}, [el('i', { class: 'k-none' }), 'No source for that book'])]),
+    away.length ? el('p', { class: 'missing', text: `${away.length} of those books are not in this browser; the map counts them anyway.` }) : null,
+  ])]
+}
+
+function showRenderings(a) {
+  const d = a.data
+  if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'The map that answers this is not in this browser.' }), missingLine(a)])]
+  const rows = d.renderings ?? []
+  return [el('div', { class: 'card' }, [
+    el('h3', { text: `${d.strong}: ${rows.length} ways in the downloaded books` }),
+    rows.length ? el('ul', { class: 'list' }, rows.map((r) => el('li', {}, [el('strong', { text: `«${r.text}» · ${r.count}` }), el('span', { class: 'soft', text: (r.refs ?? []).join(', ') })]))) : el('p', { text: 'The downloaded books do not use it.' }),
+    missingLine(a),
+  ])]
+}
+
+function showArticle(a) {
+  const d = a.data
+  if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That article is not in this browser.' }), missingLine(a)])]
+  return [el('div', { class: 'card' }, [
+    el('h3', { text: d.title ?? d.id }),
+    ...(d.sections ?? []).map((s) => el('p', { class: 'note-md', text: cleanNote(s.md) })),
+    d.more?.length ? el('p', { class: 'missing', text: `${d.more.length} more sections: ask with "all".` }) : null,
+  ])]
+}
+
+function showTopics(a) {
+  const d = a.data
+  if (!d || d.installed === false) return [el('div', { class: 'card' }, [el('p', { text: 'The topics are not in this browser.' }), missingLine(a)])]
+  const groups = {}
+  for (const t of d.topics ?? []) (groups[t.kind] ??= []).push(t)
+  const label = { person: 'People', place: 'Places', event: 'Events', story: 'Bible stories', section: 'Sections', topic: 'Topics' }
+  const cards = Object.entries(groups).map(([k, ts]) => el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `${label[k] ?? k} (${ts.length})` }),
+    el('ul', { class: 'list' }, ts.map((t) => el('li', {}, [
+      el('strong', { text: `${t.title}${t.verses ? ` · ${t.verses} ${t.verses === 1 ? 'verse' : 'verses'}` : ''}` }),
+      t.names?.length ? el('span', { class: 'soft', text: 'In this Bible: ' + t.names.map((n) => `«${n}»`).join(', ') }) : null,
+    ]))),
+  ]))
+  return cards.length ? cards : [el('div', { class: 'card' }, el('p', { text: 'No topics in that book.' }))]
+}
+
+function showSearch(a) {
+  const hits = a.data ?? []
+  const kind = { text: 'Bible', note: 'Note', question: 'Question', link: 'Key term' }
+  return [el('div', { class: 'card' }, [
+    el('h3', { text: `${hits.length} ${hits.length === 1 ? 'match' : 'matches'}` }),
+    el('ul', { class: 'list' }, hits.slice(0, 30).map((h) => el('li', {}, [
+      el('strong', { text: `${NAMES[h.book] ?? h.book} ${h.ref} · ${kind[h.kind] ?? h.kind}` }),
+      el('span', { text: h.snippet ?? '' }),
+    ]))),
+  ])]
+}
+
+// ---- Wiring ----
+
+for (const r of document.querySelectorAll('input[name="lang"]')) r.addEventListener('change', () => { reader = null; current = null; $('console').setAttribute('aria-disabled', 'true'); $('answer').replaceChildren(); loadCatalog() })
+$('get').addEventListener('click', download)
+for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => setQuery(b.dataset.q, true))
+$('ask').addEventListener('submit', (e) => { e.preventDefault(); ask(active, $('arg').value) })
+$('forget').addEventListener('click', async () => {
+  try { indexedDB.deleteDatabase(DB) } catch {}
+  location.reload()
+})
+setQuery('passage', false)
+loadCatalog()
+</script>
+<script src="../../site.js"></script>
+</body>
+</html>
