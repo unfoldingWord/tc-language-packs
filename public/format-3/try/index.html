@@ -415,6 +415,7 @@ async function ask(name, arg) {
   const t0 = performance.now()
   let id = arg.trim()
   let found = null
+  let others = []
   try {
     // A name instead of an id: look it up in the maps first, and answer for the one it names (or let the reader choose).
     lastId = null
@@ -429,13 +430,18 @@ async function ask(name, arg) {
       }
       id = pick.id
       lastId = id
+      others = matches.filter((m) => m.id !== id)
     }
     const answer = await q.run(id)
     const ms = Math.round(performance.now() - t0)
     const shown = await q.show(answer)
     const said = found ? el('p', { class: 'soft', text: `“${arg.trim()}” is ${id}.` }) : null
+    // The other names that contain the word (Complex Metaphor, Simple Metaphor…): one tap asks about each.
+    const also = others.length
+      ? el('div', { class: 'chips' }, [el('span', { class: 'soft', text: 'Also named like this:' }), ...others.map((m) => el('button', { class: 'chip', type: 'button', title: m.id, text: m.names[0] ?? m.id, onclick: () => ask(name, m.id) }))])
+      : null
     const before = found ? `const found = await reader.lookup(${JSON.stringify(arg.trim())})  // it names ${JSON.stringify(id)}\n` : ''
-    out.replaceChildren(...[].concat(said ?? [], shown, apiCard(q.call(id), answer, ms, before)))
+    out.replaceChildren(...[].concat(said ?? [], also ?? [], shown, apiCard(q.call(id), answer, ms, before)))
   } catch (e) {
     out.replaceChildren(el('div', { class: 'err' }, [el('strong', { text: e?.code ?? 'Error' }), el('p', { text: e?.message ?? String(e) })]), apiCard(q.call(id), { error: e?.code, message: e?.message }, 0))
   }
