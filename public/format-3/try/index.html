@@ -270,6 +270,7 @@ try { store = await indexedDbStore({ name: DB }) } catch { store = memoryStore()
 const client = createClient({ store, source: httpSource({ base: SERVER }), trust })
 let reader = null
 let current = null // { lang, book }
+let lastId = null // the id a name resolved to, for the answer that shows it
 
 // ---- Step 1: the catalog, the book list, the download ----
 
@@ -349,11 +350,12 @@ const Q = {
     show: showPassage,
   },
   books: {
-    hint: 'A key term (tw:…) or an Academy article (ta:…). The answer counts it in every book of the Bible, downloaded or not.',
+    hint: 'A key term, an Academy article, a person or a place, by its name (grace, metaphor, Paul) or its id (tw:…, ta:…). The answer counts it in every book of the Bible, downloaded or not.',
     call: (a) => `reader.books(${a.startsWith('ta:') ? `{ article: ${JSON.stringify(a)} }` : `{ concept: ${JSON.stringify(a)} }`})`,
     run: (a) => reader.books(a.startsWith('ta:') ? { article: a } : { concept: a }),
-    examples: () => ['tw:kt/grace', 'tw:kt/faith', 'ta:translate/figs-metaphor'],
-    first: () => 'tw:kt/grace',
+    byName: (id) => true,
+    examples: () => (current.lang === 'en' ? ['grace', 'faith', 'metaphor'] : ['gracia', 'fe', 'metáfora']),
+    first: () => (current.lang === 'en' ? 'grace' : 'gracia'),
     show: showBooks,
   },
   renderings: {
@@ -365,11 +367,12 @@ const Q = {
     show: showRenderings,
   },
   article: {
-    hint: 'A key-term or Academy article, in this language.',
+    hint: 'A key-term or Academy article, in this language, by its name (grace, metaphor, Paul) or its id (tw:…, ta:…).',
     call: (a) => `reader.article(${JSON.stringify(a)})`,
     run: (a) => reader.article(a),
-    examples: () => ['tw:kt/grace', 'ta:translate/figs-metaphor', 'tw:names/paul'],
-    first: () => 'tw:kt/grace',
+    byName: (id) => id.startsWith('tw:') || id.startsWith('ta:'),
+    examples: () => (current.lang === 'en' ? ['grace', 'metaphor', 'Paul'] : ['gracia', 'metáfora', 'Pablo']),
+    first: () => (current.lang === 'en' ? 'grace' : 'gracia'),
     show: showArticle,
   },
   topics: {
@@ -410,20 +413,47 @@ async function ask(name, arg) {
   const out = $('answer')
   out.replaceChildren(el('p', { class: 'soft', text: 'Asking…' }))
   const t0 = performance.now()
+  let id = arg.trim()
+  let found = null
   try {
-    const answer = await q.run(arg.trim())
+    // A name instead of an id: look it up in the maps first, and answer for the one it names (or let the reader choose).
+    lastId = null
+    if (q.byName && !/^[a-z]+:/.test(id)) {
+      found = await reader.lookup(id)
+      const matches = (found.data?.matches ?? []).filter((m) => q.byName(m.id))
+      const exact = matches.filter((m) => m.exact)
+      const pick = exact.length === 1 ? exact[0] : matches.length === 1 ? matches[0] : null
+      if (!pick) {
+        out.replaceChildren(choices(name, id, matches), apiCard(`reader.lookup(${JSON.stringify(id)})`, found, Math.round(performance.now() - t0)))
+        return
+      }
+      id = pick.id
+      lastId = id
+    }
+    const answer = await q.run(id)
     const ms = Math.round(performance.now() - t0)
     const shown = await q.show(answer)
-    out.replaceChildren(...[].concat(shown, apiCard(q.call(arg.trim()), answer, ms)))
+    const said = found ? el('p', { class: 'soft', text: `“${arg.trim()}” is ${id}.` }) : null
+    const before = found ? `const found = await reader.lookup(${JSON.stringify(arg.trim())})  // it names ${JSON.stringify(id)}\n` : ''
+    out.replaceChildren(...[].concat(said ?? [], shown, apiCard(q.call(id), answer, ms, before)))
   } catch (e) {
-    out.replaceChildren(el('div', { class: 'err' }, [el('strong', { text: e?.code ?? 'Error' }), el('p', { text: e?.message ?? String(e) })]), apiCard(q.call(arg.trim()), { error: e?.code, message: e?.message }, 0))
+    out.replaceChildren(el('div', { class: 'err' }, [el('strong', { text: e?.code ?? 'Error' }), el('p', { text: e?.message ?? String(e) })]), apiCard(q.call(id), { error: e?.code, message: e?.message }, 0))
   }
 }
 
-function apiCard(call, answer, ms) {
+// When a name matches several ids, or none: buttons to choose one.
+function choices(name, typed, matches) {
+  if (!matches.length) return el('div', { class: 'card' }, [el('p', { text: `Nothing in this language is named like “${typed}”. Try another spelling, the English word, or an id such as tw:kt/grace.` })])
+  return el('div', { class: 'card' }, [
+    el('p', { text: `“${typed}” names more than one thing. Choose one:` }),
+    el('div', { class: 'chips' }, matches.map((m) => el('button', { class: 'chip', type: 'button', title: m.id, text: `${m.names[0] ?? m.id} · ${m.id}`, onclick: () => ask(name, m.id) }))),
+  ])
+}
+
+function apiCard(call, answer, ms, before = '') {
   return el('div', { class: 'card' }, [
     el('span', { class: 'label', text: 'The call' }),
-    el('pre', {}, el('code', { text: `const reader = await client.open(${JSON.stringify(current.lang)})\nconst answer = await ${call}${ms ? `  // ${ms} ms in this browser` : ''}` })),
+    el('pre', {}, el('code', { text: `const reader = await client.open(${JSON.stringify(current.lang)})\n${before}const answer = await ${call}${ms ? `  // ${ms} ms in this browser` : ''}` })),
     el('details', {}, [el('summary', { text: 'The answer as JSON' }), el('pre', {}, el('code', { text: JSON.stringify(answer, null, 2) }))]),
   ])
 }
@@ -541,7 +571,9 @@ async function showPassage(a) {
 function showBooks(a) {
   const d = a.data
   if (!d || d.installed === false || !d.books) return [el('div', { class: 'card' }, [el('p', { text: 'The map that answers this is not in this browser.' }), missingLine(a)])]
-  const isArticle = $('arg').value.trim().startsWith('ta:')
+  const shownId = lastId ?? $('arg').value.trim()
+  const isArticle = shownId.startsWith('ta:')
+  const isTerm = shownId.startsWith('tw:')
   const cells = BOOKS.map((b) => ({ b, ...(d.books[b] ?? { state: 'none' }) }))
   const max = Math.max(1, ...cells.map((c) => c.count ?? 0))
   const withAny = cells.filter((c) => (c.count ?? 0) > 0)
@@ -557,8 +589,8 @@ function showBooks(a) {
     el('div', { class: 'blabels', 'aria-hidden': 'true' }, cells.map((c) => el('span', { class: c.installed ? 'here' : '', text: c.b }))),
   ])
   return [el('div', { class: 'card' }, [
-    el('div', { class: 'tally', text: isArticle ? `${total} notes point to it, in ${withAny.length} books` : `${total} links to this key term, in ${withAny.length} books` }),
-    el('p', { class: 'missing', text: isArticle ? 'Counted in this language’s translation notes.' : 'Counted in the English Translation Words links of each book, which every language shares.' }),
+    el('div', { class: 'tally', text: isArticle ? `${total} notes point to it, in ${withAny.length} books` : isTerm ? `${total} links to this key term, in ${withAny.length} books` : `${total} verses name it, in ${withAny.length} books` }),
+    el('p', { class: 'missing', text: isArticle ? 'Counted in this language’s translation notes.' : isTerm ? 'Counted in the English Translation Words links of each book, which every language shares.' : 'Counted in the topics: the verses that name this person, place or event.' }),
     chart,
     el('div', { class: 'legend' }, [el('span', {}, [el('i', { class: 'k-here' }), 'In this browser']), el('span', {}, [el('i', { class: 'k-away' }), 'Not downloaded: the map knows']), el('span', {}, [el('i', { class: 'k-none' }), 'No source for that book'])]),
     away.length ? el('p', { class: 'missing', text: `${away.length} of those books are not in this browser; the map counts them anyway.` }) : null,
