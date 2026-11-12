@@ -621,7 +621,16 @@ function showArticle(a) {
     el('h3', { text: d.title ?? d.id }),
     ...(d.sections ?? []).map((s) => el('p', { class: 'note-md', text: cleanNote(s.md) })),
     d.more?.length ? el('p', { class: 'missing', text: `${d.more.length} more sections: ask with "all".` }) : null,
-  ])]
+  ]), relatedCard(d.related)].filter(Boolean)
+}
+
+// tA: the articles tied to this one by its manual's config or by a link (Metaphor → Simple Metaphor, Biblical Imagery…).
+function relatedCard(related) {
+  if (!related?.length) return null
+  return el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `Related articles (${related.length})` }),
+    el('div', { class: 'chips' }, related.map((r) => el('button', { class: 'chip', type: 'button', title: r.id, text: r.title ?? r.id, onclick: () => ask('article', r.id) }))),
+  ])
 }
 
 function showTopics(a) {
