@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>tc-catalog</title>
+<meta name="description" content="Take a format 3 language with you as one transfer file to share, and ask for a language that is missing.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
+<link rel="icon" href="../favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="../site.css">
+<link rel="stylesheet" href="./catalog.css">
+</head>
+<body>
+<header class="wrap">
+  <nav class="nav" aria-label="Main">
+    <a class="wordmark" href="../">tC Language Packs</a>
+    <ul>
+      <li><a href="../inside/">Inside a pack</a></li>
+      <li><a href="../build/">Build with it</a></li>
+      <li><a href="../agents/">For agents</a></li>
+      <li><a href="../format-3/">For translators</a></li>
+      <li><a href="./" aria-current="page">tc-catalog</a></li>
+    </ul>
+  </nav>
+</header>
+
+<main>
+  <section class="top wrap" aria-labelledby="top-title">
+    <div class="top-text">
+      <p class="eyebrow">tc-catalog</p>
+      <h1 id="top-title">Take a language with you</h1>
+      <p class="lead">Pick a format 3 language from the test server, see what it holds, and (next) leave with one file you can share.</p>
+    </div>
+  </section>
+
+  <section class="panel wrap cut-l" aria-labelledby="list-title">
+    <h2 id="list-title">Languages on the test server</h2>
+    <p class="fine">These are the format 3 catalogs in the staging bucket. Opening one checks the publisher signature in this browser.</p>
+    <div class="search">
+      <label for="search">Search languages</label>
+      <input id="search" type="search" autocomplete="off" spellcheck="false" placeholder="en, es-419…">
+    </div>
+    <p id="list-status" class="status-line" role="status">Loading the language list…</p>
+    <ul id="lang-list" class="lang-list" aria-label="Format 3 languages"></ul>
+  </section>
+
+  <section id="detail" class="detail wrap" hidden aria-labelledby="detail-title">
+    <h2 id="detail-title"></h2>
+    <div id="detail-meta" class="meta"></div>
+    <p id="detail-problem" class="problem" hidden></p>
+    <div>
+      <h3 class="lead">Resources</h3>
+      <ul id="resource-list" class="resources"></ul>
+    </div>
+    <div>
+      <h3 class="lead">Books</h3>
+      <ul id="book-list" class="books"></ul>
+    </div>
+    <div class="actions">
+      <button id="download" class="button" type="button" hidden disabled>Download a transfer file</button>
+    </div>
+  </section>
+</main>
+
+<footer class="footer wrap">
+  <div class="blocks" aria-hidden="true"><span style="height:100%">t</span><span style="height:84%">C</span><span style="height:92%">c</span><span style="height:74%">a</span><span style="height:96%">t</span><span style="height:70%">a</span><span style="height:88%">l</span><span style="height:76%">o</span><span style="height:90%">g</span></div>
+  <div class="footer-links">
+    <div><a href="../">Overview</a><a href="../inside/">Inside a pack</a><a href="../build/">Build with it</a><a href="../agents/">For agents</a><a href="../format-3/">For translators</a></div>
+    <div><a href="../format-3/try/">Try a pack in the browser</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack-client">The client library</a></div>
+    <p class="credits">Catalogs and sizes come from the staging test server. The signature is checked in this browser against the staging publisher key.</p>
+  </div>
+  <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">Overview</a></div>
+</footer>
+
+<script type="module" src="./catalog.js"></script>
+</body>
+</html>
