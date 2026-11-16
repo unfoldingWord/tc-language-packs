@@ -1,4 +1,5 @@
 .taste-skill/inspect*/
+.superpowers/
 node_modules/
 .wrangler/
 

@@ -1,4 +1,5 @@
 import type { Env } from "./env";
+import { listLanguages } from "./languages";
 
 export function json(
   status: number,
@@ -20,16 +21,29 @@ export function json(
 
 async function handleApi(
   request: Request,
-  _env: Env,
+  env: Env,
   pathname: string,
 ): Promise<Response> {
-  if (pathname === "/api/languages" || pathname === "/api/requests") {
+  if (pathname === "/api/languages") {
+    if (request.method !== "GET") {
+      return json(405, { error: "method not allowed" });
+    }
+    const languages = await listLanguages(env.PACKS);
+    return json(
+      200,
+      { languages },
+      { "Cache-Control": "public, max-age=60" },
+    );
+  }
+
+  if (pathname === "/api/requests") {
     if (request.method !== "GET" && request.method !== "POST") {
       return json(405, { error: "method not allowed" });
     }
     // Filled by later tasks.
     return json(404, { error: "not found" });
   }
+
   return json(404, { error: "not found" });
 }
 

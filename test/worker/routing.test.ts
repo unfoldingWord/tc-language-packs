@@ -67,7 +67,7 @@ describe("worker routing", () => {
     expect(await response.json()).toEqual({ error: "not found" });
   });
 
-  it("returns 405 for unsupported methods on /api/languages", async () => {
+  it("returns 405 JSON for unsupported methods on /api/languages", async () => {
     const env = makeEnv(fakeFetcher(() => new Response("assets")));
     const response = await worker.fetch(
       new Request("https://example.test/api/languages", { method: "PUT" }),
@@ -76,5 +76,6 @@ describe("worker routing", () => {
     );
 
     expect(response.status).toBe(405);
+    expect(await response.json()).toEqual({ error: "method not allowed" });
   });
 });
