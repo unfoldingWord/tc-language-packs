@@ -154,6 +154,8 @@
       <button role="tab" data-q="renderings" aria-selected="false">How it was translated</button>
       <button role="tab" data-q="article" aria-selected="false">An article</button>
       <button role="tab" data-q="topics" aria-selected="false">People and places</button>
+      <button role="tab" data-q="stories" aria-selected="false">Bible stories</button>
+      <button role="tab" data-q="story" aria-selected="false">A story</button>
       <button role="tab" data-q="search" aria-selected="false">Search</button>
     </div>
     <form class="ask" id="ask">
@@ -246,7 +248,7 @@ const KEY_HEX = 'c2057cec32b948452849e7fcba6af323961a091ea82645eb297bb368e1c8d91
 const DB = 'tc-language-packs-try'
 const SHARED_UNITS = ['art:tw:kt', 'art:tw:names', 'art:tw:other', 'art:ta:translate']
 const BOOKS = ['gen','exo','lev','num','deu','jos','jdg','rut','1sa','2sa','1ki','2ki','1ch','2ch','ezr','neh','est','job','psa','pro','ecc','sng','isa','jer','lam','ezk','dan','hos','jol','amo','oba','jon','mic','nam','hab','zep','hag','zec','mal','mat','mrk','luk','jhn','act','rom','1co','2co','gal','eph','php','col','1th','2th','1ti','2ti','tit','phm','heb','jas','1pe','2pe','1jn','2jn','3jn','jud','rev']
-const NAMES = { gen:'Genesis', exo:'Exodus', lev:'Leviticus', num:'Numbers', deu:'Deuteronomy', jos:'Joshua', jdg:'Judges', rut:'Ruth', '1sa':'1 Samuel', '2sa':'2 Samuel', '1ki':'1 Kings', '2ki':'2 Kings', '1ch':'1 Chronicles', '2ch':'2 Chronicles', ezr:'Ezra', neh:'Nehemiah', est:'Esther', job:'Job', psa:'Psalms', pro:'Proverbs', ecc:'Ecclesiastes', sng:'Song of Songs', isa:'Isaiah', jer:'Jeremiah', lam:'Lamentations', ezk:'Ezekiel', dan:'Daniel', hos:'Hosea', jol:'Joel', amo:'Amos', oba:'Obadiah', jon:'Jonah', mic:'Micah', nam:'Nahum', hab:'Habakkuk', zep:'Zephaniah', hag:'Haggai', zec:'Zechariah', mal:'Malachi', mat:'Matthew', mrk:'Mark', luk:'Luke', jhn:'John', act:'Acts', rom:'Romans', '1co':'1 Corinthians', '2co':'2 Corinthians', gal:'Galatians', eph:'Ephesians', php:'Philippians', col:'Colossians', '1th':'1 Thessalonians', '2th':'2 Thessalonians', '1ti':'1 Timothy', '2ti':'2 Timothy', tit:'Titus', phm:'Philemon', heb:'Hebrews', jas:'James', '1pe':'1 Peter', '2pe':'2 Peter', '1jn':'1 John', '2jn':'2 John', '3jn':'3 John', jud:'Jude', rev:'Revelation' }
+const NAMES = { obs:'Open Bible Stories', gen:'Genesis', exo:'Exodus', lev:'Leviticus', num:'Numbers', deu:'Deuteronomy', jos:'Joshua', jdg:'Judges', rut:'Ruth', '1sa':'1 Samuel', '2sa':'2 Samuel', '1ki':'1 Kings', '2ki':'2 Kings', '1ch':'1 Chronicles', '2ch':'2 Chronicles', ezr:'Ezra', neh:'Nehemiah', est:'Esther', job:'Job', psa:'Psalms', pro:'Proverbs', ecc:'Ecclesiastes', sng:'Song of Songs', isa:'Isaiah', jer:'Jeremiah', lam:'Lamentations', ezk:'Ezekiel', dan:'Daniel', hos:'Hosea', jol:'Joel', amo:'Amos', oba:'Obadiah', jon:'Jonah', mic:'Micah', nam:'Nahum', hab:'Habakkuk', zep:'Zephaniah', hag:'Haggai', zec:'Zechariah', mal:'Malachi', mat:'Matthew', mrk:'Mark', luk:'Luke', jhn:'John', act:'Acts', rom:'Romans', '1co':'1 Corinthians', '2co':'2 Corinthians', gal:'Galatians', eph:'Ephesians', php:'Philippians', col:'Colossians', '1th':'1 Thessalonians', '2th':'2 Thessalonians', '1ti':'1 Timothy', '2ti':'2 Timothy', tit:'Titus', phm:'Philemon', heb:'Hebrews', jas:'James', '1pe':'1 Peter', '2pe':'2 Peter', '1jn':'1 John', '2jn':'2 John', '3jn':'3 John', jud:'Jude', rev:'Revelation' }
 
 const $ = (id) => document.getElementById(id)
 const el = (tag, props = {}, kids = []) => {
@@ -383,8 +385,24 @@ const Q = {
     first: () => current.book,
     show: showTopics,
   },
+  stories: {
+    hint: 'A chapter or a passage (gen 1, jon 1:1-3), and the Open Bible Stories that tell it. Leave it empty for all fifty. The titles and ranges come from the maps; the frames need the stories downloaded.',
+    call: (a) => `reader.stories(${a ? JSON.stringify(a) : ''})`,
+    run: (a) => reader.stories(a || undefined),
+    examples: () => ['gen 1', `${current.book} 1`, 'mat 3', ''],
+    first: () => 'gen 1',
+    show: showStories,
+  },
+  story: {
+    hint: 'A story number, 1 to 50. The answer has its frames and, for each frame, the notes, the questions and the key-term links, when the stories are downloaded.',
+    call: (a) => `reader.story(${Number(a)})`,
+    run: (a) => reader.story(Number(a)),
+    examples: () => ['1', '8', '13', '37'],
+    first: () => '1',
+    show: showStory,
+  },
   search: {
-    hint: 'Words to find in the downloaded book: its texts, notes and questions.',
+    hint: 'Words to find in the downloaded book: its texts, notes and questions, and in the Open Bible Stories when they are downloaded.',
     call: (a) => `reader.search(${JSON.stringify(a)})`,
     run: (a) => reader.search(a),
     examples: () => (current.lang === 'en' ? ['grace', 'good works', 'elders'] : ['gracia', 'buenas obras', 'ancianos']),
@@ -571,10 +589,111 @@ async function showPassage(a) {
     el('span', { class: 'label', text: 'Questions' }),
     el('ul', { class: 'list' }, qs.map((q) => el('li', {}, [el('strong', { text: q.cols?.question ?? '' }), el('p', { text: q.cols?.response ?? '' })]))),
   ]) : null
-  return [el('div', { class: 'card' }, [head, texts]), termCard, noteCard, qCard]
+  const storyCard = await storiesOfPassage(`${d.book} ${d.ref}`)
+  return [el('div', { class: 'card' }, [head, texts]), storyCard, termCard, noteCard, qCard]
 }
 
-function showBooks(a) {
+// ---- Open Bible Stories ----
+
+// The button that downloads the `obs` unit when an answer says it needs it.
+function obsInstall(answer) {
+  const need = (answer?.notInstalled ?? []).find((x) => x.unit === 'obs')
+  if (!need) return null
+  const status = el('span', { class: 'soft' })
+  const btn = el('button', { class: 'button', type: 'button', text: `Download the Open Bible Stories (${kb(need.bytes ?? 0)})` })
+  btn.addEventListener('click', async () => {
+    btn.disabled = true
+    status.textContent = 'Downloading…'
+    try {
+      await client.install(current.lang, { units: ['obs'] }, { onProgress: (p) => { status.textContent = `Downloading: ${p.done} of ${p.total} pieces · ${kb(p.bytes)}` } })
+      await ready(current.lang, current.book)
+    } catch (e) {
+      status.textContent = 'The download stopped: ' + (e?.code ? e.code + ' — ' : '') + (e?.message ?? e)
+      btn.disabled = false
+    }
+  })
+  return el('p', { class: 'missing' }, [btn, ' ', status])
+}
+
+const storyChip = (s, extra = '') => el('button', { class: 'chip', type: 'button', title: `${s.id} · ${(s.refs ?? []).join(', ')}`, text: `${s.n}. ${s.title}${extra}`, onclick: () => ask('story', String(s.n)) })
+
+// Under a passage: the stories that tell it, with the call and its JSON.
+async function storiesOfPassage(ref) {
+  const t0 = performance.now()
+  let a
+  try { a = await reader.stories(ref) } catch (e) { return null }
+  const ms = Math.round(performance.now() - t0)
+  const list = a?.data?.stories ?? []
+  const body = !a?.data
+    ? [el('p', { class: 'missing', text: 'The stories are not in this pack.' }), missingLine(a)]
+    : list.length
+      ? [el('ul', { class: 'list' }, list.map((s) => el('li', {}, [storyChip(s), el('span', { class: 'soft', text: (s.refs ?? []).join(', ') })])))]
+      : [el('p', { class: 'missing', text: 'No Bible story tells this passage.' })]
+  return el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `Bible stories that tell it (${list.length}) · touch one to read it` }),
+    ...body,
+    obsInstall(a),
+    el('details', {}, [el('summary', { text: 'The call and its JSON' }), el('pre', {}, el('code', { text: `const answer = await reader.stories(${JSON.stringify(ref)})  // ${ms} ms\n` + JSON.stringify(a, null, 2) }))]),
+  ].filter(Boolean))
+}
+
+function showStories(a) {
+  const d = a.data
+  if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'The stories are not in this pack.' }), missingLine(a)])]
+  return [el('div', { class: 'card' }, [
+    el('h3', { text: `${d.stories.length} ${d.stories.length === 1 ? 'story' : 'stories'}${d.ref ? ` in ${d.ref}` : ''}` }),
+    d.stories.length ? el('ul', { class: 'list' }, d.stories.map((s) => el('li', {}, [storyChip(s), el('span', { class: 'soft', text: (s.refs ?? []).join(', ') })]))) : el('p', { text: 'No Bible story tells this passage.' }),
+    missingLine(a),
+    obsInstall(a),
+  ].filter(Boolean))]
+}
+
+const helpText = (r) => cleanNote(r.cols?.note ?? r.cols?.question ?? r.cols?.response ?? r.cols?.text ?? Object.values(r.cols ?? {}).join(' · '))
+
+function showStory(a) {
+  const d = a.data
+  if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That story is not in this pack.' }), missingLine(a)])]
+  const head = el('div', { class: 'card' }, [
+    el('h3', { text: `${d.n}. ${d.title}` }),
+    d.refs?.length ? el('p', { class: 'soft', text: d.refs.join(', ') }) : null,
+    d.reference ? el('p', { class: 'soft', text: d.reference }) : null,
+  ].filter(Boolean))
+  if (!d.frames) return [head, el('div', { class: 'card' }, [el('p', { class: 'missing', text: 'The frames are not in this browser: the stories are not downloaded, or not in this pack.' }), missingLine(a), obsInstall(a)].filter(Boolean))]
+  const none = (k) => d.helps?.[k] === 'none'
+  const frames = d.frames.map((f) => el('li', {}, [
+    el('strong', { text: `Frame ${f.ref}` }),
+    f.text ? el('p', { text: f.text }) : null,
+    f.notes.length ? el('div', {}, [el('span', { class: 'label', text: 'Notes' }), ...f.notes.map((r) => el('p', { class: 'note-md', text: helpText(r) }))]) : null,
+    f.questions.length ? el('div', {}, [el('span', { class: 'label', text: 'Questions' }), ...f.questions.map((r) => el('p', { class: 'note-md', text: helpText(r) }))]) : null,
+    f.links.length ? el('div', { class: 'chips' }, f.links.filter((r) => r.concept).map((r) => conceptChip(r.concept))) : null,
+  ].filter(Boolean)))
+  const gaps = ['notes', 'questions', 'links'].filter(none)
+  return [head, el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `Frames (${d.frames.length})` }),
+    el('ul', { class: 'list' }, frames),
+    gaps.length ? el('p', { class: 'missing', text: `This language has no ${gaps.join(', ')} for the stories.` }) : null,
+  ].filter(Boolean))]
+}
+
+// The `obs` field of a concept (key term, article, person, place): the stories that use it.
+function obsCard(c) {
+  const o = c?.data?.obs
+  if (!o) return null
+  if (o.installed === false) return el('div', { class: 'card' }, [el('span', { class: 'label', text: 'Open Bible Stories' }), el('p', { class: 'missing', text: 'Not in this browser.' }), missingLine(c), obsInstall(c)].filter(Boolean))
+  const list = o.stories ?? []
+  return el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `Open Bible Stories that use it (${list.length})` }),
+    list.length
+      ? el('div', { class: 'chips' }, list.map((s) => storyChip(s, s.frames ? ` · frames ${s.frames.join(', ')}` : s.count ? ` · ${s.count} ${s.count === 1 ? 'note' : 'notes'}` : '')))
+      : el('p', { class: 'missing', text: 'No story uses it.' }),
+  ])
+}
+async function obsOfConcept(id) {
+  if (!id) return null
+  try { return obsCard(await reader.concept(id)) } catch { return null }
+}
+
+async function showBooks(a) {
   const d = a.data
   if (!d || d.installed === false || !d.books) return [el('div', { class: 'card' }, [el('p', { text: 'The map that answers this is not in this browser.' }), missingLine(a)])]
   const shownId = lastId ?? $('arg').value.trim()
@@ -600,7 +719,15 @@ function showBooks(a) {
     chart,
     el('div', { class: 'legend' }, [el('span', {}, [el('i', { class: 'k-here' }), 'In this browser']), el('span', {}, [el('i', { class: 'k-away' }), 'Not downloaded: the map knows']), el('span', {}, [el('i', { class: 'k-none' }), 'No source for that book'])]),
     away.length ? el('p', { class: 'missing', text: `${away.length} of those books are not in this browser; the map counts them anyway.` }) : null,
-  ])]
+    obsLine(d.obs),
+  ]), await obsOfConcept(shownId)].filter(Boolean)
+}
+
+function obsLine(c) {
+  if (!c) return null
+  if (c.installed === false) return el('p', { class: 'missing', text: 'Open Bible Stories: not in this pack, or not downloaded.' })
+  if (c.state === 'none') return el('p', { class: 'missing', text: 'Open Bible Stories: no source in this pack.' })
+  return el('p', { class: 'missing', text: `Open Bible Stories: ${c.state === 'zero' ? 'none' : c.count ?? 0}` })
 }
 
 function showRenderings(a) {
@@ -614,14 +741,14 @@ function showRenderings(a) {
   ])]
 }
 
-function showArticle(a) {
+async function showArticle(a) {
   const d = a.data
   if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That article is not in this browser.' }), missingLine(a)])]
   return [el('div', { class: 'card' }, [
     el('h3', { text: d.title ?? d.id }),
     ...(d.sections ?? []).map((s) => el('p', { class: 'note-md', text: cleanNote(s.md) })),
     d.more?.length ? el('p', { class: 'missing', text: `${d.more.length} more sections: ask with "all".` }) : null,
-  ]), relatedCard(d.related)].filter(Boolean)
+  ]), relatedCard(d.related), await obsOfConcept(d.id)].filter(Boolean)
 }
 
 // tA: the articles tied to this one by its manual's config or by a link (Metaphor → Simple Metaphor, Biblical Imagery…).
@@ -651,14 +778,16 @@ function showTopics(a) {
 
 function showSearch(a) {
   const hits = a.data ?? []
-  const kind = { text: 'Bible', note: 'Note', question: 'Question', link: 'Key term' }
+  const kind = { text: 'Bible', note: 'Note', question: 'Question', link: 'Key term', title: 'Story title' }
   return [el('div', { class: 'card' }, [
     el('h3', { text: `${hits.length} ${hits.length === 1 ? 'match' : 'matches'}` }),
     el('ul', { class: 'list' }, hits.slice(0, 30).map((h) => el('li', {}, [
       el('strong', { text: `${NAMES[h.book] ?? h.book} ${h.ref} · ${kind[h.kind] ?? h.kind}` }),
       el('span', { text: h.snippet ?? '' }),
+      h.book === 'obs' ? el('button', { class: 'chip', type: 'button', text: 'Read the story', onclick: () => ask('story', String(parseInt(h.ref, 10))) }) : null,
     ]))),
-  ])]
+    obsInstall(a),
+  ].filter(Boolean))]
 }
 
 // ---- Wiring ----
