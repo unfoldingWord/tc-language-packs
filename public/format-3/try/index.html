@@ -616,7 +616,7 @@ function obsInstall(answer) {
 }
 
 // The English stories carry their number in the title ("1. The Creation"); other languages may not.
-const storyLabel = (n, title) => (/^\s*\d+[.)]\s/.test(String(title ?? '')) ? String(title) : `${n}. ${title}`)
+const storyLabel = (n, title) => (/^\s*\d+[.)]\s/.test(String(title ?? '')) || /^\s*Story\s+\d+\s*$/i.test(String(title ?? '')) ? String(title) : `${n}. ${title}`)
 // An obs hit's ref is "SS:FF" (story, frame); frame 0 is the title.
 const obsHitRef = (ref) => { const [st, fr] = String(ref).split(':').map((x) => parseInt(x, 10)); return fr ? `story ${st}, frame ${fr}` : `story ${st}` }
 const storyChip = (s, extra = '') => el('button', { class: 'chip', type: 'button', title: `${s.id} · ${(s.refs ?? []).join(', ')}`, text: `${storyLabel(s.n, s.title)}${extra}`, onclick: () => ask('story', String(s.n)) })
