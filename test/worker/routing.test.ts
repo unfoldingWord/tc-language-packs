@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import worker from "../../src/worker/index";
 import type { Env } from "../../src/worker/env";
 import { fakeBucket, fakeFetcher, fakeKv } from "./fakes";
@@ -77,5 +77,29 @@ describe("worker routing", () => {
 
     expect(response.status).toBe(405);
     expect(await response.json()).toEqual({ error: "method not allowed" });
+  });
+
+  it("returns 500 JSON when /api/languages listing throws", async () => {
+    const err = vi.spyOn(console, "error").mockImplementation(() => {});
+    const packs = fakeBucket({});
+    packs.list = async () => {
+      throw new Error("list failed");
+    };
+    const env: Env = {
+      ...makeEnv(fakeFetcher(() => new Response("assets"))),
+      PACKS: packs,
+    };
+
+    const response = await worker.fetch(
+      new Request("https://example.test/api/languages"),
+      env,
+      {} as ExecutionContext,
+    );
+
+    expect(response.status).toBe(500);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(await response.json()).toEqual({ error: "internal error" });
+    expect(err).toHaveBeenCalled();
+    err.mockRestore();
   });
 });

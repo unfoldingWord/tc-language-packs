@@ -55,7 +55,12 @@ const worker = {
   ): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname.startsWith("/api/")) {
-      return handleApi(request, env, url.pathname);
+      try {
+        return await handleApi(request, env, url.pathname);
+      } catch (err) {
+        console.error(err);
+        return json(500, { error: "internal error" });
+      }
     }
     return env.ASSETS.fetch(request);
   },
