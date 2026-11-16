@@ -615,7 +615,11 @@ function obsInstall(answer) {
   return el('p', { class: 'missing' }, [btn, ' ', status])
 }
 
-const storyChip = (s, extra = '') => el('button', { class: 'chip', type: 'button', title: `${s.id} · ${(s.refs ?? []).join(', ')}`, text: `${s.n}. ${s.title}${extra}`, onclick: () => ask('story', String(s.n)) })
+// The English stories carry their number in the title ("1. The Creation"); other languages may not.
+const storyLabel = (n, title) => (/^\s*\d+[.)]\s/.test(String(title ?? '')) ? String(title) : `${n}. ${title}`)
+// An obs hit's ref is "SS:FF" (story, frame); frame 0 is the title.
+const obsHitRef = (ref) => { const [st, fr] = String(ref).split(':').map((x) => parseInt(x, 10)); return fr ? `story ${st}, frame ${fr}` : `story ${st}` }
+const storyChip = (s, extra = '') => el('button', { class: 'chip', type: 'button', title: `${s.id} · ${(s.refs ?? []).join(', ')}`, text: `${storyLabel(s.n, s.title)}${extra}`, onclick: () => ask('story', String(s.n)) })
 
 // Under a passage: the stories that tell it, with the call and its JSON.
 async function storiesOfPassage(ref) {
@@ -654,7 +658,7 @@ function showStory(a) {
   const d = a.data
   if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That story is not in this pack.' }), missingLine(a)])]
   const head = el('div', { class: 'card' }, [
-    el('h3', { text: `${d.n}. ${d.title}` }),
+    el('h3', { text: storyLabel(d.n, d.title) }),
     d.refs?.length ? el('p', { class: 'soft', text: d.refs.join(', ') }) : null,
     d.reference ? el('p', { class: 'soft', text: d.reference }) : null,
   ].filter(Boolean))
@@ -790,7 +794,7 @@ function showSearch(a) {
   return [el('div', { class: 'card' }, [
     el('h3', { text: `${hits.length} ${hits.length === 1 ? 'match' : 'matches'}` }),
     el('ul', { class: 'list' }, hits.slice(0, 30).map((h) => el('li', {}, [
-      el('strong', { text: `${NAMES[h.book] ?? h.book} ${h.ref} · ${kind[h.kind] ?? h.kind}` }),
+      el('strong', { text: `${NAMES[h.book] ?? h.book} ${h.book === 'obs' ? obsHitRef(h.ref) : h.ref} · ${kind[h.kind] ?? h.kind}` }),
       el('span', { text: h.snippet ?? '' }),
       h.book === 'obs' ? el('button', { class: 'chip', type: 'button', text: 'Read the story', onclick: () => ask('story', String(parseInt(h.ref, 10))) }) : null,
     ]))),
