@@ -79,21 +79,34 @@ export function fakeBucket(
   } as unknown as R2Bucket;
 }
 
-export function fakeKv(): KVNamespace {
-  const store = new Map<string, string>();
-  return {
+export type FakeKv = KVNamespace & {
+  getCallCount: number;
+  resetGetCallCount(): void;
+};
+
+export function fakeKv(): FakeKv {
+  const store = new Map<string, { value: string; metadata: unknown | null }>();
+  const kv = {
+    getCallCount: 0,
+    resetGetCallCount() {
+      kv.getCallCount = 0;
+    },
     async get(key: string, type?: "text" | "json" | "arrayBuffer" | "stream") {
-      const value = store.get(key);
-      if (value === undefined) return null;
-      if (type === "json") return JSON.parse(value);
-      return value;
+      kv.getCallCount += 1;
+      const entry = store.get(key);
+      if (!entry) return null;
+      if (type === "json") return JSON.parse(entry.value);
+      return entry.value;
     },
     async put(
       key: string,
       value: string,
-      _options?: { expirationTtl?: number; expiration?: number; metadata?: unknown },
+      options?: { expirationTtl?: number; expiration?: number; metadata?: unknown },
     ) {
-      store.set(key, value);
+      store.set(key, {
+        value,
+        metadata: options?.metadata ?? null,
+      });
     },
     async delete(key: string) {
       store.delete(key);
@@ -110,16 +123,29 @@ export function fakeKv(): KVNamespace {
       const slice = names.slice(Math.max(start, 0), Math.max(start, 0) + limit);
       const listComplete = Math.max(start, 0) + limit >= names.length;
       return {
-        keys: slice.map((name) => ({ name })),
+        keys: slice.map((name) => {
+          const entry = store.get(name)!;
+          return {
+            name,
+            metadata: entry.metadata,
+          };
+        }),
         list_complete: listComplete,
         cursor: listComplete ? undefined : slice[slice.length - 1],
         cacheStatus: null,
       };
     },
-    async getWithMetadata() {
-      return { value: null, metadata: null, cacheStatus: null };
+    async getWithMetadata(key: string) {
+      const entry = store.get(key);
+      if (!entry) return { value: null, metadata: null, cacheStatus: null };
+      return {
+        value: entry.value,
+        metadata: entry.metadata,
+        cacheStatus: null,
+      };
     },
-  } as unknown as KVNamespace;
+  };
+  return kv as unknown as FakeKv;
 }
 
 export function fakeFetcher(

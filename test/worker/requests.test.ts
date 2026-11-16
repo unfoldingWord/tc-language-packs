@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import worker from "../../src/worker/index";
 import type { Env } from "../../src/worker/env";
+import type { RequestListMeta, RequestRecord } from "../../src/worker/requests";
 import { fakeBucket, fakeFetcher, fakeKv } from "./fakes";
 
 const COMPAT = "f2.0-u2.3.0-p6000230-q9-a12-t1";
@@ -321,5 +322,70 @@ describe("/api/requests", () => {
     const response = await postRequest(env, "not-json");
     expect(response.status).toBe(400);
     expect(await response.json()).toEqual({ error: "bad request" });
+  });
+
+  it("builds GET from list metadata only, with no KV get calls", async () => {
+    vi.stubGlobal("fetch", turnstileOkFetch());
+    const requests = fakeKv();
+    const env = makeEnv({ REQUESTS: requests });
+
+    await postRequest(env, { lang: "pt", token: "ok" });
+    await postRequest(env, { lang: "aa", token: "ok" }, "203.0.113.99");
+    requests.resetGetCallCount();
+
+    const get = await worker.fetch(
+      new Request("https://example.test/api/requests"),
+      env,
+      {} as ExecutionContext,
+    );
+    expect(get.status).toBe(200);
+    const body = (await get.json()) as {
+      requests: Array<{ lang: string; count: number }>;
+    };
+    expect(body.requests.map((r) => r.lang).sort()).toEqual(["aa", "pt-br"]);
+    expect(requests.getCallCount).toBe(0);
+  });
+
+  it("writes list metadata that matches the request record body", async () => {
+    vi.stubGlobal("fetch", turnstileOkFetch());
+    const requests = fakeKv();
+    const env = makeEnv({ REQUESTS: requests });
+
+    await postRequest(env, { lang: "pt", token: "ok", reason: "need it" });
+
+    const listed = await requests.list({ prefix: "req:" });
+    expect(listed.keys).toHaveLength(1);
+    const meta = listed.keys[0].metadata as RequestListMeta;
+    const record = (await requests.get("req:pt-br", "json")) as RequestRecord;
+    expect(meta).toEqual({
+      count: record.count,
+      lastState: record.lastState,
+      lastAt: record.lastAt,
+    });
+  });
+
+  it("keeps count at 1 when the same address posts twice while PACKS.head throws", async () => {
+    vi.stubGlobal("fetch", turnstileOkFetch());
+    const packs = fakeBucket({});
+    packs.head = async () => {
+      throw new Error("r2 head failed");
+    };
+    const env = makeEnv({ PACKS: packs });
+
+    const first = await postRequest(env, { lang: "pt", token: "ok" });
+    const second = await postRequest(env, { lang: "pt", token: "ok" });
+
+    expect(await first.json()).toEqual({
+      lang: "pt-br",
+      state: "try-later",
+      reason: "status-unreadable",
+      count: 1,
+    });
+    expect(await second.json()).toEqual({
+      lang: "pt-br",
+      state: "try-later",
+      reason: "status-unreadable",
+      count: 1,
+    });
   });
 });

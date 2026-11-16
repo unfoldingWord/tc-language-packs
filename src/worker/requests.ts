@@ -1,4 +1,5 @@
 import type { Env } from "./env";
+import { json } from "./http";
 import { askStaging, readStatus } from "./staging";
 import { decideState, type RequestState } from "./state";
 import { normalizeTag } from "./tags";
@@ -11,30 +12,18 @@ export type RequestRecord = {
   reasons: string[];
 };
 
+export type RequestListMeta = {
+  count: number;
+  lastState: RequestState;
+  lastAt: string;
+};
+
 const MAX_REASON_LEN = 280;
 const RATE_LIMIT = 5;
 const RATE_TTL = 3600;
 const SEEN_TTL = 86400;
 const REASONS_KEEP = 5;
-
-/** Local copy of index.json to avoid a circular import with the router. */
-function json(
-  status: number,
-  body: unknown,
-  headers?: HeadersInit,
-): Response {
-  const responseHeaders = new Headers(headers);
-  if (!responseHeaders.has("Content-Type")) {
-    responseHeaders.set("Content-Type", "application/json");
-  }
-  if (!responseHeaders.has("Cache-Control")) {
-    responseHeaders.set("Cache-Control", "no-store");
-  }
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: responseHeaders,
-  });
-}
+const GET_CACHE_TTL_MS = 30_000;
 
 async function sha256Hex(input: string): Promise<string> {
   const digest = await crypto.subtle.digest(
@@ -98,6 +87,14 @@ async function readRecord(
   return (await kv.get(`req:${lang}`, "json")) as RequestRecord | null;
 }
 
+function recordMetadata(record: RequestRecord): RequestListMeta {
+  return {
+    count: record.count,
+    lastState: record.lastState,
+    lastAt: record.lastAt,
+  };
+}
+
 function clientIp(request: Request): string | null {
   return request.headers.get("CF-Connecting-IP");
 }
@@ -136,7 +133,9 @@ async function countAndReply(
   };
   if (o.reason) record.lastReason = o.reason;
 
-  await env.REQUESTS.put(`req:${lang}`, JSON.stringify(record));
+  await env.REQUESTS.put(`req:${lang}`, JSON.stringify(record), {
+    metadata: recordMetadata(record),
+  });
   await env.REQUESTS.put(seenKey, "1", { expirationTtl: SEEN_TTL });
 
   return json(
@@ -207,6 +206,21 @@ async function handlePost(
   });
 
   const seenKey = `seen:${ipHash}:${lang}:${dayKey(now)}`;
+  const seen = await env.REQUESTS.get(seenKey);
+  if (seen) {
+    const existing = await readRecord(env.REQUESTS, lang);
+    if (existing) {
+      return json(
+        200,
+        replyBody(
+          lang,
+          existing.lastState,
+          existing.count,
+          existing.lastReason,
+        ),
+      );
+    }
+  }
 
   let hasV3 = false;
   try {
@@ -223,22 +237,6 @@ async function handlePost(
 
   if (hasV3) {
     return json(200, { lang, state: "available", count: 0 });
-  }
-
-  const seen = await env.REQUESTS.get(seenKey);
-  if (seen) {
-    const existing = await readRecord(env.REQUESTS, lang);
-    if (existing) {
-      return json(
-        200,
-        replyBody(
-          lang,
-          existing.lastState,
-          existing.count,
-          existing.lastReason,
-        ),
-      );
-    }
   }
 
   let decided: { state: RequestState; reason?: string };
@@ -264,7 +262,14 @@ async function handlePost(
   });
 }
 
-async function handleGet(env: Env): Promise<Response> {
+async function buildRequestsList(env: Env): Promise<
+  Array<{
+    lang: string;
+    count: number;
+    state: RequestState;
+    at: string;
+  }>
+> {
   const requests: Array<{
     lang: string;
     count: number;
@@ -276,25 +281,59 @@ async function handleGet(env: Env): Promise<Response> {
   do {
     const page = await env.REQUESTS.list({ prefix: "req:", cursor });
     for (const key of page.keys) {
-      const lang = key.name.slice("req:".length);
-      const record = await readRecord(env.REQUESTS, lang);
-      if (!record) continue;
+      const meta = key.metadata as RequestListMeta | null | undefined;
+      if (
+        !meta ||
+        typeof meta.count !== "number" ||
+        typeof meta.lastState !== "string" ||
+        typeof meta.lastAt !== "string"
+      ) {
+        continue;
+      }
       requests.push({
-        lang,
-        count: record.count,
-        state: record.lastState,
-        at: record.lastAt,
+        lang: key.name.slice("req:".length),
+        count: meta.count,
+        state: meta.lastState,
+        at: meta.lastAt,
       });
     }
     cursor = page.list_complete ? undefined : page.cursor;
   } while (cursor);
 
   requests.sort((a, b) => b.count - a.count || a.lang.localeCompare(b.lang));
-  return json(
+  return requests;
+}
+
+async function handleGet(request: Request, env: Env): Promise<Response> {
+  const cache =
+    typeof caches !== "undefined" ? caches.default : undefined;
+  if (cache) {
+    const cached = await cache.match(request.url);
+    if (cached) return cached;
+  }
+
+  const response = json(
     200,
-    { requests },
+    { requests: await buildRequestsList(env) },
     { "Cache-Control": "public, max-age=30" },
   );
+
+  if (cache) {
+    const toStore = response.clone();
+    // Cache API ignores Cache-Control on put; store a response we control.
+    const headers = new Headers(toStore.headers);
+    headers.set("Cache-Control", `public, max-age=${GET_CACHE_TTL_MS / 1000}`);
+    await cache.put(
+      request.url,
+      new Response(await toStore.arrayBuffer(), {
+        status: toStore.status,
+        statusText: toStore.statusText,
+        headers,
+      }),
+    );
+  }
+
+  return response;
 }
 
 export async function handleRequests(
@@ -302,7 +341,7 @@ export async function handleRequests(
   env: Env,
 ): Promise<Response> {
   if (request.method === "GET") {
-    return handleGet(env);
+    return handleGet(request, env);
   }
   if (request.method === "POST") {
     return handlePost(request, env);

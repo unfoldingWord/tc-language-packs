@@ -1,24 +1,7 @@
 import type { Env } from "./env";
+import { json } from "./http";
 import { listLanguages } from "./languages";
 import { handleRequests } from "./requests";
-
-export function json(
-  status: number,
-  body: unknown,
-  headers?: HeadersInit,
-): Response {
-  const responseHeaders = new Headers(headers);
-  if (!responseHeaders.has("Content-Type")) {
-    responseHeaders.set("Content-Type", "application/json");
-  }
-  if (!responseHeaders.has("Cache-Control")) {
-    responseHeaders.set("Cache-Control", "no-store");
-  }
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: responseHeaders,
-  });
-}
 
 async function handleApi(
   request: Request,
