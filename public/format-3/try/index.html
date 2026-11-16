@@ -598,7 +598,7 @@ async function showPassage(a) {
 // The button that downloads the `obs` unit when an answer says it needs it.
 function obsInstall(answer) {
   const need = (answer?.notInstalled ?? []).find((x) => x.unit === 'obs')
-  if (!need) return null
+  if (!need || !need.bytes) return null
   const status = el('span', { class: 'soft' })
   const btn = el('button', { class: 'button', type: 'button', text: `Download the Open Bible Stories (${kb(need.bytes ?? 0)})` })
   btn.addEventListener('click', async () => {
@@ -658,7 +658,12 @@ function showStory(a) {
     d.refs?.length ? el('p', { class: 'soft', text: d.refs.join(', ') }) : null,
     d.reference ? el('p', { class: 'soft', text: d.reference }) : null,
   ].filter(Boolean))
-  if (!d.frames) return [head, el('div', { class: 'card' }, [el('p', { class: 'missing', text: 'The frames are not in this browser: the stories are not downloaded, or not in this pack.' }), missingLine(a), obsInstall(a)].filter(Boolean))]
+  if (!d.frames) {
+    const listed = (a.notInstalled ?? []).some((x) => x.unit === 'obs' && x.bytes)
+    return [head, el('div', { class: 'card' }, listed
+      ? [el('p', { class: 'missing', text: 'The frames are not in this browser: the stories are not downloaded.' }), missingLine(a), obsInstall(a)].filter(Boolean)
+      : [el('p', { class: 'missing', text: 'The frames, notes and questions are not in this pack: it has no Open Bible Stories unit.' })])]
+  }
   const none = (k) => d.helps?.[k] === 'none'
   const frames = d.frames.map((f) => el('li', {}, [
     el('strong', { text: `Frame ${f.ref}` }),
@@ -679,7 +684,10 @@ function showStory(a) {
 function obsCard(c) {
   const o = c?.data?.obs
   if (!o) return null
-  if (o.installed === false) return el('div', { class: 'card' }, [el('span', { class: 'label', text: 'Open Bible Stories' }), el('p', { class: 'missing', text: 'Not in this browser.' }), missingLine(c), obsInstall(c)].filter(Boolean))
+  if (o.installed === false) {
+    const listed = (c.notInstalled ?? []).some((x) => x.unit === 'obs' && x.bytes)
+    return el('div', { class: 'card' }, [el('span', { class: 'label', text: 'Open Bible Stories' }), el('p', { class: 'missing', text: listed ? 'Not in this browser.' : 'Not in this pack.' }), listed ? missingLine(c) : null, obsInstall(c)].filter(Boolean))
+  }
   const list = o.stories ?? []
   return el('div', { class: 'card' }, [
     el('span', { class: 'label', text: `Open Bible Stories that use it (${list.length})` }),
@@ -725,7 +733,7 @@ async function showBooks(a) {
 
 function obsLine(c) {
   if (!c) return null
-  if (c.installed === false) return el('p', { class: 'missing', text: 'Open Bible Stories: not in this pack, or not downloaded.' })
+  if (c.installed === false) return el('p', { class: 'missing', text: c.bytes ? 'Open Bible Stories: not in this browser.' : 'Open Bible Stories: not in this pack.' })
   if (c.state === 'none') return el('p', { class: 'missing', text: 'Open Bible Stories: no source in this pack.' })
   return el('p', { class: 'missing', text: `Open Bible Stories: ${c.state === 'zero' ? 'none' : c.count ?? 0}` })
 }
