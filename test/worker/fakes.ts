@@ -88,14 +88,33 @@ export function fakeKv(): KVNamespace {
       if (type === "json") return JSON.parse(value);
       return value;
     },
-    async put(key: string, value: string) {
+    async put(
+      key: string,
+      value: string,
+      _options?: { expirationTtl?: number; expiration?: number; metadata?: unknown },
+    ) {
       store.set(key, value);
     },
     async delete(key: string) {
       store.delete(key);
     },
-    async list() {
-      return { keys: [], list_complete: true, cacheStatus: null };
+    async list(options?: { prefix?: string; cursor?: string; limit?: number }) {
+      const prefix = options?.prefix ?? "";
+      const limit = options?.limit ?? 1000;
+      const names = [...store.keys()]
+        .filter((key) => key.startsWith(prefix))
+        .sort();
+      const start = options?.cursor
+        ? names.findIndex((name) => name > options.cursor!)
+        : 0;
+      const slice = names.slice(Math.max(start, 0), Math.max(start, 0) + limit);
+      const listComplete = Math.max(start, 0) + limit >= names.length;
+      return {
+        keys: slice.map((name) => ({ name })),
+        list_complete: listComplete,
+        cursor: listComplete ? undefined : slice[slice.length - 1],
+        cacheStatus: null,
+      };
     },
     async getWithMetadata() {
       return { value: null, metadata: null, cacheStatus: null };

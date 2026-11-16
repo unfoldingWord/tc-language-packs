@@ -1,5 +1,6 @@
 import type { Env } from "./env";
 import { listLanguages } from "./languages";
+import { handleRequests } from "./requests";
 
 export function json(
   status: number,
@@ -37,11 +38,7 @@ async function handleApi(
   }
 
   if (pathname === "/api/requests") {
-    if (request.method !== "GET" && request.method !== "POST") {
-      return json(405, { error: "method not allowed" });
-    }
-    // Filled by later tasks.
-    return json(404, { error: "not found" });
+    return handleRequests(request, env);
   }
 
   return json(404, { error: "not found" });
