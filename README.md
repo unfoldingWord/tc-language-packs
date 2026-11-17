@@ -39,7 +39,7 @@ publishes them in `public/skills/` with their zips. Check with `claude plugin va
 `public/format-3/try/` downloads a language in format 3 from the staging Worker
 (`translation-helps-mcp-v2-preview.unfoldingword.workers.dev`, routes `/v3/packs/…`) into the browser's IndexedDB and
 asks it the client library's queries. `language-pack-client.js` next to it is `@bt-synergy/language-pack-client`
-packed into one file. It was built from `unfoldingWord/tc-study` at `a67766f5`, merged into master as `b64253e9` (unfoldingWord/tc-study#86), with:
+packed into one file. It was built from `unfoldingWord/tc-study` at `302631d4` (master, after unfoldingWord/tc-study#92), with:
 
 ```bash
 bun build packages/language-pack-client/src/index.ts --target=browser --format=esm --minify --outfile language-pack-client.js
@@ -52,6 +52,48 @@ Rebuild it when the library changes.
 `skill/tc-packs-translator/`. Copy both again when the package changes. The page trusts the staging publisher key (`78d2e6299a2de4d0`, from
 `packages/language-pack-v3/keys/`); a page that reads production needs the production key.
 
+## tc-catalog
+
+`public/catalog/` is a page that lists format 3 languages from the staging bucket, lets a visitor download chosen books
+and other units (OBS, Academy manuals, lexicon, phrase index) as one `.tcpack` transfer file built in the browser, and
+lets them ask for a language that is missing (with a per-language request counter). The Worker script in `src/worker/`
+answers `/api/*`; every other path falls through to the static assets in `public/`.
+
+### Worker routes
+
+| Route | Method | What it does |
+| --- | --- | --- |
+| `/api/languages` | GET | Lists format 3 catalogs in the staging R2 bucket (`v3/catalog/`, excluding `common.seg`). |
+| `/api/requests` | GET | Lists every requested language with count, last state and time (from KV). |
+| `/api/requests` | POST | Body `{ lang, reason?, token }`: checks Turnstile, rate limits, normalizes the tag, asks staging when needed, counts the request in KV, returns `{ lang, state, count }`. |
+
+### Bindings and vars (`wrangler.jsonc`)
+
+| Binding / var | Kind | Staging value |
+| --- | --- | --- |
+| `ASSETS` | assets | `public/` with `run_worker_first: ["/api/*"]` |
+| `PACKS` | R2 | `language-packs-staging` (read) |
+| `REQUESTS` | KV | placeholder id `<set by Abel>` until the namespace exists |
+| `STAGING` | service | `translation-helps-mcp-v2-preview` |
+| `PARTS_COMPAT` | var | `f2.0-u2.3.0-p6000230-q9-a12-t1` |
+| `TURNSTILE_SITE_KEY` | var | public test key `1x00000000000000000000AA` until the real widget key replaces it |
+| `TURNSTILE_SECRET` | secret | not in the repo; set with `wrangler secret put` |
+
+The page reads the site key from `<meta name="turnstile-site-key">` (same test key today). Staging only: the trusted
+publisher key on the page is `78d2e6299a2de4d0`. Production is not touched.
+
+### Before the first deploy (Abel)
+
+1. Create a KV namespace and put its id in `wrangler.jsonc` under `REQUESTS` (replace `<set by Abel>`).
+2. Create a Turnstile widget for the site, put the site key in `vars.TURNSTILE_SITE_KEY` and in the catalog page meta
+   tag, and set the secret with `npx wrangler secret put TURNSTILE_SECRET`.
+3. Confirm the R2 bucket `language-packs-staging` and the service binding to `translation-helps-mcp-v2-preview` are
+   usable from this Worker in the unfoldingWord Cloudflare account.
+4. Only then: `npx wrangler deploy` (with Abel's yes). Do not commit real secrets or the real KV id until that is ready.
+
+Local preview of the API: `npx wrangler dev` with a gitignored `.dev.vars` that sets `TURNSTILE_SECRET` (Cloudflare's
+always-pass test secret is fine for local checks). KV and R2 stay local unless Abel allows `--remote`.
+
 ## Preview
 
 ```bash
@@ -60,8 +102,8 @@ npx serve public
 
 ## Publish
 
-The site runs on Cloudflare's account of unfoldingWord as `tc-language-packs`: Pages in its current form, a Worker that
-serves `public/` as static assets (`wrangler.jsonc`). It is live at https://tc-language-packs.unfoldingword.workers.dev.
+The site runs on Cloudflare's account of unfoldingWord as `tc-language-packs`: a Worker that serves `public/` as static
+assets and answers `/api/*` (`wrangler.jsonc`). It is live at https://tc-language-packs.unfoldingword.workers.dev.
 
 ```bash
 npx wrangler deploy
