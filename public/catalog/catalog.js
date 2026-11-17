@@ -3,13 +3,17 @@ import {
   httpSource,
   indexedDbStore,
   memoryStore,
+  planInstall,
+  verifyCatalogFile,
 } from "../format-3/try/language-pack-client.js";
 import {
+  bookExclusiveBytes,
   bookList,
   catalogProblemText,
   downloadErrorText,
   formatSize,
   needsSizeWarning,
+  sharedSizeLine,
   transferName,
 } from "./view.js";
 
@@ -191,8 +195,26 @@ let languages = [];
 let openLang = null;
 /** @type {{ code: string; bytes: number }[]} */
 let openBooks = [];
+/** @type {{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number } | null} */
+let openPlan = null;
 /** @type {number} */
 let downloadGen = 0;
+
+const WANT_BASE = { defaults: true, units: SHARED_UNITS };
+
+/**
+ * @param {string[]} books
+ * @returns {number}
+ */
+function planBytes(books) {
+  if (!openPlan || books.length === 0) return 0;
+  return planInstall(
+    openPlan.catalogs,
+    openPlan.state,
+    { ...WANT_BASE, books },
+    openPlan.have,
+  ).bytes;
+}
 
 function setStatus(text) {
   $("list-status").textContent = text;
@@ -246,11 +268,14 @@ function clearDetail() {
   $("download-panel").hidden = true;
   $("download").disabled = true;
   $("whole-language").checked = false;
+  $("shared-size").hidden = true;
+  $("shared-size").textContent = "";
   $("choice-size").textContent = "Selected: 0 KB";
   $("progress-wrap").hidden = true;
   $("progress-bar").style.width = "0%";
   setDownloadStatus("");
   openBooks = [];
+  openPlan = null;
 }
 
 function showProblem(err) {
@@ -274,13 +299,7 @@ function selectedBooks() {
 }
 
 function selectedBytes() {
-  if ($("whole-language").checked) {
-    return openBooks.reduce((sum, book) => sum + book.bytes, 0);
-  }
-  const chosen = new Set(selectedBooks());
-  return openBooks
-    .filter((book) => chosen.has(book.code))
-    .reduce((sum, book) => sum + book.bytes, 0);
+  return planBytes(selectedBooks());
 }
 
 function updateChoice() {
@@ -300,6 +319,15 @@ function updateChoice() {
 
 function renderBookChoices(books) {
   openBooks = books;
+  const sharedBytes = openPlan?.sharedBytes ?? 0;
+  const shared = $("shared-size");
+  if (openPlan) {
+    shared.hidden = false;
+    shared.textContent = sharedSizeLine(sharedBytes);
+  } else {
+    shared.hidden = true;
+    shared.textContent = "";
+  }
   const bookUl = $("book-list");
   bookUl.replaceChildren();
   for (const book of books) {
@@ -327,6 +355,27 @@ function renderBookChoices(books) {
 }
 
 /**
+ * @returns {Promise<{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number }>}
+ */
+async function loadInstallPlan() {
+  const state = await store.getState();
+  const catalogs = [];
+  for (const published of Object.values(state.published ?? {})) {
+    const file = await store.get(published.id);
+    if (!file) continue;
+    catalogs.push(await verifyCatalogFile(file, trust, {}));
+  }
+  const have = new Set(await store.ids());
+  const sharedBytes = planInstall(
+    catalogs,
+    state,
+    { ...WANT_BASE, books: [] },
+    have,
+  ).bytes;
+  return { catalogs, state, have, sharedBytes };
+}
+
+/**
  * @param {string} lang
  */
 async function openLanguage(lang) {
@@ -347,10 +396,23 @@ async function openLanguage(lang) {
     if (openLang !== lang) return;
     const reader = await client.open(lang);
     if (openLang !== lang) return;
+    openPlan = await loadInstallPlan();
+    if (openLang !== lang) return;
     const resources = reader.resources?.() ?? [];
-    const books = bookList(status).sort(
-      (a, b) => BOOKS.indexOf(a.code) - BOOKS.indexOf(b.code),
-    );
+    const books = bookList(status)
+      .map((book) => {
+        const withShared = planInstall(
+          openPlan.catalogs,
+          openPlan.state,
+          { ...WANT_BASE, books: [book.code] },
+          openPlan.have,
+        ).bytes;
+        return {
+          code: book.code,
+          bytes: bookExclusiveBytes(withShared, openPlan.sharedBytes),
+        };
+      })
+      .sort((a, b) => BOOKS.indexOf(a.code) - BOOKS.indexOf(b.code));
     const revision = status.published?.revision ?? status.active?.revision;
 
     const meta = $("detail-meta");

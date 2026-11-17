@@ -77,6 +77,24 @@ export function needsSizeWarning(bytes) {
 }
 
 /**
+ * Bytes unique to one book once the shared install plan is subtracted.
+ * @param {number} bookPlanBytes
+ * @param {number} sharedBytes
+ * @returns {number}
+ */
+export function bookExclusiveBytes(bookPlanBytes, sharedBytes) {
+  return Math.max(0, bookPlanBytes - sharedBytes);
+}
+
+/**
+ * @param {number} bytes
+ * @returns {string}
+ */
+export function sharedSizeLine(bytes) {
+  return `Shared by every book (downloaded once): ${formatSize(bytes)}`;
+}
+
+/**
  * @param {unknown} err
  * @returns {string}
  */

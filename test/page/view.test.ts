@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  bookExclusiveBytes,
   bookList,
   catalogProblemText,
   downloadErrorText,
   formatSize,
   needsSizeWarning,
+  sharedSizeLine,
   transferName,
 } from "../../public/catalog/view.js";
 
@@ -79,6 +81,24 @@ describe("needsSizeWarning", () => {
 
   it("is true just over 200 MiB", () => {
     expect(needsSizeWarning(limit + 1)).toBe(true);
+  });
+});
+
+describe("bookExclusiveBytes", () => {
+  it("is the book plan minus what every book shares", () => {
+    expect(bookExclusiveBytes(2_305_820, 2_253_048)).toBe(52_772);
+  });
+
+  it("never goes below zero", () => {
+    expect(bookExclusiveBytes(100, 200)).toBe(0);
+  });
+});
+
+describe("sharedSizeLine", () => {
+  it("names the shared download and formats its size", () => {
+    expect(sharedSizeLine(2_253_048)).toBe(
+      "Shared by every book (downloaded once): 2.1 MB",
+    );
   });
 });
 
