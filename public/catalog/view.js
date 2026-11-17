@@ -128,3 +128,32 @@ export function downloadErrorText(err) {
   const detail = message || "Something went wrong while building the transfer file.";
   return `${detail} What is complete is kept; try again.`;
 }
+
+/**
+ * @typedef {"available" | "preparing" | "no-content" | "try-later" | "waiting-format-3"} RequestState
+ */
+
+/**
+ * Plain words for a language-request answer. `reason` is accepted for the
+ * call site but never shown (personal data stays off the page).
+ * @param {RequestState | string} state
+ * @param {string} [reason]
+ * @returns {string}
+ */
+export function requestStateText(state, reason) {
+  void reason;
+  switch (state) {
+    case "available":
+      return "This language is already here. Pick it in the list above.";
+    case "preparing":
+      return "It is being prepared now. Come back in a few hours.";
+    case "no-content":
+      return "Door43 has no resources in this language yet, so there is nothing to prepare. Your request is counted.";
+    case "try-later":
+      return "Asked for. It cannot be prepared right now; it will be tried again later. Your request is counted.";
+    case "waiting-format-3":
+      return "This language exists in the older format; the new one is still pending. Your request is counted.";
+    default:
+      return "Asked for. It cannot be prepared right now; it will be tried again later. Your request is counted.";
+  }
+}

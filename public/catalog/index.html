@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>tc-catalog</title>
 <meta name="description" content="Take a format 3 language with you as one transfer file to share, and ask for a language that is missing.">
+<meta name="turnstile-site-key" content="1x00000000000000000000AA">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500&family=JetBrains+Mono:wght@400&display=swap" rel="stylesheet"><!-- taste-skill-ignore: JetBrains Mono sets only pre and code -->
@@ -73,6 +74,30 @@
       </div>
     </div>
   </section>
+
+  <section class="ask wrap" aria-labelledby="ask-title">
+    <h2 id="ask-title">Ask for a language</h2>
+    <p class="fine">If the language you need is not in the list, ask for it. Your request is counted; nobody is notified.</p>
+    <form id="ask-form" class="ask-form" novalidate>
+      <div class="field">
+        <label for="ask-lang">Language code</label>
+        <input id="ask-lang" name="lang" type="text" autocomplete="off" spellcheck="false" required maxlength="32" placeholder="xyz, pt, es…">
+      </div>
+      <div class="field">
+        <label for="ask-reason">Why (optional, up to 280 characters)</label>
+        <textarea id="ask-reason" name="reason" maxlength="280" rows="3" placeholder="A short note for the people who look at the counter"></textarea>
+      </div>
+      <div id="ask-turnstile" class="turnstile" aria-label="Cloudflare Turnstile"></div>
+      <p id="ask-status" class="status-line" role="status"></p>
+      <div class="actions">
+        <button id="ask-submit" class="button" type="submit">Ask for this language</button>
+      </div>
+    </form>
+
+    <h3 class="lead" id="asked-title">Asked for</h3>
+    <p id="asked-status" class="status-line" role="status">Loading who asked…</p>
+    <ul id="asked-list" class="asked-list" aria-labelledby="asked-title"></ul>
+  </section>
 </main>
 
 <footer class="footer wrap">
@@ -85,6 +110,7 @@
   <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">Overview</a></div>
 </footer>
 
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>
 <script type="module" src="./catalog.js"></script>
 </body>
 </html>

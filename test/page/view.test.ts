@@ -6,6 +6,7 @@ import {
   downloadErrorText,
   formatSize,
   needsSizeWarning,
+  requestStateText,
   sharedSizeLine,
   transferName,
 } from "../../public/catalog/view.js";
@@ -113,5 +114,37 @@ describe("downloadErrorText", () => {
     const text = downloadErrorText(new TypeError("Failed to fetch"));
     expect(text).toMatch(/connection/i);
     expect(text).toMatch(/what is complete is kept/i);
+  });
+});
+
+describe("requestStateText", () => {
+  it("explains available", () => {
+    expect(requestStateText("available")).toBe(
+      "This language is already here. Pick it in the list above.",
+    );
+  });
+
+  it("explains preparing", () => {
+    expect(requestStateText("preparing")).toBe(
+      "It is being prepared now. Come back in a few hours.",
+    );
+  });
+
+  it("explains no-content", () => {
+    expect(requestStateText("no-content")).toBe(
+      "Door43 has no resources in this language yet, so there is nothing to prepare. Your request is counted.",
+    );
+  });
+
+  it("explains try-later", () => {
+    expect(requestStateText("try-later")).toBe(
+      "Asked for. It cannot be prepared right now; it will be tried again later. Your request is counted.",
+    );
+  });
+
+  it("explains waiting-format-3", () => {
+    expect(requestStateText("waiting-format-3")).toBe(
+      "This language exists in the older format; the new one is still pending. Your request is counted.",
+    );
   });
 });

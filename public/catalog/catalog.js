@@ -13,6 +13,7 @@ import {
   downloadErrorText,
   formatSize,
   needsSizeWarning,
+  requestStateText,
   sharedSizeLine,
   transferName,
 } from "./view.js";
@@ -617,4 +618,155 @@ $("download").addEventListener("click", () => {
   void downloadTransfer();
 });
 
-await loadLanguages();
+function turnstileSiteKey() {
+  const meta = document.querySelector('meta[name="turnstile-site-key"]');
+  return meta?.getAttribute("content")?.trim() || "";
+}
+
+/** @type {string | null} */
+let turnstileToken = null;
+/** @type {string | null} */
+let turnstileWidgetId = null;
+
+function setAskStatus(text) {
+  $("ask-status").textContent = text;
+}
+
+function setAskedStatus(text) {
+  $("asked-status").textContent = text;
+}
+
+function renderAskedList(entries) {
+  const list = $("asked-list");
+  list.replaceChildren();
+  if (!entries.length) {
+    const empty = document.createElement("li");
+    empty.className = "empty";
+    empty.textContent = "Nobody has asked for a language yet.";
+    list.append(empty);
+    return;
+  }
+  for (const entry of entries) {
+    const li = document.createElement("li");
+    const lang = document.createElement("strong");
+    lang.textContent = entry.lang;
+    const count = document.createElement("span");
+    count.className = "count";
+    count.textContent = `${entry.count} ask${entry.count === 1 ? "" : "s"}`;
+    const state = document.createElement("span");
+    state.className = "state";
+    state.textContent = requestStateText(entry.state);
+    li.append(lang, count, state);
+    list.append(li);
+  }
+}
+
+async function loadAsked() {
+  setAskedStatus("Loading who asked…");
+  try {
+    const res = await fetch("/api/requests");
+    if (!res.ok) {
+      throw new Error(`The request list could not be loaded (${res.status}).`);
+    }
+    const body = await res.json();
+    const entries = Array.isArray(body.requests) ? body.requests : [];
+    renderAskedList(entries);
+    setAskedStatus(
+      entries.length
+        ? `${entries.length} language${entries.length === 1 ? "" : "s"} asked for.`
+        : "Nobody has asked for a language yet.",
+    );
+  } catch (err) {
+    renderAskedList([]);
+    setAskedStatus(err?.message ?? String(err));
+  }
+}
+
+function resetTurnstile() {
+  turnstileToken = null;
+  const api = globalThis.turnstile;
+  if (api && turnstileWidgetId != null) {
+    try {
+      api.reset(turnstileWidgetId);
+    } catch {
+      /* widget may not be ready */
+    }
+  }
+}
+
+function mountTurnstile() {
+  const key = turnstileSiteKey();
+  const host = $("ask-turnstile");
+  if (!key) {
+    setAskStatus("Turnstile is not configured on this page.");
+    return;
+  }
+  const api = globalThis.turnstile;
+  if (!api || typeof api.render !== "function") {
+    window.setTimeout(mountTurnstile, 200);
+    return;
+  }
+  if (turnstileWidgetId != null) return;
+  turnstileWidgetId = api.render(host, {
+    sitekey: key,
+    callback: (token) => {
+      turnstileToken = token;
+    },
+    "expired-callback": () => {
+      turnstileToken = null;
+    },
+    "error-callback": () => {
+      turnstileToken = null;
+    },
+  });
+}
+
+async function submitAsk(event) {
+  event.preventDefault();
+  const lang = $("ask-lang").value.trim();
+  const reason = $("ask-reason").value.trim();
+  if (!lang) {
+    setAskStatus("Enter a language code.");
+    return;
+  }
+  if (!turnstileToken) {
+    setAskStatus("Complete the check before asking.");
+    return;
+  }
+
+  $("ask-submit").disabled = true;
+  setAskStatus("Sending your request…");
+  try {
+    const body = { lang, token: turnstileToken };
+    if (reason) body.reason = reason;
+    const res = await fetch("/api/requests", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const err =
+        typeof data.error === "string" ? data.error : `Request failed (${res.status}).`;
+      setAskStatus(err);
+      return;
+    }
+    const state = typeof data.state === "string" ? data.state : "try-later";
+    const count =
+      typeof data.count === "number" ? ` · ${data.count} ask${data.count === 1 ? "" : "s"}` : "";
+    setAskStatus(`${requestStateText(state, data.reason)}${count}`);
+    await loadAsked();
+  } catch (err) {
+    setAskStatus(err?.message ?? String(err));
+  } finally {
+    $("ask-submit").disabled = false;
+    resetTurnstile();
+  }
+}
+
+$("ask-form").addEventListener("submit", (event) => {
+  void submitAsk(event);
+});
+
+mountTurnstile();
+await Promise.all([loadLanguages(), loadAsked()]);
