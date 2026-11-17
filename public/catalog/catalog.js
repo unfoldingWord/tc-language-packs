@@ -7,15 +7,22 @@ import {
   verifyCatalogFile,
 } from "../format-3/try/language-pack-client.js";
 import {
+  askCountSuffix,
   bookExclusiveBytes,
   bookList,
   catalogProblemText,
+  CORE_UNITS,
   downloadErrorText,
   formatSize,
+  groupCatalogUnits,
+  listableLanguages,
   needsSizeWarning,
+  requestErrorText,
   requestStateText,
+  sharedArticleUnits,
   sharedSizeLine,
   transferName,
+  unitsFromCatalogs,
 } from "./view.js";
 
 const SERVER =
@@ -25,12 +32,6 @@ const KEY_ID = "78d2e6299a2de4d0";
 const KEY_HEX =
   "c2057cec32b948452849e7fcba6af323961a091ea82645eb297bb368e1c8d911";
 const DB = "tc-language-packs-catalog";
-const SHARED_UNITS = [
-  "art:tw:kt",
-  "art:tw:names",
-  "art:tw:other",
-  "art:ta:translate",
-];
 
 const BOOKS = [
   "gen",
@@ -101,75 +102,6 @@ const BOOKS = [
   "rev",
 ];
 
-const NAMES = {
-  gen: "Genesis",
-  exo: "Exodus",
-  lev: "Leviticus",
-  num: "Numbers",
-  deu: "Deuteronomy",
-  jos: "Joshua",
-  jdg: "Judges",
-  rut: "Ruth",
-  "1sa": "1 Samuel",
-  "2sa": "2 Samuel",
-  "1ki": "1 Kings",
-  "2ki": "2 Kings",
-  "1ch": "1 Chronicles",
-  "2ch": "2 Chronicles",
-  ezr: "Ezra",
-  neh: "Nehemiah",
-  est: "Esther",
-  job: "Job",
-  psa: "Psalms",
-  pro: "Proverbs",
-  ecc: "Ecclesiastes",
-  sng: "Song of Songs",
-  isa: "Isaiah",
-  jer: "Jeremiah",
-  lam: "Lamentations",
-  ezk: "Ezekiel",
-  dan: "Daniel",
-  hos: "Hosea",
-  jol: "Joel",
-  amo: "Amos",
-  oba: "Obadiah",
-  jon: "Jonah",
-  mic: "Micah",
-  nam: "Nahum",
-  hab: "Habakkuk",
-  zep: "Zephaniah",
-  hag: "Haggai",
-  zec: "Zechariah",
-  mal: "Malachi",
-  mat: "Matthew",
-  mrk: "Mark",
-  luk: "Luke",
-  jhn: "John",
-  act: "Acts",
-  rom: "Romans",
-  "1co": "1 Corinthians",
-  "2co": "2 Corinthians",
-  gal: "Galatians",
-  eph: "Ephesians",
-  php: "Philippians",
-  col: "Colossians",
-  "1th": "1 Thessalonians",
-  "2th": "2 Thessalonians",
-  "1ti": "1 Timothy",
-  "2ti": "2 Timothy",
-  tit: "Titus",
-  phm: "Philemon",
-  heb: "Hebrews",
-  jas: "James",
-  "1pe": "1 Peter",
-  "2pe": "2 Peter",
-  "1jn": "1 John",
-  "2jn": "2 John",
-  "3jn": "3 John",
-  jud: "Jude",
-  rev: "Revelation",
-};
-
 const $ = (id) => document.getElementById(id);
 
 const trust = {
@@ -196,23 +128,59 @@ let languages = [];
 let openLang = null;
 /** @type {{ code: string; bytes: number }[]} */
 let openBooks = [];
-/** @type {{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number } | null} */
+/** @type {string[]} */
+let openUnitIds = [];
+/** @type {string[]} */
+let openLexIds = [];
+/** @type {boolean} */
+let openHasAligned = false;
+/** @type {{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number; sharedUnits: string[] } | null} */
 let openPlan = null;
 /** @type {number} */
 let downloadGen = 0;
 
-const WANT_BASE = { defaults: true, units: SHARED_UNITS };
+/**
+ * @param {{ books?: string[]; units?: string[]; aligned?: boolean; whole?: boolean }} choice
+ * @returns {object}
+ */
+function wantFor(choice) {
+  if (choice.whole) {
+    return {
+      defaults: true,
+      books: openBooks.map((book) => book.code),
+      units: openUnitIds.filter(
+        (id) =>
+          !id.startsWith("book:") &&
+          !CORE_UNITS.includes(id) &&
+          id !== "obs" &&
+          !id.startsWith("aligned:") &&
+          !id.startsWith("orig:"),
+      ),
+      aligned: openHasAligned ? true : undefined,
+    };
+  }
+  const units = [...(openPlan?.sharedUnits ?? []), ...(choice.units ?? [])];
+  return {
+    defaults: false,
+    books: choice.books ?? [],
+    units: [...new Set(units)],
+    ...(choice.aligned ? { aligned: true } : {}),
+  };
+}
 
 /**
  * @param {string[]} books
+ * @param {string[]} units
+ * @param {boolean} aligned
  * @returns {number}
  */
-function planBytes(books) {
-  if (!openPlan || books.length === 0) return 0;
+function planBytes(books, units, aligned) {
+  if (!openPlan) return 0;
+  if (books.length === 0 && units.length === 0 && !aligned) return 0;
   return planInstall(
     openPlan.catalogs,
     openPlan.state,
-    { ...WANT_BASE, books },
+    wantFor({ books, units, aligned }),
     openPlan.have,
   ).bytes;
 }
@@ -228,14 +196,15 @@ function setDownloadStatus(text) {
 function renderList(filter = "") {
   const q = filter.trim().toLowerCase();
   const list = $("lang-list");
-  const matched = languages.filter(
+  const visible = listableLanguages(languages);
+  const matched = visible.filter(
     (entry) => !q || entry.lang.toLowerCase().includes(q),
   );
   list.replaceChildren();
   if (matched.length === 0) {
     const empty = document.createElement("li");
     empty.className = "empty";
-    empty.textContent = languages.length
+    empty.textContent = visible.length
       ? "No language matches that search."
       : "No format 3 languages are listed yet.";
     list.append(empty);
@@ -263,7 +232,7 @@ function clearDetail() {
   $("detail-title").textContent = "";
   $("detail-meta").replaceChildren();
   $("resource-list").replaceChildren();
-  $("book-list").replaceChildren();
+  $("unit-groups").replaceChildren();
   $("detail-problem").textContent = "";
   $("detail-problem").hidden = true;
   $("download-panel").hidden = true;
@@ -276,6 +245,9 @@ function clearDetail() {
   $("progress-bar").style.width = "0%";
   setDownloadStatus("");
   openBooks = [];
+  openUnitIds = [];
+  openLexIds = [];
+  openHasAligned = false;
   openPlan = null;
 }
 
@@ -284,7 +256,7 @@ function showProblem(err) {
   $("detail-problem").hidden = false;
   $("detail-problem").textContent = catalogProblemText(err);
   $("resource-list").replaceChildren();
-  $("book-list").replaceChildren();
+  $("unit-groups").replaceChildren();
   $("detail-meta").replaceChildren();
   $("download-panel").hidden = true;
   $("download").disabled = true;
@@ -294,31 +266,77 @@ function selectedBooks() {
   if ($("whole-language").checked) {
     return openBooks.map((book) => book.code);
   }
-  return [...$("book-list").querySelectorAll('input[type="checkbox"]:checked')]
+  return [...$("unit-groups").querySelectorAll('input[data-kind="book"]:checked')]
     .map((input) => input.value)
     .filter(Boolean);
 }
 
+function selectedExtraUnits() {
+  if ($("whole-language").checked) {
+    return openUnitIds.filter(
+      (id) =>
+        id === "obs" ||
+        id.startsWith("art:ta:") ||
+        id.startsWith("lex:"),
+    );
+  }
+  const units = [];
+  for (const input of $("unit-groups").querySelectorAll(
+    'input[data-kind="unit"]:checked',
+  )) {
+    units.push(input.value);
+  }
+  if (
+    $("unit-groups").querySelector('input[data-kind="lexicon"]:checked')
+  ) {
+    units.push(...openLexIds);
+  }
+  return [...new Set(units)];
+}
+
+function selectedAligned() {
+  if ($("whole-language").checked) return openHasAligned;
+  return Boolean(
+    $("unit-groups").querySelector('input[data-kind="aligned"]:checked'),
+  );
+}
+
 function selectedBytes() {
-  return planBytes(selectedBooks());
+  if ($("whole-language").checked) {
+    if (!openPlan) return 0;
+    return planInstall(
+      openPlan.catalogs,
+      openPlan.state,
+      wantFor({ whole: true }),
+      openPlan.have,
+    ).bytes;
+  }
+  return planBytes(selectedBooks(), selectedExtraUnits(), selectedAligned());
 }
 
 function updateChoice() {
   const books = selectedBooks();
+  const units = selectedExtraUnits();
+  const aligned = selectedAligned();
   const bytes = selectedBytes();
   const whole = $("whole-language").checked;
+  const parts = books.length + units.length + (aligned ? 1 : 0);
   $("choice-size").textContent = whole
     ? `Whole language: ${formatSize(bytes)}`
-    : `Selected: ${formatSize(bytes)}${books.length ? ` · ${books.length} book${books.length === 1 ? "" : "s"}` : ""}`;
-  $("download").disabled = books.length === 0;
-  for (const input of $("book-list").querySelectorAll(
+    : `Selected: ${formatSize(bytes)}${parts ? ` · ${parts} part${parts === 1 ? "" : "s"}` : ""}`;
+  $("download").disabled = !whole && books.length === 0 && units.length === 0 && !aligned;
+  for (const input of $("unit-groups").querySelectorAll(
     'input[type="checkbox"]',
   )) {
     input.disabled = whole;
   }
 }
 
-function renderBookChoices(books) {
+/**
+ * @param {{ kind: string; label: string; bytes: number; optional: boolean; items: { id: string; label: string; bytes: number; optional: boolean; choosable: boolean }[] }[]} groups
+ * @param {{ code: string; bytes: number }[]} books
+ */
+function renderUnitGroups(groups, books) {
   openBooks = books;
   const sharedBytes = openPlan?.sharedBytes ?? 0;
   const shared = $("shared-size");
@@ -329,28 +347,150 @@ function renderBookChoices(books) {
     shared.hidden = true;
     shared.textContent = "";
   }
-  const bookUl = $("book-list");
-  bookUl.replaceChildren();
-  for (const book of books) {
-    const li = document.createElement("li");
-    const label = document.createElement("label");
-    label.className = "book";
-    const pick = document.createElement("span");
-    pick.className = "pick";
-    const input = document.createElement("input");
-    input.type = "checkbox";
-    input.value = book.code;
-    input.addEventListener("change", updateChoice);
+
+  const root = $("unit-groups");
+  root.replaceChildren();
+
+  for (const group of groups) {
+    const section = document.createElement("section");
+    section.className = "unit-group";
+    section.dataset.kind = group.kind;
+
+    const heading = document.createElement("h4");
+    heading.className = "unit-group-title";
     const title = document.createElement("span");
-    title.textContent = NAMES[book.code] ?? book.code;
-    pick.append(input, title);
-    const bytes = document.createElement("span");
-    bytes.className = "bytes";
-    bytes.textContent = formatSize(book.bytes);
-    label.append(pick, bytes);
-    li.append(label);
-    bookUl.append(li);
+    title.textContent = group.optional
+      ? `${group.label} (optional)`
+      : group.label;
+    const size = document.createElement("span");
+    size.className = "bytes";
+    size.textContent = formatSize(group.bytes);
+    heading.append(title, size);
+    section.append(heading);
+
+    if (group.kind === "books") {
+      const ul = document.createElement("ul");
+      ul.className = "books";
+      for (const book of books) {
+        const li = document.createElement("li");
+        const label = document.createElement("label");
+        label.className = "book";
+        const pick = document.createElement("span");
+        pick.className = "pick";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = book.code;
+        input.dataset.kind = "book";
+        input.addEventListener("change", updateChoice);
+        const name = document.createElement("span");
+        name.textContent =
+          group.items.find((item) => item.id === `book:${book.code}`)?.label ??
+          book.code;
+        pick.append(input, name);
+        const bytes = document.createElement("span");
+        bytes.className = "bytes";
+        bytes.textContent = formatSize(book.bytes);
+        label.append(pick, bytes);
+        li.append(label);
+        ul.append(li);
+      }
+      section.append(ul);
+    } else if (group.kind === "lexicon") {
+      const label = document.createElement("label");
+      label.className = "unit-pick";
+      const pick = document.createElement("span");
+      pick.className = "pick";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.kind = "lexicon";
+      input.value = "lexicon";
+      input.addEventListener("change", updateChoice);
+      const name = document.createElement("span");
+      name.textContent = "Lexicon";
+      pick.append(input, name);
+      const bytes = document.createElement("span");
+      bytes.className = "bytes";
+      bytes.textContent = formatSize(group.bytes);
+      label.append(pick, bytes);
+      section.append(label);
+      const ul = document.createElement("ul");
+      ul.className = "unit-items soft-list";
+      for (const item of group.items) {
+        const li = document.createElement("li");
+        const left = document.createElement("span");
+        left.textContent = item.label;
+        const right = document.createElement("span");
+        right.className = "bytes";
+        right.textContent = formatSize(item.bytes);
+        li.append(left, right);
+        ul.append(li);
+      }
+      section.append(ul);
+    } else if (group.kind === "aligned") {
+      const label = document.createElement("label");
+      label.className = "unit-pick";
+      const pick = document.createElement("span");
+      pick.className = "pick";
+      const input = document.createElement("input");
+      input.type = "checkbox";
+      input.dataset.kind = "aligned";
+      input.value = "aligned";
+      input.addEventListener("change", updateChoice);
+      const name = document.createElement("span");
+      name.textContent = "Phrase index";
+      pick.append(input, name);
+      const bytes = document.createElement("span");
+      bytes.className = "bytes";
+      bytes.textContent = formatSize(group.bytes);
+      label.append(pick, bytes);
+      section.append(label);
+    } else if (
+      group.kind === "obs" ||
+      group.kind === "academy"
+    ) {
+      const ul = document.createElement("ul");
+      ul.className = "books";
+      for (const item of group.items) {
+        const li = document.createElement("li");
+        const label = document.createElement("label");
+        label.className = "book";
+        const pick = document.createElement("span");
+        pick.className = "pick";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.value = item.id;
+        input.dataset.kind = "unit";
+        input.addEventListener("change", updateChoice);
+        const name = document.createElement("span");
+        name.textContent = item.label;
+        pick.append(input, name);
+        const bytes = document.createElement("span");
+        bytes.className = "bytes";
+        bytes.textContent = formatSize(item.bytes);
+        label.append(pick, bytes);
+        li.append(label);
+        ul.append(li);
+      }
+      section.append(ul);
+    } else {
+      const ul = document.createElement("ul");
+      ul.className = "unit-items";
+      for (const item of group.items) {
+        const li = document.createElement("li");
+        const left = document.createElement("span");
+        left.textContent = item.label;
+        const right = document.createElement("span");
+        right.className = "bytes";
+        right.textContent = formatSize(item.bytes);
+        li.append(left, right);
+        ul.append(li);
+      }
+      section.append(ul);
+    }
+
+    root.append(section);
   }
+
   $("whole-language").checked = false;
   updateChoice();
 }
@@ -371,7 +511,7 @@ function bytesToHex(bytes) {
  * is left to download on this device.
  *
  * @param {string} lang
- * @returns {Promise<{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number }>}
+ * @returns {Promise<{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number; sharedUnits: string[] }>}
  */
 async function loadInstallPlan(lang) {
   const state = await store.getState();
@@ -403,21 +543,25 @@ async function loadInstallPlan(lang) {
   }
   for (const req of open.catalog.requires ?? []) {
     const name = req[0];
-    const idFromReq =
-      req[2] != null ? bytesToHex(req[2]) : undefined;
+    const idFromReq = req[2] != null ? bytesToHex(req[2]) : undefined;
     const idFromName = state.published?.[name]?.id;
     const added = await addCatalog(idFromReq);
     if (!added) await addCatalog(idFromName);
   }
 
+  const catalogUnits = unitsFromCatalogs(catalogs);
+  const sharedUnits = [
+    ...CORE_UNITS,
+    ...sharedArticleUnits(catalogUnits),
+  ];
   const have = new Set();
   const sharedBytes = planInstall(
     catalogs,
     state,
-    { ...WANT_BASE, books: [] },
+    { defaults: false, books: [], units: sharedUnits },
     have,
   ).bytes;
-  return { catalogs, state, have, sharedBytes };
+  return { catalogs, state, have, sharedBytes, sharedUnits };
 }
 
 /**
@@ -443,13 +587,23 @@ async function openLanguage(lang) {
     if (openLang !== lang) return;
     openPlan = await loadInstallPlan(lang);
     if (openLang !== lang) return;
+
+    const catalogUnits = unitsFromCatalogs(openPlan.catalogs);
+    openUnitIds = catalogUnits.map((unit) => unit.id);
+    openLexIds = catalogUnits
+      .filter((unit) => unit.id.startsWith("lex:"))
+      .map((unit) => unit.id);
+    openHasAligned = catalogUnits.some((unit) =>
+      unit.id.startsWith("aligned:"),
+    );
+
     const resources = reader.resources?.() ?? [];
     const books = bookList(status)
       .map((book) => {
         const withShared = planInstall(
           openPlan.catalogs,
           openPlan.state,
-          { ...WANT_BASE, books: [book.code] },
+          wantFor({ books: [book.code], units: [] }),
           openPlan.have,
         ).bytes;
         return {
@@ -458,6 +612,8 @@ async function openLanguage(lang) {
         };
       })
       .sort((a, b) => BOOKS.indexOf(a.code) - BOOKS.indexOf(b.code));
+
+    const groups = groupCatalogUnits(catalogUnits);
     const revision = status.published?.revision ?? status.active?.revision;
 
     const meta = $("detail-meta");
@@ -498,7 +654,7 @@ async function openLanguage(lang) {
     }
 
     $("download-panel").hidden = false;
-    renderBookChoices(books);
+    renderUnitGroups(groups, books);
     setStatus(
       `${books.length} books in ${lang}${revision != null ? `, revision ${revision}` : ""}. Signature checked.`,
     );
@@ -527,7 +683,9 @@ async function downloadTransfer() {
   if (!lang) return;
   const whole = $("whole-language").checked;
   const books = selectedBooks();
-  if (books.length === 0) return;
+  const units = selectedExtraUnits();
+  const aligned = selectedAligned();
+  if (!whole && books.length === 0 && units.length === 0 && !aligned) return;
 
   const bytes = selectedBytes();
   if (
@@ -540,36 +698,54 @@ async function downloadTransfer() {
   }
 
   const gen = ++downloadGen;
-  const nameBooks = whole ? [] : books;
-  const filename = transferName(lang, nameBooks, new Date());
+  const want = whole
+    ? wantFor({ whole: true })
+    : wantFor({ books, units, aligned });
+  const filename = transferName(
+    lang,
+    {
+      books: whole ? [] : books,
+      units: whole ? [] : units,
+      whole,
+    },
+    new Date(),
+  );
   $("download").disabled = true;
   $("progress-wrap").hidden = false;
   $("progress-bar").style.width = "0%";
   setDownloadStatus("Downloading…");
 
   try {
-    await client.install(
-      lang,
-      { books, defaults: true, units: SHARED_UNITS },
-      {
-        onProgress: (p) => {
-          if (gen !== downloadGen || openLang !== lang) return;
-          $("progress-bar").style.width =
-            (p.total ? Math.round((p.done / p.total) * 100) : 0) + "%";
-          setDownloadStatus(
-            `Downloading: ${p.done} of ${p.total} pieces · ${formatSize(p.bytes ?? 0)}`,
-          );
-        },
+    await client.install(lang, want, {
+      onProgress: (p) => {
+        if (gen !== downloadGen || openLang !== lang) return;
+        $("progress-bar").style.width =
+          (p.total ? Math.round((p.done / p.total) * 100) : 0) + "%";
+        setDownloadStatus(
+          `Downloading: ${p.done} of ${p.total} pieces · ${formatSize(p.bytes ?? 0)}`,
+        );
       },
-    );
+    });
     if (gen !== downloadGen || openLang !== lang) return;
 
     setDownloadStatus("Building the transfer file…");
-    const bytesOut = await client.exportTransfer({
-      lang,
-      mode: "full",
-      books,
-    });
+    // A full export with no books/units filter takes every active unit
+    // (whole language). Otherwise list books and units explicitly; phrase-index
+    // units must be named because exportTransfer has no `aligned` flag.
+    const exportOpts = whole
+      ? { lang, mode: "full" }
+      : {
+          lang,
+          mode: "full",
+          books: want.books,
+          units: [
+            ...want.units,
+            ...(want.aligned
+              ? openUnitIds.filter((id) => id.startsWith("aligned:"))
+              : []),
+          ],
+        };
+    const bytesOut = await client.exportTransfer(exportOpts);
     if (gen !== downloadGen || openLang !== lang) return;
 
     offerBlob(bytesOut, filename);
@@ -597,10 +773,11 @@ async function loadLanguages() {
     }
     const body = await res.json();
     languages = Array.isArray(body.languages) ? body.languages : [];
+    const visible = listableLanguages(languages);
     renderList($("search").value);
     setStatus(
-      languages.length
-        ? `${languages.length} format 3 languages.`
+      visible.length
+        ? `${visible.length} format 3 languages.`
         : "No format 3 languages are listed yet.",
     );
   } catch (err) {
@@ -627,6 +804,8 @@ function turnstileSiteKey() {
 let turnstileToken = null;
 /** @type {string | null} */
 let turnstileWidgetId = null;
+/** @type {number} */
+let turnstileStarted = 0;
 
 function setAskStatus(text) {
   $("ask-status").textContent = text;
@@ -701,8 +880,15 @@ function mountTurnstile() {
     setAskStatus("Turnstile is not configured on this page.");
     return;
   }
+  if (!turnstileStarted) turnstileStarted = Date.now();
   const api = globalThis.turnstile;
   if (!api || typeof api.render !== "function") {
+    if (Date.now() - turnstileStarted > 10_000) {
+      setAskStatus(
+        "The check could not load. Reload the page and try again.",
+      );
+      return;
+    }
     window.setTimeout(mountTurnstile, 200);
     return;
   }
@@ -748,13 +934,14 @@ async function submitAsk(event) {
     if (!res.ok) {
       const err =
         typeof data.error === "string" ? data.error : `Request failed (${res.status}).`;
-      setAskStatus(err);
+      setAskStatus(requestErrorText(err));
       return;
     }
     const state = typeof data.state === "string" ? data.state : "try-later";
-    const count =
-      typeof data.count === "number" ? ` · ${data.count} ask${data.count === 1 ? "" : "s"}` : "";
-    setAskStatus(`${requestStateText(state, data.reason)}${count}`);
+    const count = typeof data.count === "number" ? data.count : 0;
+    setAskStatus(
+      `${requestStateText(state, data.reason)}${askCountSuffix(state, count)}`,
+    );
     await loadAsked();
   } catch (err) {
     setAskStatus(err?.message ?? String(err));

@@ -1,14 +1,22 @@
 import { describe, expect, it } from "vitest";
 import {
+  askCountSuffix,
   bookExclusiveBytes,
   bookList,
   catalogProblemText,
   downloadErrorText,
   formatSize,
+  groupCatalogUnits,
+  GROUP_ORDER,
+  listableLanguages,
   needsSizeWarning,
+  requestErrorText,
   requestStateText,
   sharedSizeLine,
   transferName,
+  unitKind,
+  unitLabel,
+  unitsFromCatalogs,
 } from "../../public/catalog/view.js";
 
 describe("formatSize", () => {
@@ -70,6 +78,12 @@ describe("transferName", () => {
     expect(transferName("es-419", [], day)).toBe(
       "es-419-all-2026-11-15.tcpack",
     );
+  });
+
+  it("names an OBS-only transfer from the unit id", () => {
+    expect(
+      transferName("en", { books: [], units: ["obs"] }, day),
+    ).toBe("en-obs-2026-11-15.tcpack");
   });
 });
 
@@ -146,5 +160,213 @@ describe("requestStateText", () => {
     expect(requestStateText("waiting-format-3")).toBe(
       "This language exists in the older format; the new one is still pending. Your request is counted.",
     );
+  });
+});
+
+describe("requestErrorText", () => {
+  it("explains bad language", () => {
+    expect(requestErrorText("bad language")).toBe(
+      "That is not a language code. Try one like es-419 or pt.",
+    );
+  });
+
+  it("explains too many requests", () => {
+    expect(requestErrorText("too many requests")).toBe(
+      "Too many requests from here. Try again later.",
+    );
+  });
+
+  it("explains check failed", () => {
+    expect(requestErrorText("check failed")).toBe(
+      "The check did not pass. Try again.",
+    );
+  });
+});
+
+describe("askCountSuffix", () => {
+  it("is empty when the language is already available", () => {
+    expect(askCountSuffix("available", 0)).toBe("");
+    expect(askCountSuffix("available", 3)).toBe("");
+  });
+
+  it("is empty when the count is zero", () => {
+    expect(askCountSuffix("try-later", 0)).toBe("");
+  });
+
+  it("shows the count otherwise", () => {
+    expect(askCountSuffix("try-later", 1)).toBe(" · 1 ask");
+    expect(askCountSuffix("preparing", 2)).toBe(" · 2 asks");
+  });
+});
+
+describe("listableLanguages", () => {
+  it("hides es when es-419 is present", () => {
+    const listed = listableLanguages([
+      { lang: "en" },
+      { lang: "es" },
+      { lang: "es-419" },
+    ]);
+    expect(listed.map((e) => e.lang)).toEqual(["en", "es-419"]);
+  });
+
+  it("drops catalogs whose code starts with zxx-", () => {
+    const listed = listableLanguages([
+      { lang: "en" },
+      { lang: "zxx-obsimg" },
+    ]);
+    expect(listed.map((e) => e.lang)).toEqual(["en"]);
+  });
+});
+
+describe("unitKind and unitLabel", () => {
+  it("classifies known unit ids", () => {
+    expect(unitKind("book:tit")).toBe("books");
+    expect(unitKind("obs")).toBe("obs");
+    expect(unitKind("art:ta:intro")).toBe("academy");
+    expect(unitKind("art:tw:kt")).toBe("words");
+    expect(unitKind("lex:G0")).toBe("lexicon");
+    expect(unitKind("aligned:a-c")).toBe("aligned");
+    expect(unitKind("map")).toBe("lang-map");
+    expect(unitKind("xmap")).toBe("common");
+    expect(unitKind("weird:thing")).toBe("other");
+  });
+
+  it("labels academy manuals in plain English", () => {
+    expect(unitLabel("art:ta:translate")).toBe("Translation Manual");
+  });
+});
+
+describe("unitsFromCatalogs and groupCatalogUnits", () => {
+  const sample = [
+    {
+      name: "en",
+      catalog: {
+        units: [
+          { id: "book:tit", segments: [0] },
+          { id: "obs", segments: [1] },
+          { id: "art:ta:translate", segments: [2] },
+          { id: "art:ta:intro", segments: [3] },
+          { id: "art:tw:kt", segments: [4] },
+          { id: "aligned:other", segments: [5], optional: true },
+          { id: "map", segments: [6] },
+          { id: "topics", segments: [7] },
+        ],
+        segments: [
+          { size: 1000 },
+          { size: 2000 },
+          { size: 3000 },
+          { size: 4000 },
+          { size: 5000 },
+          { size: 6000 },
+          { size: 7000 },
+          { size: 8000 },
+        ],
+      },
+    },
+    {
+      name: "common",
+      catalog: {
+        units: [
+          { id: "orig:tit", segments: [0] },
+          { id: "xmap", segments: [1] },
+          { id: "xtopics", segments: [2] },
+        ],
+        segments: [{ size: 100 }, { size: 200 }, { size: 300 }],
+      },
+    },
+  ];
+
+  it("reads units and sizes from catalogs", () => {
+    const units = unitsFromCatalogs(sample);
+    expect(units.find((u) => u.id === "obs")).toEqual({
+      id: "obs",
+      catalog: "en",
+      bytes: 2000,
+      optional: false,
+    });
+  });
+
+  it("groups in the catalog order and skips missing kinds", () => {
+    const groups = groupCatalogUnits(unitsFromCatalogs(sample));
+    expect(groups.map((g) => g.kind)).toEqual([
+      "books",
+      "obs",
+      "academy",
+      "words",
+      "aligned",
+      "lang-map",
+      "common",
+    ]);
+    expect(groups.map((g) => g.kind)).not.toContain("lexicon");
+    expect(GROUP_ORDER.indexOf("books")).toBeLessThan(
+      GROUP_ORDER.indexOf("obs"),
+    );
+  });
+
+  it("omits OBS when the language has none", () => {
+    const noObs = [
+      {
+        name: "vi",
+        catalog: {
+          units: [
+            { id: "book:mat", segments: [0] },
+            { id: "map", segments: [1] },
+            { id: "topics", segments: [2] },
+            { id: "aligned:other", segments: [3], optional: true },
+          ],
+          segments: [
+            { size: 10 },
+            { size: 20 },
+            { size: 30 },
+            { size: 40 },
+          ],
+        },
+      },
+    ];
+    const kinds = groupCatalogUnits(unitsFromCatalogs(noObs)).map((g) => g.kind);
+    expect(kinds).not.toContain("obs");
+    expect(kinds).not.toContain("academy");
+    expect(kinds).toContain("books");
+  });
+
+  it("lists an unknown class under Other with its id and size", () => {
+    const weird = [
+      {
+        name: "xx",
+        catalog: {
+          units: [{ id: "future:widget", segments: [0] }],
+          segments: [{ size: 42 }],
+        },
+      },
+    ];
+    const groups = groupCatalogUnits(unitsFromCatalogs(weird));
+    expect(groups).toEqual([
+      {
+        kind: "other",
+        label: "Other",
+        bytes: 42,
+        optional: false,
+        items: [
+          {
+            id: "future:widget",
+            label: "future:widget",
+            bytes: 42,
+            optional: false,
+            choosable: false,
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("folds orig books into one Hebrew and Greek line", () => {
+    const common = groupCatalogUnits(unitsFromCatalogs(sample)).find(
+      (g) => g.kind === "common",
+    );
+    expect(common?.items[0]).toMatchObject({
+      id: "orig",
+      label: "Hebrew and Greek (MACULA v2)",
+      bytes: 100,
+    });
   });
 });

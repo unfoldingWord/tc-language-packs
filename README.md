@@ -55,9 +55,9 @@ Rebuild it when the library changes.
 ## tc-catalog
 
 `public/catalog/` is a page that lists format 3 languages from the staging bucket, lets a visitor download chosen books
-as one `.tcpack` transfer file built in the browser, and lets them ask for a language that is missing (with a per-language
-request counter). The Worker script in `src/worker/` answers `/api/*`; every other path falls through to the static
-assets in `public/`.
+and other units (OBS, Academy manuals, lexicon, phrase index) as one `.tcpack` transfer file built in the browser, and
+lets them ask for a language that is missing (with a per-language request counter). The Worker script in `src/worker/`
+answers `/api/*`; every other path falls through to the static assets in `public/`.
 
 ### Worker routes
 

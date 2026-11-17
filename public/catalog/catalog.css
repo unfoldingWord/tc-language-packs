@@ -119,7 +119,8 @@
 .meta strong { font-weight: 500; }
 
 .resources,
-.books {
+.books,
+.unit-items {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -128,7 +129,8 @@
   max-width: 640px;
 }
 .resources li,
-.books li {
+.books li,
+.unit-items li {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
@@ -140,8 +142,57 @@
 .books li:first-child {
   clip-path: polygon(var(--cut-s) 0, 100% 0, 100% 100%, 0 100%, 0 var(--cut-s));
 }
-.books .bytes {
+.books .bytes,
+.unit-items .bytes,
+.unit-group-title .bytes,
+.unit-pick .bytes {
   font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+
+.unit-groups {
+  display: grid;
+  gap: 22px;
+  max-width: 640px;
+}
+.unit-group {
+  display: grid;
+  gap: 10px;
+}
+.unit-group-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+}
+.unit-pick {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  align-items: baseline;
+  width: 100%;
+  cursor: pointer;
+  padding: 12px 14px;
+  background: var(--surface);
+}
+.unit-pick .pick {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.unit-pick input {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.unit-items.soft-list li {
+  background: transparent;
+  padding: 4px 14px;
+  font-size: 15px;
   color: var(--muted);
 }
 
