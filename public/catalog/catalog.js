@@ -355,17 +355,61 @@ function renderBookChoices(books) {
 }
 
 /**
+ * @param {Uint8Array | ArrayBuffer | number[]} bytes
+ * @returns {string}
+ */
+function bytesToHex(bytes) {
+  return [...new Uint8Array(bytes)]
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
+/**
+ * Verified catalog for `lang` plus the catalogs it `requires` (by name and id).
+ * Sizes use an empty `have`: they describe the transfer file to share, not what
+ * is left to download on this device.
+ *
+ * @param {string} lang
  * @returns {Promise<{ catalogs: object[]; state: object; have: Set<string>; sharedBytes: number }>}
  */
-async function loadInstallPlan() {
+async function loadInstallPlan(lang) {
   const state = await store.getState();
-  const catalogs = [];
-  for (const published of Object.values(state.published ?? {})) {
-    const file = await store.get(published.id);
-    if (!file) continue;
-    catalogs.push(await verifyCatalogFile(file, trust, {}));
+  const published = state.published?.[lang];
+  if (!published) {
+    throw new Error(`No published catalog for ${lang}.`);
   }
-  const have = new Set(await store.ids());
+
+  const catalogs = [];
+  const seen = new Set();
+
+  /**
+   * @param {string | undefined} id
+   * @returns {Promise<object | null>}
+   */
+  async function addCatalog(id) {
+    if (!id || seen.has(id)) return null;
+    const file = await store.get(id);
+    if (!file) return null;
+    const verified = await verifyCatalogFile(file, trust, {});
+    seen.add(id);
+    catalogs.push(verified);
+    return verified;
+  }
+
+  const open = await addCatalog(published.id);
+  if (!open) {
+    throw new Error(`Catalog file missing for ${lang}.`);
+  }
+  for (const req of open.catalog.requires ?? []) {
+    const name = req[0];
+    const idFromReq =
+      req[2] != null ? bytesToHex(req[2]) : undefined;
+    const idFromName = state.published?.[name]?.id;
+    const added = await addCatalog(idFromReq);
+    if (!added) await addCatalog(idFromName);
+  }
+
+  const have = new Set();
   const sharedBytes = planInstall(
     catalogs,
     state,
@@ -396,7 +440,7 @@ async function openLanguage(lang) {
     if (openLang !== lang) return;
     const reader = await client.open(lang);
     if (openLang !== lang) return;
-    openPlan = await loadInstallPlan();
+    openPlan = await loadInstallPlan(lang);
     if (openLang !== lang) return;
     const resources = reader.resources?.() ?? [];
     const books = bookList(status)
