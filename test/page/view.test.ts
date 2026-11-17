@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { bookList, catalogProblemText, formatSize } from "../../public/catalog/view.js";
+import {
+  bookList,
+  catalogProblemText,
+  downloadErrorText,
+  formatSize,
+  needsSizeWarning,
+  transferName,
+} from "../../public/catalog/view.js";
 
 describe("formatSize", () => {
   it("formats kilobytes with a 1024 base", () => {
@@ -38,5 +45,53 @@ describe("catalogProblemText", () => {
     expect(catalogProblemText({ status: 404 })).toMatch(
       /not available right now/i,
     );
+  });
+});
+
+describe("transferName", () => {
+  const day = new Date(Date.UTC(2026, 10, 15));
+
+  it("names a single-book transfer with the book code", () => {
+    expect(transferName("es-419", ["tit"], day)).toBe(
+      "es-419-tit-2026-11-15.tcpack",
+    );
+  });
+
+  it("names a multi-book transfer with the book count", () => {
+    expect(transferName("es-419", ["mat", "mrk", "luk"], day)).toBe(
+      "es-419-3-books-2026-11-15.tcpack",
+    );
+  });
+
+  it("names a whole-language transfer as all", () => {
+    expect(transferName("es-419", [], day)).toBe(
+      "es-419-all-2026-11-15.tcpack",
+    );
+  });
+});
+
+describe("needsSizeWarning", () => {
+  const limit = 200 * 1024 * 1024;
+
+  it("is false at exactly 200 MiB", () => {
+    expect(needsSizeWarning(limit)).toBe(false);
+  });
+
+  it("is true just over 200 MiB", () => {
+    expect(needsSizeWarning(limit + 1)).toBe(true);
+  });
+});
+
+describe("downloadErrorText", () => {
+  it("mentions browser storage for QuotaExceededError", () => {
+    expect(downloadErrorText({ name: "QuotaExceededError" })).toMatch(
+      /browser storage/i,
+    );
+  });
+
+  it("mentions the connection and that what is complete is kept for a failed fetch", () => {
+    const text = downloadErrorText(new TypeError("Failed to fetch"));
+    expect(text).toMatch(/connection/i);
+    expect(text).toMatch(/what is complete is kept/i);
   });
 });

@@ -31,7 +31,7 @@
     <div class="top-text">
       <p class="eyebrow">tc-catalog</p>
       <h1 id="top-title">Take a language with you</h1>
-      <p class="lead">Pick a format 3 language from the test server, see what it holds, and (next) leave with one file you can share.</p>
+      <p class="lead">Pick a format 3 language from the test server, choose the books you need, and leave with one transfer file you can share.</p>
     </div>
   </section>
 
@@ -54,12 +54,22 @@
       <h3 class="lead">Resources</h3>
       <ul id="resource-list" class="resources"></ul>
     </div>
-    <div>
-      <h3 class="lead">Books</h3>
+    <div id="download-panel" hidden>
+      <h3 class="lead">Choose books to take</h3>
+      <p class="fine">Nothing is checked by default. Turn on “whole language” to take every book.</p>
+      <label class="whole">
+        <input id="whole-language" type="checkbox">
+        Whole language
+      </label>
       <ul id="book-list" class="books"></ul>
-    </div>
-    <div class="actions">
-      <button id="download" class="button" type="button" hidden disabled>Download a transfer file</button>
+      <p id="choice-size" class="choice-size" aria-live="polite">Selected: 0 KB</p>
+      <div class="progress" hidden id="progress-wrap" aria-hidden="true">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+      <p id="download-status" class="status-line" role="status"></p>
+      <div class="actions">
+        <button id="download" class="button" type="button" disabled>Download a transfer file</button>
+      </div>
     </div>
   </section>
 </main>

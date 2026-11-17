@@ -162,6 +162,65 @@
 }
 .button[hidden] { display: none; }
 
+#download-panel[hidden] { display: none; }
+#download-panel {
+  display: grid;
+  gap: 14px;
+  max-width: 640px;
+}
+#download-panel .fine {
+  font-size: 15px;
+  color: var(--muted);
+  max-width: 62ch;
+}
+.whole {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 16px;
+  width: fit-content;
+}
+.whole input {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+.books label.book {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 16px;
+  align-items: baseline;
+  width: 100%;
+  cursor: pointer;
+}
+.books label.book .pick {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+}
+.books label.book input {
+  width: 1.05rem;
+  height: 1.05rem;
+}
+.choice-size {
+  font-variant-numeric: tabular-nums;
+  font-size: 16px;
+  color: var(--muted);
+  margin: 0;
+}
+.progress {
+  height: 10px;
+  background: var(--surface);
+  overflow: hidden;
+}
+.progress[hidden] { display: none; }
+.progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--ink);
+  transition: width 120ms linear;
+}
+
 .status-line {
   min-height: 1.5em;
   font-size: 16px;

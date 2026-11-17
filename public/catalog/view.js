@@ -3,6 +3,7 @@
 const KiB = 1024;
 const MiB = KiB * 1024;
 const GiB = MiB * 1024;
+const SIZE_WARN = 200 * MiB;
 const BOOK_KEY = /\/book:([0-9a-z]{3})$/;
 
 /**
@@ -49,4 +50,63 @@ export function catalogProblemText(err) {
         ? err
         : "Something went wrong while reading the catalog.";
   return detail;
+}
+
+/**
+ * @param {string} lang
+ * @param {string[]} books
+ * @param {Date} date
+ * @returns {string}
+ */
+export function transferName(lang, books, date) {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
+  const day = `${y}-${m}-${d}`;
+  if (books.length === 0) return `${lang}-all-${day}.tcpack`;
+  if (books.length === 1) return `${lang}-${books[0]}-${day}.tcpack`;
+  return `${lang}-${books.length}-books-${day}.tcpack`;
+}
+
+/**
+ * @param {number} bytes
+ * @returns {boolean}
+ */
+export function needsSizeWarning(bytes) {
+  return bytes > SIZE_WARN;
+}
+
+/**
+ * @param {unknown} err
+ * @returns {string}
+ */
+export function downloadErrorText(err) {
+  const problem = err && typeof err === "object" ? err : {};
+  const name = typeof problem.name === "string" ? problem.name : "";
+  const message =
+    typeof problem.message === "string"
+      ? problem.message
+      : typeof err === "string"
+        ? err
+        : "";
+
+  if (
+    name === "QuotaExceededError" ||
+    /quotaexceeded/i.test(name) ||
+    /quota/i.test(message)
+  ) {
+    return "Browser storage is full, so the download could not finish. Free some space and try again. What is complete is kept.";
+  }
+
+  if (
+    name === "TypeError" ||
+    /failed to fetch/i.test(message) ||
+    /network/i.test(message) ||
+    problem.code === "E_NETWORK"
+  ) {
+    return "The connection dropped before the download finished. What is complete is kept; try again.";
+  }
+
+  const detail = message || "Something went wrong while building the transfer file.";
+  return `${detail} What is complete is kept; try again.`;
 }
