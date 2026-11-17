@@ -13,8 +13,10 @@ import {
   catalogProblemText,
   CORE_UNITS,
   downloadErrorText,
+  exportUnitsForWant,
   formatSize,
   groupCatalogUnits,
+  installWant,
   listableLanguages,
   needsSizeWarning,
   requestErrorText,
@@ -144,28 +146,12 @@ let downloadGen = 0;
  * @returns {object}
  */
 function wantFor(choice) {
-  if (choice.whole) {
-    return {
-      defaults: true,
-      books: openBooks.map((book) => book.code),
-      units: openUnitIds.filter(
-        (id) =>
-          !id.startsWith("book:") &&
-          !CORE_UNITS.includes(id) &&
-          id !== "obs" &&
-          !id.startsWith("aligned:") &&
-          !id.startsWith("orig:"),
-      ),
-      aligned: openHasAligned ? true : undefined,
-    };
-  }
-  const units = [...(openPlan?.sharedUnits ?? []), ...(choice.units ?? [])];
-  return {
-    defaults: false,
-    books: choice.books ?? [],
-    units: [...new Set(units)],
-    ...(choice.aligned ? { aligned: true } : {}),
-  };
+  return installWant(choice, {
+    bookCodes: openBooks.map((book) => book.code),
+    unitIds: openUnitIds,
+    hasAligned: openHasAligned,
+    sharedUnits: openPlan?.sharedUnits ?? [],
+  });
 }
 
 /**
@@ -729,23 +715,14 @@ async function downloadTransfer() {
     if (gen !== downloadGen || openLang !== lang) return;
 
     setDownloadStatus("Building the transfer file…");
-    // A full export with no books/units filter takes every active unit
-    // (whole language). Otherwise list books and units explicitly; phrase-index
-    // units must be named because exportTransfer has no `aligned` flag.
-    const exportOpts = whole
-      ? { lang, mode: "full" }
-      : {
-          lang,
-          mode: "full",
-          books: want.books,
-          units: [
-            ...want.units,
-            ...(want.aligned
-              ? openUnitIds.filter((id) => id.startsWith("aligned:"))
-              : []),
-          ],
-        };
-    const bytesOut = await client.exportTransfer(exportOpts);
+    // Same want as the size estimate / install: list books and units
+    // explicitly (phrase-index units must be named; export has no `aligned`).
+    const bytesOut = await client.exportTransfer({
+      lang,
+      mode: "full",
+      books: want.books,
+      units: exportUnitsForWant(want, openUnitIds),
+    });
     if (gen !== downloadGen || openLang !== lang) return;
 
     offerBlob(bytesOut, filename);

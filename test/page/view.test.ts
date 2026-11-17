@@ -5,9 +5,11 @@ import {
   bookList,
   catalogProblemText,
   downloadErrorText,
+  exportUnitsForWant,
   formatSize,
   groupCatalogUnits,
   GROUP_ORDER,
+  installWant,
   listableLanguages,
   needsSizeWarning,
   requestErrorText,
@@ -56,6 +58,74 @@ describe("catalogProblemText", () => {
     expect(catalogProblemText({ status: 404 })).toMatch(
       /not available right now/i,
     );
+  });
+});
+
+describe("installWant", () => {
+  const catalog = {
+    bookCodes: ["tit", "mat"],
+    unitIds: [
+      "book:tit",
+      "book:mat",
+      "obs",
+      "art:ta:translate",
+      "art:tw:kt",
+      "map",
+      "topics",
+      "xmap",
+      "xtopics",
+      "aligned:other",
+      "orig:tit",
+      "lex:G0",
+    ],
+    hasAligned: true,
+    sharedUnits: ["xmap", "map", "xtopics", "topics", "art:tw:kt", "art:ta:translate"],
+  };
+
+  it("whole language lists OBS and maps explicitly, not via defaults", () => {
+    const want = installWant({ whole: true }, catalog);
+    expect(want.defaults).toBe(false);
+    expect(want.books).toEqual(["tit", "mat"]);
+    expect(want.units).toEqual(
+      expect.arrayContaining([
+        "obs",
+        "art:ta:translate",
+        "art:tw:kt",
+        "map",
+        "topics",
+        "xmap",
+        "xtopics",
+        "lex:G0",
+      ]),
+    );
+    expect(want.units).not.toContain("book:tit");
+    expect(want.units).not.toContain("aligned:other");
+    expect(want.units).not.toContain("orig:tit");
+    expect(want.aligned).toBe(true);
+  });
+
+  it("partial choice keeps shared units and optional extras", () => {
+    const want = installWant(
+      { books: ["tit"], units: ["obs"], aligned: false },
+      catalog,
+    );
+    expect(want.defaults).toBe(false);
+    expect(want.books).toEqual(["tit"]);
+    expect(want.units).toEqual(
+      expect.arrayContaining(["obs", "xmap", "art:tw:kt"]),
+    );
+    expect(want.aligned).toBeUndefined();
+  });
+});
+
+describe("exportUnitsForWant", () => {
+  it("names aligned units when the want asks for the phrase index", () => {
+    expect(
+      exportUnitsForWant(
+        { units: ["obs", "map"], aligned: true },
+        ["obs", "map", "aligned:a-c", "aligned:other"],
+      ),
+    ).toEqual(["obs", "map", "aligned:a-c", "aligned:other"]);
   });
 });
 

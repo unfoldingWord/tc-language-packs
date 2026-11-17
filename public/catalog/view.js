@@ -373,6 +373,72 @@ export function catalogProblemText(err) {
 }
 
 /**
+ * Want for `planInstall` / `client.install`. Whole language lists every
+ * catalog unit explicitly (including OBS and maps), so the size estimate
+ * matches the transfer; `orig:*` still arrives through needs. Aligned
+ * phrase-index units use the `aligned` flag.
+ *
+ * @param {{
+ *   whole?: boolean;
+ *   books?: string[];
+ *   units?: string[];
+ *   aligned?: boolean;
+ * }} choice
+ * @param {{
+ *   bookCodes: string[];
+ *   unitIds: string[];
+ *   hasAligned: boolean;
+ *   sharedUnits?: string[];
+ * }} catalog
+ * @returns {{
+ *   defaults: boolean;
+ *   books: string[];
+ *   units: string[];
+ *   aligned?: boolean | string[];
+ * }}
+ */
+export function installWant(choice, catalog) {
+  if (choice.whole) {
+    return {
+      defaults: false,
+      books: [...catalog.bookCodes],
+      units: catalog.unitIds.filter(
+        (id) =>
+          !id.startsWith("book:") &&
+          !id.startsWith("aligned:") &&
+          !id.startsWith("orig:"),
+      ),
+      ...(catalog.hasAligned ? { aligned: true } : {}),
+    };
+  }
+  const shared = catalog.sharedUnits ?? [];
+  return {
+    defaults: false,
+    books: choice.books ?? [],
+    units: [...new Set([...shared, ...(choice.units ?? [])])],
+    ...(choice.aligned ? { aligned: true } : {}),
+  };
+}
+
+/**
+ * Unit ids to pass to `exportTransfer` for the same want (phrase-index
+ * units must be named; export has no `aligned` flag).
+ *
+ * @param {{ units: string[]; aligned?: boolean | string[] }} want
+ * @param {string[]} unitIds
+ * @returns {string[]}
+ */
+export function exportUnitsForWant(want, unitIds) {
+  const aligned =
+    want.aligned === true
+      ? unitIds.filter((id) => id.startsWith("aligned:"))
+      : Array.isArray(want.aligned)
+        ? want.aligned.map((g) => `aligned:${g}`)
+        : [];
+  return [...new Set([...want.units, ...aligned])];
+}
+
+/**
  * @param {string} lang
  * @param {{ books?: string[]; units?: string[]; whole?: boolean }} selection
  * @param {Date} date
