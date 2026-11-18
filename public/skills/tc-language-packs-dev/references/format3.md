@@ -85,7 +85,8 @@ core. ACAI adds only what TIPNR lacks, and nothing is stored that the pack can a
 - **More `same-as` rows** (`xtopics` core): a Translation Words article on a name that the TIPNR rule joined to no one
   can be joined by ACAI (source ACAI, confidence 75); one article may then name several people ("Abijah").
 - **`people`** (`topics` core of each language, v1): `names` (a person's name where the pack cannot derive it),
-  `notes` (what tells two people of the same name apart, "padre de José") and `aliases` (other names). Built for en,
+  `notes` (what tells two people of the same name apart, "padre de José") and `aliases` (other names; not one that mostly
+  means another person: ACAI's «David» for Judah, from a textual variant in one verse, is left out, `spec/ids.md`). Built for en,
   es-419, id, hi and ar (French has no format 3 catalog yet) when ACAI names the person; 14 to 42 KB per language.
 
 The name an app shows for a person: `people.names`, else the first name in the language's map of the Translation Words
