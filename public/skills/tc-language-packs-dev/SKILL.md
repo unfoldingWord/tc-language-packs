@@ -1,6 +1,6 @@
 ---
 name: tc-language-packs-dev
-description: Build software that makes, opens, downloads, serves or reads tC Language Packs (Bible translation language packs of the translationCore family) — the offline .langpack.zip files and format 2.0 .part.gz parts that unfoldingWord's tC Study pipeline (bt-synergy) writes and Servos, tC Study and translation-helps-mcp read. Covers the file layout, manifest, layers and cache keys, kinds of pack, version and compatibility rules, parts lists and the parts server routes, the v3 word index (index layer, Strong's codes, word lists), the TypeScript packages (@bt-synergy/language-pack, importLanguagePack, buildLanguagePack, planParts, applyParts), MCP views, and a dependency-free Python reader for inspecting packs. Use this skill whenever code touches language packs or Door43 translation resources offline — an app, a CLI, a server, an MCP tool, tests, a pack inspector — or someone asks how packs work inside, even if they only say "langpack", "parts", "pack format" or name tC Study's cache.
+description: Build software that makes, opens, downloads, serves or reads tC Language Packs (Bible translation language packs of the translationCore family) — the offline .langpack.zip files and format 2.0 .part.gz parts that unfoldingWord's tC Study pipeline (bt-synergy) writes and Servos, tC Study and translation-helps-mcp read. Covers the file layout, manifest, layers and cache keys, kinds of pack, version and compatibility rules, parts lists and the parts server routes, the v3 word index (index layer, Strong's codes, word lists), the TypeScript packages (@bt-synergy/language-pack, importLanguagePack, buildLanguagePack, planParts, applyParts), MCP views, a dependency-free Python reader for inspecting packs, and format 3 read with @bt-synergy/language-pack-client (Five Movements sessions of Open Bible Stories, the verses and pictures of story frames, a person's family with gender and names). Use this skill whenever code touches language packs or Door43 translation resources offline — an app, a CLI, a server, an MCP tool, tests, a pack inspector — or someone asks how packs work inside, even if they only say "langpack", "parts", "pack format" or name tC Study's cache.
 license: CC BY-SA 4.0
 compatibility: The TypeScript packages live in github.com/unfoldingWord/tc-study (Bun or Node). scripts/langpack.py needs Python 3.8+ only.
 metadata:
@@ -78,8 +78,18 @@ numbers to verses. Codes follow the lexicon (`G5485`, `H0776`). An app reads it 
 Words links join it, are in [references/format.md](references/format.md). `scripts/langpack.py occurrences` reads it,
 and finds the same places in the original's words when a pack has no index.
 
+## Format 3: stories, families and pictures
+
+Format 3 packs (signed catalogs of content-addressed segments, read with `@bt-synergy/language-pack-client`) now also
+carry the Five Movements sessions of Open Bible Stories (`reader.obsSession(n)`, `reader.obsPart(n, code)`; English 50
+stories, Indonesian 16), the verses of each story frame (`reader.frameVerses`, `reader.framesAt`), the story pictures in
+the catalog `zxx-obsimg` (`reader.obsImage`), and each person's family with gender and names in the language
+(`reader.family(id)`, `reader.people()`, `kinVerses`). Tables, sizes, calls and credits are in
+[references/format3.md](references/format3.md).
+
 ## Where to go next
 
+- [references/format3.md](references/format3.md): format 3's Five Movements, frame verses, story pictures and families.
 - [references/format.md](references/format.md): files, manifest, layers and keys with their value shapes, kinds,
   versions, parts lists, the word index.
 - [references/code.md](references/code.md): the TypeScript packages (read a manifest, import, build, plan and apply

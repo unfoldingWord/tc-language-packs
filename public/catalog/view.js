@@ -335,7 +335,8 @@ export function sharedArticleUnits(units) {
 }
 
 /**
- * Drop experimental `zxx-*` catalogs and hide `es` when `es-419` is listed
+ * Drop `zxx-*` catalogs (no linguistic content, such as `zxx-obsimg`, the story pictures: the page names it
+ * in its text) and hide `es` when `es-419` is listed
  * (staging serves the same catalog; header lang is es-419).
  * @param {{ lang: string }[]} languages
  * @returns {{ lang: string }[]}

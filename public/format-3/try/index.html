@@ -123,7 +123,7 @@
   <section class="top wrap" aria-labelledby="top-title">
     <p class="eyebrow">Live on the test server · English and Latin American Spanish</p>
     <h1 id="top-title">Try a pack</h1>
-    <p class="lead">Take a language into this browser, then ask it what a translator would ask: a verse with its notes, a word through the whole Bible, an article, the people and places of a book. It runs here, on the same library an app uses, and keeps working with no internet once it is downloaded.</p>
+    <p class="lead">Take a language into this browser, then ask it what a translator would ask: a verse with its notes, a word through the whole Bible, an article, the people and places of a book, a person’s family, a Bible story session. It runs here, on the same library an app uses, and keeps working with no internet once it is downloaded.</p>
   </section>
 
   <section class="wrap" aria-labelledby="get-title">
@@ -154,8 +154,10 @@
       <button role="tab" data-q="renderings" aria-selected="false">How it was translated</button>
       <button role="tab" data-q="article" aria-selected="false">An article</button>
       <button role="tab" data-q="topics" aria-selected="false">People and places</button>
+      <button role="tab" data-q="family" aria-selected="false">A family</button>
       <button role="tab" data-q="stories" aria-selected="false">Bible stories</button>
       <button role="tab" data-q="story" aria-selected="false">A story</button>
+      <button role="tab" data-q="session" aria-selected="false">Five Movements</button>
       <button role="tab" data-q="search" aria-selected="false">Search</button>
     </div>
     <form class="ask" id="ask">
@@ -233,7 +235,7 @@
     <div><a href="../../">Overview</a><a href="../../inside/">Inside a pack</a><a href="../../build/">Build with it</a><a href="../../agents/">For agents</a><a href="../">For translators</a></div>
     <div><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack-v3/spec">The specification</a><a href="https://github.com/unfoldingWord/tc-study/tree/master/packages/language-pack-client">The client library</a></div>
     <div><a href="https://github.com/idiomaspuentes/servos">Servos</a><a href="https://git.door43.org/">Door43</a></div>
-    <p class="credits">The packs are built from the openly licensed translation resources published on Door43. Each answer names its sources in its JSON (<code>cites</code>).</p>
+    <p class="credits">The packs are built from the openly licensed translation resources published on Door43. Each answer names its sources in its JSON (<code>cites</code>). People and family relations come from STEPBible’s TIPNR (CC BY 4.0), events from Theographic Bible Metadata (CC BY-SA 4.0), the gender and names of people from ACAI Biblical Entity Data © 2024 BiblioNexus (CC BY-SA 4.0), and the Five Movements sessions from OBS Theological Formation, by unfoldingWord and Formation Stories (CC BY-SA 4.0).</p>
   </div>
   <div class="footer-last"><span>unfoldingWord · 2026</span><a class="button on-field" href="../">For translators</a></div>
 </footer>
@@ -400,6 +402,23 @@ const Q = {
     examples: () => ['1', '8', '13', '37'],
     first: () => '1',
     show: showStory,
+  },
+  session: {
+    hint: 'A story number, 1 to 50. The answer is its Five Movements session for oral Bible study: the questions to observe the story, the translation terms frame by frame, the questions about its meaning, and the steps to draft and check it. On this page only English has the sessions; they come with the Open Bible Stories.',
+    call: (a) => `reader.obsSession(${Number(a)})`,
+    run: (a) => reader.obsSession(Number(a)),
+    examples: () => ['1', '8', '37'],
+    first: () => '1',
+    show: showSession,
+  },
+  family: {
+    hint: 'A person, by name (Isaac, Ruth, David) or id (per:…). The answer has their parents, children, husband or wife, brothers and sisters, with this language’s names and a verse that shows each tie, worked out in this browser from the books it holds.',
+    call: (a) => `reader.family(${JSON.stringify(a)})`,
+    run: (a) => reader.family(a),
+    byName: (id) => id.startsWith('per:'),
+    examples: () => (current.lang === 'en' ? ['Isaac', 'Ruth', 'David'] : ['Isaac', 'Rut', 'David']),
+    first: () => 'Isaac',
+    show: showFamily,
   },
   search: {
     hint: 'Words to find in the downloaded book: its texts, notes and questions, and in the Open Bible Stories when they are downloaded.',
@@ -786,6 +805,74 @@ function showTopics(a) {
     ]))),
   ]))
   return cards.length ? cards : [el('div', { class: 'card' }, el('p', { text: 'No topics in that book.' }))]
+}
+
+// ---- A family ----
+
+// A verse id is LLCCCVVV: book number (Genesis 1), chapter, verse.
+const verseRef = ([a, b]) => {
+  const book = BOOKS[Math.floor(a / 1e6) - 1]
+  const c = Math.floor(a / 1e3) % 1e3, v = a % 1e3
+  const end = b !== a ? (Math.floor(b / 1e3) % 1e3 === c ? `-${b % 1e3}` : `-${Math.floor(b / 1e3) % 1e3}:${b % 1e3}`) : ''
+  return `${NAMES[book] ?? book} ${c}:${v}${end}`
+}
+const sex = (g) => (g === 1 ? 'man' : g === 2 ? 'woman' : null)
+const personLabel = (p) => p.name + (p.note ? ` (${p.note})` : '')
+
+function showFamily(a) {
+  const d = a.data
+  if (!d) return [el('div', { class: 'card' }, [el('p', { text: 'That is not a person of the topics, or the topics are not in this browser.' }), missingLine(a)])]
+  const head = el('div', { class: 'card' }, [
+    el('h3', { text: personLabel(d) }),
+    el('p', { class: 'soft', text: [sex(d.gender), `${d.verses} ${d.verses === 1 ? 'verse' : 'verses'}`, d.tw?.length ? `Translation Words: ${d.tw.map((t) => t.replace(/^tw:/, '')).join(', ')}` : null].filter(Boolean).join(' · ') }),
+  ])
+  const group = (title, list) => list.length ? el('div', { class: 'card' }, [
+    el('span', { class: 'label', text: `${title} (${list.length}) · touch one to see their family` }),
+    el('ul', { class: 'list' }, list.map((r) => el('li', {}, [
+      el('button', { class: 'chip', type: 'button', title: r.id, text: personLabel(r) + (r.half ? ' · half sibling' : ''), onclick: () => ask('family', r.id) }),
+      el('span', { class: 'soft', text: [sex(r.gender), r.verses.length ? r.verses.map(verseRef).join(', ') : 'no verse shows it in the books here'].filter(Boolean).join(' · ') }),
+    ]))),
+  ]) : null
+  const groups = [group('Parents', d.parents), group('Children', d.children), group('Husband or wife', d.partners), group('Brothers and sisters', d.siblings)].filter(Boolean)
+  return [head, ...(groups.length ? groups : [el('div', { class: 'card' }, el('p', { text: 'The sources name no family for this person.' }))]), missingLine(a)].filter(Boolean)
+}
+
+// ---- Five Movements ----
+
+const PART = { intro: 'Introduction', frames: 'The story', community: 'Community study', m1: 'Movement 1', m2: 'Movement 2', drafting: 'Drafting', m3: 'Movement 3', checking: 'Checking', m4: 'Movement 4', m5: 'Movement 5', conclusion: 'Conclusion' }
+const frameLabel = (id) => `${Math.floor(id / 100)}:${id % 100}`
+
+async function showSession(d) {
+  if (!d) {
+    const st = await client.status(current.lang)
+    const u = st.units.find((x) => x.key === `${current.lang}/obs`)
+    if (u && !u.installed) return [el('div', { class: 'card' }, [el('p', { class: 'missing', text: 'The sessions travel with the Open Bible Stories, which are not in this browser.' }), obsInstall({ notInstalled: [{ unit: 'obs', bytes: u.bytes }] })].filter(Boolean))]
+    return [el('div', { class: 'card' }, el('p', { text: current.lang === 'en' ? 'There is no Five Movements session for that story: try a number from 1 to 50.' : 'This language has no Five Movements sessions yet. On this page, choose English: it has all 50 stories.' }))]
+  }
+  const head = el('div', { class: 'card' }, [
+    el('h3', { text: storyLabel(d.story, d.title) }),
+    el('p', { class: 'soft', text: `Five Movements, release ${d.release} · ${d.coverage.length} stories have a session in this language · ${d.frames.length} frames` }),
+  ])
+  const parts = d.parts.map((p) => {
+    const title = p.block?.title ?? p.title ?? PART[p.code] ?? p.code
+    const body = []
+    const text = cleanNote(p.block?.text ?? p.text)
+    // A long block is cut at a word: the whole of it is in the JSON below.
+    const space = Math.max(text.lastIndexOf(' ', 600), text.lastIndexOf('\n', 600))
+    const short = text.length > 600 ? text.slice(0, space > 0 ? space : 600) + ' …' : text
+    if (p.code === 'frames') body.push(el('ul', { class: 'list' }, d.frames.map((f) => el('li', {}, [el('strong', { text: `Frame ${frameLabel(f.id)}` }), el('p', { text: f.text })]))))
+    else if (short) body.push(el('p', { class: 'note-md', text: short }))
+    for (const l of p.lists) {
+      body.push(el('span', { class: 'label', text: l.title ?? l.code }))
+      if (l.questions.length) body.push(el('ul', { class: 'list' }, l.questions.map((q) => el('li', {}, [
+        el('strong', { text: q.q }),
+        el('span', { class: 'soft', text: [q.frames.length ? 'frame ' + q.frames.map(frameLabel).join(', ') : null, q.a ? 'answer: ' + q.a : null, q.id].filter(Boolean).join(' · ') }),
+      ]))))
+      for (const t of l.terms) body.push(el('div', {}, [el('strong', { text: `Frame ${frameLabel(t.frame)}` }), ...t.terms.map((x) => el('p', { class: 'note-md', text: cleanNote(x.text) }))]))
+    }
+    return el('details', { class: 'card' }, [el('summary', { text: title }), ...body])
+  })
+  return [head, ...parts]
 }
 
 function showSearch(a) {
