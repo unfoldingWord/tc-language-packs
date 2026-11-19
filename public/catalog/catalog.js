@@ -206,14 +206,9 @@ function renderList(filter = "") {
     if (entry.lang === openLang) btn.setAttribute("aria-current", "true");
     const name = document.createElement("span");
     name.textContent = entry.lang;
-    btn.append(name);
     const patch = patchInfo(entry.lang);
-    if (patch) {
-      const tag = document.createElement("span");
-      tag.className = "soft";
-      tag.textContent = ` patch of ${patch.base}`;
-      btn.append(tag);
-    }
+    if (patch) name.textContent = `${entry.lang} · patch of ${patch.base}`;
+    btn.append(name);
     btn.addEventListener("click", () => {
       void openLanguage(entry.lang);
     });
