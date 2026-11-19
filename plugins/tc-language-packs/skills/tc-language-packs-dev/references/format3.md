@@ -110,3 +110,7 @@ kinVerses(versesOfA, versesOfB)             // the same rule, for your own data
 
 Credits: STEPBible TIPNR (CC BY 4.0) for people and relations; Theographic Bible Metadata (CC BY-SA 4.0) for events;
 «ACAI Biblical Entity Data © 2024 BiblioNexus», CC BY-SA 4.0, for gender, names and aliases.
+
+## Patch catalogs (`{lang}-x-aquifer`)
+
+A patch is a separate signed catalog named `{lang}-x-{source}` (`hi-x-aquifer`, `es-419-x-aquifer`, `id-x-aquifer`) that holds `book` segments of notes or questions for the books Door43 production lacks. Door43 always wins, per book and per table; the base language is the tag minus `-x-{source}`. Every row carries its provenance (source repository and commit, license, adaptation notice, `review`). A patch pins one revision of the common catalog, so it must be rebuilt (new revision, same segments) when the common catalog changes: a stale patch stays waiting for its `orig:*` segments in the client. The spec is `catalog.md` ("Patch catalogs") in tc-study `packages/language-pack-v3/spec/`; the build is `packages/resource-pipeline/cli/build-patch-v3.ts`. The catalog page lists patches as "patch of <language>".

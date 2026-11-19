@@ -19,6 +19,8 @@ import {
   installWant,
   listableLanguages,
   needsSizeWarning,
+  patchInfo,
+  patchNoticeText,
   requestErrorText,
   requestStateText,
   sharedArticleUnits,
@@ -205,6 +207,13 @@ function renderList(filter = "") {
     const name = document.createElement("span");
     name.textContent = entry.lang;
     btn.append(name);
+    const patch = patchInfo(entry.lang);
+    if (patch) {
+      const tag = document.createElement("span");
+      tag.className = "soft";
+      tag.textContent = ` patch of ${patch.base}`;
+      btn.append(tag);
+    }
     btn.addEventListener("click", () => {
       void openLanguage(entry.lang);
     });
@@ -619,6 +628,12 @@ async function openLanguage(lang) {
     sig.textContent = "Signature checked.";
     sigLine.append(sig);
     meta.append(revLine, sigLine);
+    const patch = patchInfo(lang);
+    if (patch) {
+      const note = document.createElement("p");
+      note.textContent = patchNoticeText(patch);
+      meta.append(note);
+    }
 
     const resourceList = $("resource-list");
     resourceList.replaceChildren();

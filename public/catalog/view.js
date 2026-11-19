@@ -352,6 +352,28 @@ export function listableLanguages(languages) {
   });
 }
 
+/** Sources that publish patch catalogs `{lang}-x-{source}` (`spec/catalog.md`, "Patch catalogs"). */
+const PATCH_SOURCES = { aquifer: "Aquifer" };
+
+/**
+ * A patch catalog fills gaps in the catalog of its base language; it is not a language of its own.
+ * @param {string} tag
+ * @returns {{ base: string, source: string, sourceName: string } | null}
+ */
+export function patchInfo(tag) {
+  const m = /^(.+)-x-([a-z0-9]{1,8})$/.exec(typeof tag === "string" ? tag : "");
+  if (!m || !Object.hasOwn(PATCH_SOURCES, m[2])) return null;
+  return { base: m[1], source: m[2], sourceName: PATCH_SOURCES[m[2]] };
+}
+
+/**
+ * @param {{ base: string, sourceName: string }} info
+ * @returns {string}
+ */
+export function patchNoticeText(info) {
+  return `This is a patch, not a language. It adds ${info.sourceName} material where ${info.base} lacks it, and each row says where it came from. An app installs it next to ${info.base}; ${info.base} wins wherever it has the same material.`;
+}
+
 /**
  * @param {unknown} err
  * @returns {string}
