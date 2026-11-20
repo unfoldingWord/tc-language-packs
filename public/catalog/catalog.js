@@ -19,6 +19,8 @@ import {
   installWant,
   listableLanguages,
   needsSizeWarning,
+  patchInfo,
+  patchNoticeText,
   requestErrorText,
   requestStateText,
   sharedArticleUnits,
@@ -204,6 +206,8 @@ function renderList(filter = "") {
     if (entry.lang === openLang) btn.setAttribute("aria-current", "true");
     const name = document.createElement("span");
     name.textContent = entry.lang;
+    const patch = patchInfo(entry.lang);
+    if (patch) name.textContent = `${entry.lang} · patch of ${patch.base}`;
     btn.append(name);
     btn.addEventListener("click", () => {
       void openLanguage(entry.lang);
@@ -619,6 +623,12 @@ async function openLanguage(lang) {
     sig.textContent = "Signature checked.";
     sigLine.append(sig);
     meta.append(revLine, sigLine);
+    const patch = patchInfo(lang);
+    if (patch) {
+      const note = document.createElement("p");
+      note.textContent = patchNoticeText(patch);
+      meta.append(note);
+    }
 
     const resourceList = $("resource-list");
     resourceList.replaceChildren();

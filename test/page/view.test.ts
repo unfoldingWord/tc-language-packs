@@ -11,6 +11,8 @@ import {
   GROUP_ORDER,
   installWant,
   listableLanguages,
+  patchInfo,
+  patchNoticeText,
   needsSizeWarning,
   requestErrorText,
   requestStateText,
@@ -438,5 +440,20 @@ describe("unitsFromCatalogs and groupCatalogUnits", () => {
       label: "Hebrew and Greek (MACULA v2)",
       bytes: 100,
     });
+  });
+});
+
+describe("patch catalogs", () => {
+  it("knows a patch by its source, not any -x- tag", () => {
+    expect(patchInfo("hi-x-aquifer")).toEqual({ base: "hi", source: "aquifer", sourceName: "Aquifer" });
+    expect(patchInfo("es-419-x-aquifer")?.base).toBe("es-419");
+    expect(patchInfo("ar-x-strong")).toBeNull();
+    expect(patchInfo("hi")).toBeNull();
+  });
+
+  it("says in words what a patch is", () => {
+    const text = patchNoticeText({ base: "hi", sourceName: "Aquifer" });
+    expect(text).toContain("patch, not a language");
+    expect(text).toContain("hi wins");
   });
 });

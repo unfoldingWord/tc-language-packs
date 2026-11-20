@@ -309,6 +309,34 @@
     <p class="estimate">The story pictures were measured on the test server. The other add-ons are estimates from samples and have not been built yet.</p>
   </section>
 
+  <section class="part wrap" aria-labelledby="patch-title">
+    <div class="head">
+      <h2 id="patch-title" data-reveal>Filling gaps without mixing sources</h2>
+      <p data-reveal style="--d:60ms">Door43 is the base of the language packs. Some languages lack notes, questions or book introductions there, and Aquifer, a public project, has adaptations of the same unfoldingWord resources that fill part of the gap. They travel as a <strong>patch</strong>: a separate signed catalog named <code>{language}-x-aquifer</code> (for example <code>hi-x-aquifer</code>), never mixed into the language’s own catalog.</p>
+    </div>
+    <div class="tiers" data-reveal style="--d:100ms">
+      <div class="tier core">
+        <h3>Door43 always wins</h3>
+        <ul>
+          <li><strong>Only the gaps</strong><span>A patch holds a book only where Door43 has none. When Door43 publishes that book, the next rebuild of the patch drops it.</span></li>
+        </ul>
+      </div>
+      <div class="tier">
+        <h3>Every row says where it came from</h3>
+        <ul>
+          <li><strong>Source, license and review</strong><span>Each row names the Aquifer repository and commit, its license, the adaptation notice and its review status, so an app can tell a translator what they are reading.</span></li>
+        </ul>
+      </div>
+      <div class="tier">
+        <h3>Installed next to the language</h3>
+        <ul>
+          <li><strong>Its own download</strong><span>An app installs the patch beside the language and shows its rows marked. The catalog lists patches with the label “patch of” and the language they fill.</span></li>
+        </ul>
+      </div>
+    </div>
+    <p class="estimate">Patches built so far (the catalog page lists what is published): Hindi (notes for 48 books and questions for 33), Spanish (notes for 24 books) and Indonesian (notes for 7 books). Portuguese is planned; it would also bring Translation Academy, which Door43 does not have in Portuguese.</p>
+  </section>
+
   <section class="part wrap" aria-labelledby="apps-title">
     <div class="head">
       <h2 id="apps-title" data-reveal>One format, open to every app</h2>
