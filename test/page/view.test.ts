@@ -447,6 +447,7 @@ describe("patch catalogs", () => {
   it("knows a patch by its source, not any -x- tag", () => {
     expect(patchInfo("hi-x-aquifer")).toEqual({ base: "hi", source: "aquifer", sourceName: "Aquifer" });
     expect(patchInfo("es-419-x-aquifer")?.base).toBe("es-419");
+    expect(patchInfo("es-419-x-yaapi")).toEqual({ base: "es-419", source: "yaapi", sourceName: "yaapi.bible" });
     expect(patchInfo("ar-x-strong")).toBeNull();
     expect(patchInfo("hi")).toBeNull();
   });

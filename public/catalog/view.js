@@ -353,7 +353,7 @@ export function listableLanguages(languages) {
 }
 
 /** Sources that publish patch catalogs `{lang}-x-{source}` (`spec/catalog.md`, "Patch catalogs"). */
-const PATCH_SOURCES = { aquifer: "Aquifer" };
+const PATCH_SOURCES = { aquifer: "Aquifer", yaapi: "yaapi.bible" };
 
 /**
  * A patch catalog fills gaps in the catalog of its base language; it is not a language of its own.
@@ -367,10 +367,13 @@ export function patchInfo(tag) {
 }
 
 /**
- * @param {{ base: string, sourceName: string }} info
+ * @param {{ base: string, source?: string, sourceName: string }} info
  * @returns {string}
  */
 export function patchNoticeText(info) {
+  if (info.source === "yaapi") {
+    return `This is a patch, not a language. It adds Bible text from yaapi.bible for the books ${info.base} has no text of, one text per version, not aligned to the original, each with its own license and a label saying whether it is for translators or readers. An app installs it next to ${info.base}; ${info.base} wins wherever it has text of a book.`;
+  }
   return `This is a patch, not a language. It adds ${info.sourceName} material where ${info.base} lacks it, and each row says where it came from. An app installs it next to ${info.base}; ${info.base} wins wherever it has the same material.`;
 }
 
