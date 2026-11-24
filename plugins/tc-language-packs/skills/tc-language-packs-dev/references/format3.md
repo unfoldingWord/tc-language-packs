@@ -89,6 +89,18 @@ core. ACAI adds only what TIPNR lacks, and nothing is stored that the pack can a
   means another person: ACAI's «David» for Judah, from a textual variant in one verse, is left out, `spec/ids.md`). Built for en,
   es-419, id, hi and ar (French has no format 3 catalog yet) when ACAI names the person; 14 to 42 KB per language.
 
+## Places and maps
+
+The common `xtopics` core carries `geo` (v1: latitude, longitude, certainty `sure` 1 to 3 and form 1 to 5, port included, as columns aligned
+with `topics.ids`) and `routes` (nine journeys, place by place); `born-in` and `died-in` are relations. The points are OpenBible.info
+(CC BY 4.0) with TIPNR as a fallback; ACAI places give the names. Each language's `topics` core carries `places` (names, notes and aliases,
+as `people`). The coastlines, lakes and rivers with no names are the complement `basemap` (v1, about 5.8 KB, Natural Earth, public domain)
+that the common catalog lists: it is not a segment, its id is the sha256 of the file as downloaded, and it is served at
+`/v3/packs/complement/{id}` and stored in the bucket as `v3/complement/{id}` (`serving.md`). The client downloads it with
+`client.fetchComplements(lang, { kinds: ['basemap'] })` and the transfer files carry it; an app that never asks for it draws without a
+background. The client has `distance`, `travelDays` (ORBIS speeds, always a range), `placeQuery`, `placesOf`, `passagePlaces`, `route`
+and `drawMap`. Sizes: common +7 KB, languages +5 to 14 KB (en, es-419, ar, hi, id).
+
 The name an app shows for a person: `people.names`, else the first name in the language's map of the Translation Words
 article joined by `same-as`, else the English title (`spec/ids.md`, "Names of people").
 
