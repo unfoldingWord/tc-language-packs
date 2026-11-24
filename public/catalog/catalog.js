@@ -724,6 +724,11 @@ async function downloadTransfer() {
     });
     if (gen !== downloadGen || openLang !== lang) return;
 
+    // The map background (a few KB) travels in the file when the server has it; a complement is optional, so a miss never stops the download.
+    setDownloadStatus("Fetching the map background…");
+    await client.fetchComplements(lang).catch(() => null);
+    if (gen !== downloadGen || openLang !== lang) return;
+
     setDownloadStatus("Building the transfer file…");
     // Same want as the size estimate / install: list books and units
     // explicitly (phrase-index units must be named; export has no `aligned`).

@@ -39,7 +39,7 @@ publishes them in `public/skills/` with their zips. Check with `claude plugin va
 `public/format-3/try/` downloads a language in format 3 from the staging Worker
 (`translation-helps-mcp-v2-preview.unfoldingword.workers.dev`, routes `/v3/packs/…`) into the browser's IndexedDB and
 asks it the client library's queries. `language-pack-client.js` next to it is `@bt-synergy/language-pack-client`
-packed into one file. It was built from `unfoldingWord/tc-study` at `354b4eb6` (master, after unfoldingWord/tc-study#98: the Five Movements
+packed into one file. It was built from `unfoldingWord/tc-study` at `3cb4fc75` (master, after unfoldingWord/tc-study#109: the client downloads and exports complements, the map background; before that #98, the Five Movements
 sessions, the family of a person and the story pictures), with:
 
 ```bash
